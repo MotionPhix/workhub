@@ -141,9 +141,9 @@ Route::middleware('auth')->group(function () {
 
   /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 
-//  Route::middleware([
-//    'role:employee|manager|admin'
-//  ])->group(function () {
+  //  Route::middleware([
+  //    'role:employee|manager|admin'
+  //  ])->group(function () {
 
   Route::get(
     '/',
@@ -163,30 +163,25 @@ Route::middleware('auth')->group(function () {
     [ProductivityPredictionController::class, 'getPredictions']
   )->name('productivity.predictions');
 
-  Route::get('/profile', [UserController::class, 'profile'])->name('profile.index');
-  Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
-  Route::put('/profile/password', [UserController::class, 'changePassword'])->name('profile.password');
-  Route::put('/profile/two-factor', [UserController::class, 'toggleTwoFactorAuthentication'])
-    ->name('profile.two-factor');
+  Route::prefix('profile')->name('profile.')->group(function () {
 
-  // Impersonation routes
-  Route::middleware(['can:impersonate'])->group(function () {
-    Route::post('/impersonate/{user}', [UserController::class, 'impersonate'])
-      ->name('impersonate.start');
-    Route::post('/stop-impersonation', [UserController::class, 'stopImpersonation'])
-      ->name('impersonate.stop');
+    Route::get('/', [ProfileController::class, 'index'])->name('index');
+    Route::get('/e/{user}', [ProfileController::class, 'edit'])->name('edit');
+    Route::patch('/u', [ProfileController::class, 'update'])->name('update');
+    Route::delete('/d', [ProfileController::class, 'destroy'])->name('destroy');
+
   });
 
-//  });
+  //  });
 
-//  Route::middleware([
-//    'role:manager|admin'
-//  ])->group(function () {
+  //  Route::middleware([
+  //    'role:manager|admin'
+  //  ])->group(function () {
 
   Route::get(
     '/reports',
     [\App\Http\Controllers\Report\ReportController::class, 'index']
   )->name('reports.index');
 
-//  });
+  //  });
 });

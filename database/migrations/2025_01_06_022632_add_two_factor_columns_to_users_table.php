@@ -5,7 +5,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Fortify\Fortify;
 
+<<<<<<< HEAD
 return new class extends Migration {
+=======
+return new class extends Migration
+{
+>>>>>>> e9156be882d0fca8dcd710285a1bea1b93423b5d
   /**
    * Run the migrations.
    */

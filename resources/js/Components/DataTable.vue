@@ -5,7 +5,7 @@ import {
   ColumnsIcon,
   DownloadIcon
 } from 'lucide-vue-next'
-import { exportToCSV, exportToExcel, exportToPDF } from '@/Services/ExportService'
+import { exportData } from '@/Services/ExportService'
 import {
   Table,
   TableBody,
@@ -14,13 +14,16 @@ import {
   TableHeader,
   TableRow
 } from "@/Components/ui/table";
-import {Button} from "@/Components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuGroup
 } from "@/Components/ui/dropdown-menu";
+import { Checkbox } from "@/Components/ui/checkbox";
+import { Button } from "@/Components/ui/button";
+import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
   columns: {
@@ -28,7 +31,7 @@ const props = defineProps({
     required: true
   },
   data: {
-    type: Array,
+    type: Object,
     required: true
   },
   showFilters: {
@@ -56,7 +59,7 @@ const visibleColumns = computed(() =>
 )
 
 const processedData = computed(() => {
-  let result = [...props.data]
+  let result = [...props.data.data]  // Access the `data` from the paginated object
 
   // Search filtering
   if (searchQuery.value) {
@@ -85,7 +88,7 @@ const processedData = computed(() => {
   return result.slice(start, end)
 })
 
-const totalItems = computed(() => props.data.length)
+const totalItems = computed(() => props.data.total)
 
 // Methods
 const handleSort = (column) => {
@@ -111,36 +114,46 @@ const toggleColumnVisibility = (column) => {
 const isColumnVisible = (column) =>
   !hiddenColumns.value.includes(column.accessorKey)
 
-const exportData = (format) => {
-  const exportData = processedData.value.map(row =>
-    visibleColumns.value.reduce((acc, column) => {
-      acc[column.header] = row[column.accessorKey]
-      return acc
-    }, {})
-  )
+const exportDataHandler = (format) => {
+  const filename = 'data-export'  // You can customize this
 
-  switch (format) {
-    case 'csv':
-      exportToCSV(exportData, 'data-export')
-      break
-    case 'excel':
-      exportToExcel(exportData, 'data-export')
-      break
-    case 'pdf':
-      exportToPDF(exportData, 'data-export')
-      break
-  }
+  // Get the columns to be exported (only visible columns)
+  const columns = visibleColumns.value.map(column => ({
+    header: column.header,
+    accessorKey: column.accessorKey
+  }));
+
+  // You can pass filters (e.g., searchQuery) if necessary
+  const filters = {
+    search: searchQuery.value
+  };
+
+  // Optional: Add styling options (currently left empty)
+  const styling = {};
+
+  // Call the exportData function from ExportService
+  exportData(format, filename, columns, filters, styling);
 }
 
 const nextPage = () => {
-  if (currentPage.value * props.pageSize < totalItems.value) {
-    currentPage.value++
+  if (props.data.next_page_url) {
+    router.visit(props.data.next_page_url, {
+      replace: true,
+      preserveScroll: true
+    })
+  } else {
+    console.log('no next page');
   }
 }
 
 const prevPage = () => {
-  if (currentPage .value > 1) {
-    currentPage.value--
+  if (props.data.previous_page_url) {
+    router.visit(props.data.previous_page_url, {
+      replace: true,
+      preserveScroll: true
+    })
+  } else {
+    console.log('no previous page');
   }
 }
 
@@ -195,13 +208,13 @@ watch(() => props.data, () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem @click="exportData('csv')">
+            <DropdownMenuItem @click="exportDataHandler('csv')">
               Export as CSV
             </DropdownMenuItem>
-            <DropdownMenuItem @click="exportData('excel')">
+            <DropdownMenuItem @click="exportDataHandler('excel')">
               Export as Excel
             </DropdownMenuItem>
-            <DropdownMenuItem @click="exportData('pdf')">
+            <DropdownMenuItem @click="exportDataHandler('pdf')">
               Export as PDF
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -257,23 +270,26 @@ watch(() => props.data, () => {
     <div class="flex items-center justify-between mt-4">
       <div>
         Showing
-        {{ (currentPage - 1) * pageSize + 1 }}-
-        {{ Math.min(currentPage * pageSize, totalItems) }}
-        of {{ totalItems }} entries
+        {{ (data.current_page - 1) * data.per_page + 1 }} - <!-- Use per_page instead of last_page -->
+        {{ Math.min(data.current_page * data.per_page, data.total) }}
+        of {{ data.total }} entries
       </div>
       <div class="flex space-x-2">
         <Button
           variant="outline"
           @click="prevPage"
-          :disabled="currentPage === 1"
-        >
+          :disabled="!data.previous_page_url">
           Previous
         </Button>
+
+        <Button size="icon" disabled>
+          {{ data.current_page }}
+        </Button>
+
         <Button
           variant="outline"
           @click="nextPage"
-          :disabled="currentPage * pageSize >= totalItems"
-        >
+          :disabled="!data.next_page_url">
           Next
         </Button>
       </div>

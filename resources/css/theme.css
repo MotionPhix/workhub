@@ -1,0 +1,87 @@
+@layer base {
+  :root {
+    /* Light Mode Palette */
+    --background: 192 15% 92%; /* #ECF0F1 - Light gray background */
+    --foreground: 210 29% 24%; /* #2C3E50 - Dark blue-gray text */
+
+    --muted: 210 14% 85%; /* Soft, muted blue-gray */
+    --muted-foreground: 210 29% 34%; /* Slightly darker blue-gray */
+
+    --popover: 0 0% 100%; /* White popover */
+    --popover-foreground: 210 29% 24%; /* Dark text on popover */
+
+    --card: 0 0% 100%; /* White card background */
+    --card-foreground: 210 29% 24%; /* Dark text on card */
+
+    --border: 210 14% 75%; /* Light blue-gray border */
+    --input: 210 14% 85%; /* Soft blue-gray input background */
+
+    --primary: 145 63% 41%; /* #27AE60 - Green primary */
+    --primary-foreground: 192 15% 92%; /* Light text on primary */
+
+    --secondary: 48 89% 50%; /* #F1C40F - Yellow secondary */
+    --secondary-foreground: 210 29% 24%; /* Dark text on secondary */
+
+    --accent: 210 14% 43%; /* #5D6D7E - Blue-gray accent */
+    --accent-foreground: 192 15% 92%; /* Light text on accent */
+
+    --destructive: 0 85% 45%; /* Vibrant red for destructive */
+    --destructive-foreground: 0 0% 98%; /* White text on destructive */
+
+    --ring: 145 63% 41%; /* Green ring */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Mode Palette */
+    --background: 210 29% 14%; /* Darker blue-gray background */
+    --foreground: 192 15% 92%; /* Light gray text */
+
+    --muted: 210 14% 20%; /* Muted dark blue-gray */
+    --muted-foreground: 192 15% 85%; /* Soft light text */
+
+    --popover: 210 29% 18%; /* Dark popover */
+    --popover-foreground: 192 15% 92%; /* Light text on popover */
+
+    --card: 210 29% 16%; /* Darker card background */
+    --card-foreground: 192 15% 92%; /* Light text on card */
+
+    --border: 210 14% 30%; /* Dark border */
+    --input: 210 14% 25%; /* Dark input background */
+
+    --primary: 145 63% 41%; /* Green primary */
+    --primary-foreground: 192 15% 92%; /* Light text on primary */
+
+    --secondary: 48 89% 50%; /* Yellow secondary */
+    --secondary-foreground: 210 29% 14%; /* Dark text on secondary */
+
+    --accent: 210 14% 43%; /* Blue-gray accent */
+    --accent-foreground: 192 15% 92%; /* Light text on accent */
+
+    --destructive: 0 85% 45%; /* Vibrant red for destructive */
+    --destructive-foreground: 0 0% 98%; /* White text on destructive */
+
+    --ring: 145 63% 41%; /* Green ring */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Custom input styles for better readability */
+  input,
+  textarea,
+  button[role="combobox"],
+  select {
+    @apply !bg-input !text-foreground placeholder:!text-muted-foreground;
+  }
+
+  Input[make-large] {
+    @apply !min-h-11
+  }
+}

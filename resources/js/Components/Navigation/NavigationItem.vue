@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Link } from "@inertiajs/vue3";
+
 defineProps<{
   href: string
   active?: boolean
@@ -6,10 +8,11 @@ defineProps<{
 </script>
 
 <template>
-  <a
+  <Link
+    as="button"
     :href="href"
-    class="flex flex-col items-center hover:text-blue-500"
-    :class="active ? 'text-blue-600' : 'text-gray-600'">
+    class="flex flex-col sm:flex-row sm:gap-1 items-center hover:text-blue-500"
+    :class="active ? 'text-blue-600 font-semibold' : 'text-gray-600'">
     <slot/>
-  </a>
+  </Link>
 </template>

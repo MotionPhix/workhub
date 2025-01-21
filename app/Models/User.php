@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Traits\BootUuid;
+
+use App\Traits\BootableUuid;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -16,13 +17,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail, HasMedia
 {
-  use HasFactory,
-    Notifiable,
-    HasRoles,
-    HasApiTokens,
-    BootUuid,
-    SoftDeletes,
-    InteractsWithMedia;
+  /** @use HasFactory<\Database\Factories\UserFactory> */
+  use HasFactory, Notifiable, HasRoles, HasApiTokens, BootableUuid, InteractsWithMedia, SoftDeletes;
 
   protected $fillable = [
     'name',
