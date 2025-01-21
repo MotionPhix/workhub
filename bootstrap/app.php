@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\RateLimitMiddleware;
+use App\Http\Middleware\SecurityHeadersMiddleware;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,13 +24,21 @@ return Application::configure(basePath: dirname(__DIR__))
 
     ]);
 
+    // Global middleware
+    $middleware->append(RateLimitMiddleware::class);
+    $middleware->append(SecurityHeadersMiddleware::class);
+    $middleware->append(\App\Http\Middleware\EnsureUserIsActive::class);
+
+    // Named middleware for specific contexts
     $middleware->alias([
-
-      // CUSTOM
-      'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-      'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-
+      'rate.limit' => RateLimitMiddleware::class,
+      'rate.limit.login' => RateLimitMiddleware::class . ':login',
+      'rate.limit.registration' => RateLimitMiddleware::class . ':registration',
+      'rate.limit.password_reset' => RateLimitMiddleware::class . ':password_reset',
+      'rate.limit.api' => RateLimitMiddleware::class . ':api',
+      'security.headers' => SecurityHeadersMiddleware::class,
     ]);
+
   })
   ->withExceptions(function (Exceptions $exceptions) {
 

@@ -20,7 +20,7 @@ class FortifyServiceProvider extends ServiceProvider
    */
   public function register(): void
   {
-    //
+    Fortify::ignoreRoutes();
   }
 
   /**
@@ -33,14 +33,39 @@ class FortifyServiceProvider extends ServiceProvider
     Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
     Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
+    // Custom views for authentication
+    Fortify::loginView(fn() => inertia('Auth/Login'));
+    Fortify::registerView(fn() => inertia('Auth/Register'));
+
+    Fortify::requestPasswordResetLinkView(
+      fn() => inertia('Auth/ForgotPassword')
+    );
+
+    Fortify::resetPasswordView(
+      fn($request) => inertia('Auth/ResetPassword', [
+        'request' => $request
+      ])
+    );
+    Fortify::verifyEmailView(
+      fn() => inertia('Auth/VerifyEmail')
+    );
+
+    Fortify::confirmPasswordView(
+      fn() => inertia('Auth/ConfirmPassword')
+    );
+
     RateLimiter::for('login', function (Request $request) {
-      $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
+      $throttleKey = Str::transliterate(
+        Str::lower($request->input(Fortify::username())) . '|' . $request->ip()
+      );
 
       return Limit::perMinute(5)->by($throttleKey);
     });
 
     RateLimiter::for('two-factor', function (Request $request) {
-      return Limit::perMinute(5)->by($request->session()->get('login.id'));
+      return Limit::perMinute(5)
+        ->by($request->session()
+          ->get('login.id'));
     });
   }
 }

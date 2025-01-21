@@ -58,6 +58,20 @@ return [
       'days' => 14,
     ],
 
+    'user_management' => [
+      'driver' => 'daily',
+      'path' => storage_path('logs/user_management.log'),
+      'level' => 'warning',
+      'days' => 7,
+    ],
+
+    'notifications' => [
+      'driver' => 'daily',
+      'path' => storage_path('logs/notifications.log'),
+      'level' => 'debug',
+      'days' => 2,
+    ],
+
     'stack' => [
       'driver' => 'stack',
       'channels' => explode(',', env('LOG_STACK', 'single')),

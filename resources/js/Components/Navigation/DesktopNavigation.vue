@@ -7,7 +7,7 @@ const desktopNavItems = [
   {label: 'Dashboard', route: 'dashboard'},
   {label: 'Work Entries', route: 'work-entries.index'},
   {label: 'Reports', route: 'reports.index'},
-  {label: 'Profile', route: 'profile.edit'}
+  {label: 'Profile', route: 'profile.index'}
 ]
 </script>
 

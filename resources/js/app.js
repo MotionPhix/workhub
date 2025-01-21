@@ -7,6 +7,22 @@ import {createApp, h} from 'vue';
 import {ZiggyVue} from '../../vendor/tightenco/ziggy';
 import VueApexCharts from "vue3-apexcharts";
 import { Modal, ModalLink, putConfig, renderApp } from '@inertiaui/modal-vue'
+import { OhVueIcon, addIcons } from "oh-vue-icons";
+import {
+  FaGoogle,
+  FaFacebookSquare,
+  FaRegularBell,
+  HiUpload,
+  HiCheckCircle
+} from "oh-vue-icons/icons";
+
+addIcons(
+  FaGoogle,
+  FaFacebookSquare,
+  FaRegularBell,
+  HiUpload,
+  HiCheckCircle
+);
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -45,6 +61,7 @@ createInertiaApp({
       .use(VueApexCharts)
       .component('GlobalModal', Modal)
       .component('ModalLink', ModalLink)
+      .component("Icon", OhVueIcon)
       .mount(el);
   },
   progress: {

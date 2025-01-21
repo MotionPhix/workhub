@@ -1,101 +1,124 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue'
+import { useForm } from '@inertiajs/vue3'
+import PasswordStrengthIndicator from '@/Components/PasswordStrengthIndicator.vue'
+import {Label} from "@/Components/ui/label";
+import {Input} from "@/Components/ui/input";
+import {Button} from "@/Components/ui/button";
 
+// Define props from the page
 const props = defineProps({
-    email: {
-        type: String,
-        required: true,
-    },
-    token: {
-        type: String,
-        required: true,
-    },
-});
+  token: String,
+  email: String
+})
 
+// Create form
 const form = useForm({
-    token: props.token,
-    email: props.email,
-    password: '',
-    password_confirmation: '',
-});
+  token: props.token,
+  email: props.email,
+  password: '',
+  password_confirmation: ''
+})
 
-const submit = () => {
-    form.post(route('password.store'), {
-        onFinish: () => form.reset('password', 'password_confirmation'),
-    });
-};
+// Validate form
+const isFormValid = computed(() => {
+  return form.password &&
+    form.password_confirmation &&
+    form.password === form.password_confirmation &&
+    form.password.length >= 12
+})
+
+// Submit handler
+const submitResetPassword = () => {
+  form.post(route('password.update'), {
+    onSuccess: () => {
+      // Redirect to login with success message
+      form.reset()
+    },
+    onError: (errors) => {
+      // Errors are automatically handled
+      console.error('Password reset failed', errors)
+    }
+  })
+}
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Reset Password" />
+  <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
+    <div class="w-full max-w-md">
+      <div class="bg-white shadow-md rounded-xl p-8 space-y-6">
+        <h2 class="text-2xl font-bold text-center">
+          Reset Your Password
+        </h2>
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
+        <form @submit.prevent="submitResetPassword" class="space-y-6">
+          <!-- Hidden email field -->
+          <input
+            type="hidden"
+            name="email"
+            :value="email"
+          />
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
+          <!-- Hidden token field -->
+          <input
+            type="hidden"
+            name="token"
+            :value="token"
+          />
 
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
+          <!-- Password Input -->
+          <div>
+            <Label for="password">New Password</Label>
+            <Input
+              id="password"
+              type="password"
+              v-model="form.password"
+              required
+              placeholder="Enter new password"
+              :error="errors.password"
+            />
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+            <!-- Password Strength Indicator -->
+            <PasswordStrengthIndicator
+              :password="form.password"
+              class="mt-2"
+            />
+          </div>
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="new-password"
-                />
+          <!-- Confirm Password Input -->
+          <div>
+            <Label for="password_confirmation">
+              Confirm New Password
+            </Label>
 
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
+            <Input
+              id="password_confirmation"
+              type="password"
+              v-model="form.password_confirmation"
+              required
+              placeholder="Confirm new password"
+              :error="errors.password_confirmation"
+            />
+          </div>
 
-            <div class="mt-4">
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
-
-                <TextInput
-                    id="password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password_confirmation"
-                    required
-                    autocomplete="new-password"
-                />
-
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.password_confirmation"
-                />
-            </div>
-
-            <div class="mt-4 flex items-center justify-end">
-                <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Reset Password
-                </PrimaryButton>
-            </div>
+          <!-- Submit Button -->
+          <Button
+            type="submit"
+            class="w-full"
+            :disabled="!isFormValid">
+            Reset Password
+          </Button>
         </form>
-    </GuestLayout>
+
+        <!-- Error Message -->
+        <div
+          v-if="Object.keys(errors).length > 0"
+          class="bg-red-50 border-l-4 border-red-400 p-4">
+          <p class="text-sm text-red-700">
+            {{ Object.values(errors)[0] }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>

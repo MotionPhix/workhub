@@ -1,68 +1,123 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue'
+import { useForm } from '@inertiajs/vue3'
+import { Link } from '@inertiajs/vue3'
+import { TransitionRoot } from '@headlessui/vue'
+import {Label} from "@/Components/ui/label";
+import InputError from "@/Components/InputError.vue";
+import {Input} from "@/Components/ui/input"
+import {Button} from "@/Components/ui/button"
 
-defineProps({
-    status: {
-        type: String,
-    },
-});
-
+// Form setup
 const form = useForm({
-    email: '',
-});
+  email: '',
+})
 
-const submit = () => {
-    form.post(route('password.email'));
-};
+// Success message state
+const successMessage = ref('')
+const showSuccessMessage = computed(() => !!successMessage.value)
+
+// Submit handler
+const submitPasswordResetRequest = () => {
+  form.post(route('password.email'), {
+    preserveScroll: true,
+    onSuccess: (page) => {
+      // Handle success scenario
+      form.reset()
+
+      // Set success message from flash data
+      successMessage.value = page.props.flash.status ||
+        'Password reset link has been sent to your email.'
+
+      // Optional: Auto-clear success message
+      setTimeout(() => {
+        successMessage.value = ''
+      }, 5000)
+    },
+    onError: (errors) => {
+      // Errors are automatically handled by the form
+      console.error('Password reset request failed', errors)
+    }
+  })
+}
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Forgot Password" />
-
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            Forgot your password? No problem. Just let us know your email
-            address and we will email you a password reset link that will allow
-            you to choose a new one.
+  <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
+    <div class="w-full max-w-md">
+      <div class="bg-white shadow-md rounded-xl p-8 space-y-6">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-gray-900">
+            Reset Your Password
+          </h2>
+          <p class="mt-2 text-sm text-gray-600">
+            Enter your email address below and we'll send you a link to reset your password.
+          </p>
         </div>
 
-        <div
-            v-if="status"
-            class="mb-4 text-sm font-medium text-green-600 dark:text-green-400"
-        >
-            {{ status }}
-        </div>
+        <form @submit.prevent="submitPasswordResetRequest" class="space-y-6">
+          <!-- Email Input -->
+          <div>
+            <Label for="email">Email address</Label>
+            <Input
+              id="email"
+              type="email"
+              v-model="form.email"
+              placeholder="Enter your email"
+            />
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
+            <!-- Email Error Message -->
+            <InputError class="mt-2" :message="form.errors.email" />
+          </div>
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div class="mt-4 flex items-center justify-end">
-                <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Email Password Reset Link
-                </PrimaryButton>
-            </div>
+          <!-- Submit Button -->
+          <Button
+            type="submit"
+            class="w-full"
+            :disabled="form.processing">
+            {{ form.processing ? 'Sending Reset Link...' : 'Send Reset Link' }}
+          </Button>
         </form>
-    </GuestLayout>
+
+        <!-- Return to Login -->
+        <div class="text-center">
+          <Link
+            as="button"
+            :href="route('login')"
+            class="text-sm text-blue-600 hover:underline">
+            Return to login
+          </Link>
+        </div>
+      </div>
+
+      <!-- Success Message -->
+      <TransitionRoot
+        :show="showSuccessMessage"
+        as="template"
+        enter="transition ease-out duration-300"
+        enter-from="opacity-0 translate-y-4"
+        enter-to="opacity-100 translate-y-0"
+        leave="transition ease-in duration-200"
+        leave-from="opacity-100 translate-y-0"
+        leave-to="opacity-0 translate-y-4">
+        <div
+          class="mt-4 bg-green-50 border-l-4 border-green-400 p-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <Icon name="hi-check-circle"
+                class="h-5 w-5 text-green-400"
+                aria-hidden="true"
+              />
+            </div>
+
+            <div class="ml-3">
+              <p class="text-sm text-green-700">
+                {{ successMessage }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </TransitionRoot>
+    </div>
+  </div>
 </template>

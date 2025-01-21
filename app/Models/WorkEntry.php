@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\BootUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class WorkEntry extends Model
 {
-  use HasFactory;
+  use HasFactory, BootUuid;
 
   protected $fillable = [
     'user_id',

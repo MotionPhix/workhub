@@ -11,53 +11,133 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\ProductivityPredictionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-  Route::get('register', [RegisteredUserController::class, 'create'])
-    ->name('register');
+    Route::get(
+    'register',
+    [\App\Http\Controllers\Auth\AuthController::class, 'showRegistrationForm']
+  )->name('register');
 
-  Route::post('register', [RegisteredUserController::class, 'store']);
+  Route::post(
+    'register',
+    [\App\Http\Controllers\Auth\AuthController::class, 'register']
+  )->middleware('rate.limit:registration');
 
-  Route::get('login', [AuthenticatedSessionController::class, 'create'])
-    ->name('login');
+  Route::get(
+    'login',
+    [\App\Http\Controllers\Auth\AuthController::class, 'showLoginForm']
+  )->name('login');
 
-  Route::post('login', [AuthenticatedSessionController::class, 'store']);
+  Route::post(
+    'login',
+    [\App\Http\Controllers\Auth\AuthController::class, 'login']
+  )->middleware('rate.limit:login');
 
-  Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-    ->name('password.request');
+  Route::get(
+    'forgot-password',
+    [\App\Http\Controllers\Auth\AuthController::class, 'forgotPassword']
+  )->name('password.request');
 
-  Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-    ->name('password.email');
+  Route::post(
+    'forgot-password',
+    [\App\Http\Controllers\Auth\AuthController::class, 'sendPasswordResetLink']
+  )->name('password.email');
 
-  Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-    ->name('password.reset');
+  Route::get(
+    'reset-password/{token}',
+    [\App\Http\Controllers\Auth\AuthController::class, 'showResetPasswordForm']
+  )->name('password.reset');
 
-  Route::post('reset-password', [NewPasswordController::class, 'store'])
+  Route::post(
+    'reset-password',
+    [\App\Http\Controllers\Auth\AuthController::class, 'resetPassword']
+  )->middleware('rate.limit:password_reset')
     ->name('password.store');
 });
 
 Route::middleware('auth')->group(function () {
+// Two-Factor Authentication Routes
+  Route::get(
+    '/two-factor',
+    [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'showEnablePage']
+  )->name('two-factor.enable');
+
+  Route::post(
+    '/two-factor/enable',
+    [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'enable']
+  )->name('two-factor.store');
+
+  Route::post(
+    '/two-factor/disable',
+    [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'disable']
+  )->name('two-factor.disable');
+
+  // Recovery Codes Management
+  Route::get(
+    '/two-factor/recovery-codes',
+    [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'showRecoveryCodes']
+  )->name('two-factor.recovery-codes');
+
+  Route::post(
+    '/two-factor/recovery-codes/regenerate',
+    [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'regenerateRecoveryCodes']
+  )->name('two-factor.recovery-codes.regenerate');
+
+  // Two-Factor Challenge Routes
+  Route::middleware('2fa.required')->group(function () {
+    Route::get(
+      '/two-factor/challenge',
+      [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'showChallengePage']
+    )->name('two-factor.challenge');
+
+    Route::post(
+      '/two-factor/challenge',
+      [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'challenge']
+    )->name('two-factor.verify');
+
+    Route::post(
+      '/two-factor/recovery',
+      [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'challengeWithRecoveryCode']
+    )->name('two-factor.verify-recovery');
+  });
+
   Route::get('verify-email', EmailVerificationPromptController::class)
     ->name('verification.notice');
 
-  Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-    ->middleware(['signed', 'throttle:6,1'])
+  Route::get(
+    'verify-email/{id}/{hash}',
+    VerifyEmailController::class
+  )->middleware(['signed', 'throttle:6,1'])
     ->name('verification.verify');
 
-  Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+  Route::post(
+    'email/verification-notification',
+    [EmailVerificationNotificationController::class, 'store']
+  )
     ->middleware('throttle:6,1')
     ->name('verification.send');
 
-  Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
-    ->name('password.confirm');
+  Route::get(
+    'confirm-password',
+    [ConfirmablePasswordController::class, 'show']
+  )->name('password.confirm');
 
-  Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
+  Route::post(
+    'confirm-password',
+    [ConfirmablePasswordController::class, 'store']
+  );
 
-  Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+  Route::put(
+    'password',
+    [PasswordController::class, 'update']
+  )->name('password.update');
 
-  Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->name('logout');
+  Route::post(
+    'logout',
+    [\App\Http\Controllers\Auth\AuthController::class, 'logout']
+  )->name('logout');
 
   /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 
@@ -67,7 +147,9 @@ Route::middleware('auth')->group(function () {
 
   Route::get(
     '/',
-    [\App\Http\Controllers\Report\ReportController::class, 'index']
+    function () {
+      return Inertia('Dashboard');
+    }
   )->name('dashboard');
 
 
@@ -81,9 +163,19 @@ Route::middleware('auth')->group(function () {
     [ProductivityPredictionController::class, 'getPredictions']
   )->name('productivity.predictions');
 
-  Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-  Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-  Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+  Route::get('/profile', [UserController::class, 'profile'])->name('profile.index');
+  Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+  Route::put('/profile/password', [UserController::class, 'changePassword'])->name('profile.password');
+  Route::put('/profile/two-factor', [UserController::class, 'toggleTwoFactorAuthentication'])
+    ->name('profile.two-factor');
+
+  // Impersonation routes
+  Route::middleware(['can:impersonate'])->group(function () {
+    Route::post('/impersonate/{user}', [UserController::class, 'impersonate'])
+      ->name('impersonate.start');
+    Route::post('/stop-impersonation', [UserController::class, 'stopImpersonation'])
+      ->name('impersonate.stop');
+  });
 
 //  });
 
