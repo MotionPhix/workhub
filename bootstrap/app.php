@@ -5,8 +5,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Inertia\EncryptHistoryMiddleware;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
   ->withRouting(
@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
       \App\Http\Middleware\HandleInertiaRequests::class,
       \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+      EncryptHistoryMiddleware::class,
 
     ]);
 

@@ -6,7 +6,6 @@ use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Exports\GenericDataExport;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportExportService
 {
@@ -83,7 +82,7 @@ class ReportExportService
       throw new \InvalidArgumentException("No data to export");
     }
 
-    // Limit export size
+    // Limit export size (this should be configurable in your .env or config)
     $maxExportSize = config('exports.max_rows', 10000);
     if (count($data) > $maxExportSize) {
       throw new \InvalidArgumentException("Export exceeds maximum allowed rows ($maxExportSize)");
@@ -97,7 +96,7 @@ class ReportExportService
   }
 
   /**
-   * Apply data filters
+   * Apply data filters (support for searchQuery, date ranges, etc.)
    *
    * @param array $data
    * @param array $filters
@@ -105,14 +104,32 @@ class ReportExportService
    */
   private function applyDataFilters(array $data, array $filters): array
   {
+    // Example: Apply search query filter
+    if (isset($filters['searchQuery']) && $filters['searchQuery']) {
+      $data = array_filter($data, function ($item) use ($filters) {
+        foreach ($item as $key => $value) {
+          if (strpos(strtolower($value), strtolower($filters['searchQuery'])) !== false) {
+            return true;
+          }
+        }
+        return false;
+      });
+    }
+
+    // Apply date range filters if available
+    if (isset($filters['startDate']) && isset($filters['endDate'])) {
+      $data = array_filter($data, function ($item) use ($filters) {
+        $date = strtotime($item['work_date'] ?? ''); // Adjust according to actual field
+        $startDate = strtotime($filters['startDate']);
+        $endDate = strtotime($filters['endDate']);
+        return $date >= $startDate && $date <= $endDate;
+      });
+    }
+
+    // Apply other filters (department, etc.)
     return array_filter($data, function ($item) use ($filters) {
       foreach ($filters as $key => $value) {
-        // Support simple equality and more complex callbacks
-        if (is_callable($value)) {
-          if (!$value($item[$key] ?? null)) {
-            return false;
-          }
-        } elseif ($item[$key] ?? null !== $value) {
+        if (isset($item[$key]) && $item[$key] != $value) {
           return false;
         }
       }
@@ -121,7 +138,7 @@ class ReportExportService
   }
 
   /**
-   * Select specific columns
+   * Select specific columns to export
    *
    * @param array $data
    * @param array|null $columns
@@ -133,13 +150,14 @@ class ReportExportService
       return $data;
     }
 
+    // Only keep the specified columns
     return array_map(function ($item) use ($columns) {
       return array_intersect_key($item, array_flip($columns));
     }, $data);
   }
 
   /**
-   * Perform export based on format
+   * Perform export based on format (handle Excel, CSV, and PDF)
    *
    * @param array $data
    * @param array $options
@@ -166,11 +184,18 @@ class ReportExportService
    */
   private function exportExcel(array $data, string $filename, array $options)
   {
-    return Excel::download(
+    $export = Excel::download(
       new GenericDataExport($data, $options['columns']),
       $filename,
       \Maatwebsite\Excel\Excel::XLSX
     );
+
+    // Handle password protection if specified
+    if ($options['password']) {
+      // Add password protection logic (e.g., using a library or Excel package)
+    }
+
+    return $export;
   }
 
   /**

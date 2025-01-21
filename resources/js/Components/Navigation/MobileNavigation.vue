@@ -40,7 +40,7 @@ const mobileNavItems = [
   },
   {
     label: 'Profile',
-    route: 'profile.edit',
+    route: 'profile.index',
     icon: UserIcon
   }
 ]

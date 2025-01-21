@@ -20,12 +20,17 @@ const submitWorkEntry = () => {
 <template>
   <div class="container mx-auto p-6">
     <Card>
+
       <CardHeader>
+
         <CardTitle>Work Entries</CardTitle>
+
       </CardHeader>
 
       <CardContent>
+
         <Form @submit="submitWorkEntry">
+
           <FormField>
             <FormLabel>Work Date</FormLabel>
             <Input type="date" v-model="form.work_date" />
@@ -37,8 +42,11 @@ const submitWorkEntry = () => {
           </FormField>
 
           <Button type="submit">Save Work Entry</Button>
+
         </Form>
+
       </CardContent>
+
     </Card>
   </div>
 </template>

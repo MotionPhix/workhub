@@ -20,7 +20,11 @@ class GenericDataExport implements FromArray, WithHeadings, WithStyles
 
   public function array(): array
   {
-    return $this->data;
+    // Filter data based on selected columns
+    return array_map(function ($item) {
+      // Filter the columns based on the visible columns passed
+      return array_intersect_key($item, array_flip($this->columns));
+    }, $this->data);
   }
 
   public function headings(): array
@@ -30,25 +34,29 @@ class GenericDataExport implements FromArray, WithHeadings, WithStyles
 
   public function styles(Worksheet $sheet)
   {
+    $headerColor = $this->styling['header_color'] ?? '#4a4a4a';
+    $alternateRowColor = $this->styling['alternate_row_color'] ?? '#f4f4f4';
+
     // Apply styles to the header row
     return [
-      1 => [
-        'font' => [
-          'bold' => true,
-          'color' => ['argb' => 'FFFFFF'],
+        1 => [
+            'font' => [
+                'bold' => true,
+                'color' => ['argb' => 'FFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['argb' => $headerColor],
+            ],
         ],
-        'fill' => [
-          'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-          'startColor' => ['argb' => '4a4a4a'],
+        // Alternate row styling
+        'A2:A' . (count($this->data) + 1) => [
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['argb' => $alternateRowColor],
+            ],
         ],
-      ],
-      // Alternate row styling
-      'A2:A' . (count($this->data) + 1) => [
-        'fill' => [
-          'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-          'startColor' => ['argb' => 'f4f4f4'],
-        ],
-      ],
     ];
   }
+
 }

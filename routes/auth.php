@@ -61,9 +61,9 @@ Route::middleware('auth')->group(function () {
 
   /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 
-//  Route::middleware([
-//    'role:employee|manager|admin'
-//  ])->group(function () {
+  //  Route::middleware([
+  //    'role:employee|manager|admin'
+  //  ])->group(function () {
 
   Route::get(
     '/',
@@ -81,20 +81,25 @@ Route::middleware('auth')->group(function () {
     [ProductivityPredictionController::class, 'getPredictions']
   )->name('productivity.predictions');
 
-  Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-  Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-  Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+  Route::prefix('profile')->name('profile.')->group(function () {
 
-//  });
+    Route::get('/', [ProfileController::class, 'index'])->name('index');
+    Route::get('/e/{user}', [ProfileController::class, 'edit'])->name('edit');
+    Route::patch('/u', [ProfileController::class, 'update'])->name('update');
+    Route::delete('/d', [ProfileController::class, 'destroy'])->name('destroy');
 
-//  Route::middleware([
-//    'role:manager|admin'
-//  ])->group(function () {
+  });
+
+  //  });
+
+  //  Route::middleware([
+  //    'role:manager|admin'
+  //  ])->group(function () {
 
   Route::get(
     '/reports',
     [\App\Http\Controllers\Report\ReportController::class, 'index']
   )->name('reports.index');
 
-//  });
+  //  });
 });
