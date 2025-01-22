@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 class AuthenticationService
@@ -240,6 +241,8 @@ class AuthenticationService
 
     // Revoke current token
     $user->currentAccessToken()?->delete();
+
+    Inertia::clearHistory();
 
     Auth::logout();
   }

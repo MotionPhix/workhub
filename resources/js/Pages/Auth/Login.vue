@@ -34,18 +34,19 @@ const submit = () => {
 
     <Head title="Log in" />
 
-    <div v-if="status"
-         class="mb-4 text-sm font-medium text-green-600">
-      {{ status }}
-    </div>
-
     <CardHeader>
       <CardTitle class="text-2xl">
         Login
       </CardTitle>
 
       <CardDescription>
-        Enter your email below to login to your account
+        <span
+          v-if="status"
+          class="text-green-600">
+          {{ status }}
+        </span>
+
+        <span v-else>Enter your email below to login to your account</span>
       </CardDescription>
     </CardHeader>
 

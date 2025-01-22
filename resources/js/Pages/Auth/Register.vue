@@ -6,6 +6,7 @@ import {Input} from "@/Components/ui/input"
 import Checkbox from "@/Components/Checkbox.vue";
 import PasswordStrengthIndicator from "@/Pages/Auth/PasswordStrengthIndicator.vue";
 import InputError from "@/Components/InputError.vue";
+import GuestLayout from "@/Layouts/GuestLayout.vue"
 
 const form = useForm({
   name: '',

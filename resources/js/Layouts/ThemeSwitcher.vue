@@ -32,7 +32,7 @@ onMounted(() => {
   <div>
     <Button
       @click="toggleTheme"
-      variant="outline"
+      variant="ghost"
       size="icon">
       <SunIcon v-if="isDarkMode" class="w-5 h-5" />
       <MoonIcon v-else class="w-5 h-5" />

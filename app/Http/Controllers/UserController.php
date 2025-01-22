@@ -14,7 +14,7 @@ use Inertia\Inertia;
 class UserController extends Controller
 {
   use AuthorizesRequests;
-  
+
   public function index(Request $request)
   {
     // Only admin can list users
@@ -62,7 +62,10 @@ class UserController extends Controller
           ->symbols()
       ],
       'department' => ['nullable', 'string', 'max:100'],
-      'manager_email' => ['nullable', 'email', 'exists:users,email']
+      'manager_email' => ['nullable', 'email', 'exists:users,email'],
+      'settings.notifications.email' => ['boolean'],
+      'settings.notifications.sms' => ['boolean'],
+      'settings.timezone' => ['string', 'max:50'],
     ]);
 
     $user = User::create([
@@ -71,10 +74,14 @@ class UserController extends Controller
       'password' => Hash::make($validated['password']),
       'department' => $validated['department'] ?? null,
       'manager_email' => $validated['manager_email'] ?? null,
+      'settings' => [
+        'notifications' => [
+          'email' => $validated['settings']['notifications']['email'] ?? true, // Default to true
+          'sms' => $validated['settings']['notifications']['sms'] ?? false,  // Default to false
+        ],
+        'timezone' => $validated['settings']['timezone'] ?? 'UTC', // Default to UTC
+      ]
     ]);
-
-    // Assign default role
-    $user->assignRole('employee');
 
     return redirect()->route('users.index')
       ->with('success', 'User created successfully.');

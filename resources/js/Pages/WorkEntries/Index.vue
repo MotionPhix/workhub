@@ -54,7 +54,7 @@ const columns = [
   },
   {
     id: 'actions',
-    header: 'Actions'
+    header: ''
   }
 ]
 
@@ -75,7 +75,7 @@ const deleteEntry = (entry) => {
 
 <template>
   <AppLayout>
-    <div class="mx-auto">
+    <div class="my-12">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold">Work Entries</h1>
       </div>

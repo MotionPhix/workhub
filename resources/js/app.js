@@ -7,6 +7,7 @@ import {createApp, h} from 'vue';
 import {ZiggyVue} from '../../vendor/tightenco/ziggy';
 import VueApexCharts from "vue3-apexcharts";
 import {Modal, ModalLink, putConfig, renderApp} from '@inertiaui/modal-vue'
+import { createPinia } from 'pinia'
 
 // components
 import {Input} from '@/Components/ui/input'
@@ -41,6 +42,7 @@ addIcons(
 );
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const pinia = createPinia()
 
 putConfig({
   type: 'modal',
@@ -74,6 +76,7 @@ createInertiaApp({
     return createApp({ render: renderApp(App, props) })
       .use(plugin)
       .use(ZiggyVue)
+      .use(pinia)
       .use(VueApexCharts)
       .component('GlobalModal', Modal)
       .component('ModalLink', ModalLink)

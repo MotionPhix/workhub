@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { useForm } from "@inertiajs/vue3";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Button } from "@/Components/ui/button";
+import {watch} from "vue";
+import {useForm} from "@inertiajs/vue3";
+import {Input} from "@/Components/ui/input";
 
 const props = defineProps({
   open: {
@@ -16,13 +14,18 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["update:open", "update:profile"]);
-
 // Reactive form with Inertia.js
 const form = useForm({
   name: "",
   email: "",
   department: "",
+  settings: {
+    notifications: {
+      email: true,
+      sms: false,
+    },
+    timezone: "UTC",
+  },
 });
 
 // Sync props.user data with form
@@ -32,43 +35,54 @@ watch(
     form.name = newUser.name || "";
     form.email = newUser.email || "";
     form.department = newUser.department || "";
+    form.settings = {
+      notifications: {
+        email: newUser.settings?.notifications?.email ?? true,
+        sms: newUser.settings?.notifications?.sms ?? false,
+      },
+      timezone: newUser.settings?.timezone ?? "cat",
+    };
   },
-  { immediate: true }
+  {immediate: true}
 );
 
 // Handle form submission
 const saveProfile = async () => {
-  // Simulate form submission; replace with Inertia POST/PUT if needed
-  emit("update:profile", {
-    ...props.user,
-    ...form,
-  });
+  form.patch(route('profile.update'), {
+    onSuccess: () => {
+      console.log('done')
+    },
 
-  emit("update:open", false);
+    onError: (error) => {
+      console.log(error)
+    }
+  })
 };
 </script>
 
 <template>
   <GlobalModal
     padding-classes="0" v-slot="{ close }"
+    panel-classes=" dark:bg-gray-800 rounded-xl"
     :close-explicitly="true"
     :close-button="false">
+    <!-- Header -->
     <CardHeader>
-      <CardTitle>
-        Edit Profile
-      </CardTitle>
+      <CardTitle>Edit Profile</CardTitle>
     </CardHeader>
 
+    <!-- Content -->
     <CardContent>
-      <form @submit.prevent="saveProfile" class="space-y-4">
+      <form @submit.prevent="saveProfile" class="space-y-6">
+        <!-- Basic Information -->
         <div>
           <Label for="name">Name</Label>
-          <Input id="name" v-model="form.name" type="text" required />
+          <Input id="name" v-model="form.name" type="text" required/>
         </div>
 
         <div>
           <Label for="email">Email</Label>
-          <Input id="email" v-model="form.email" type="email" required />
+          <Input id="email" v-model="form.email" type="email" required/>
         </div>
 
         <div>
@@ -78,21 +92,51 @@ const saveProfile = async () => {
             v-model="form.department"
           />
         </div>
+
+        <!-- Settings Section -->
+        <div class="mt-6">
+          <h3 class="text-lg font-medium">Notifications</h3>
+          <div class="flex items-center space-x-4 mt-2">
+            <label class="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                v-model="form.settings.notifications.email"
+                class="form-checkbox"
+              />
+              <span>Email</span>
+            </label>
+            <label class="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                v-model="form.settings.notifications.sms"
+                class="form-checkbox"
+              />
+              <span>SMS</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <FormField
+            type="select"
+            label="Timezone"
+            v-model="form.settings.timezone"
+            :options="[
+              { value: 'utc', label: 'UTC' },
+            ]"
+          />
+        </div>
       </form>
     </CardContent>
 
+    <!-- Footer -->
     <CardFooter class="gap-2 justify-end">
       <Button type="button" variant="secondary" @click="close">
         Cancel
       </Button>
-
-      <Button type="button" @click="saveProfile">
+      <Button type="submit" @click="saveProfile">
         Save Changes
       </Button>
     </CardFooter>
   </GlobalModal>
 </template>
-
-<style scoped>
-/* Optional: Customize modal appearance */
-</style>

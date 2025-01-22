@@ -214,7 +214,11 @@ class UserService
       $user,
       'user_created',
       'New user account created',
-      $user,
+      [
+        'user_name' => $user->name,
+        'user_email' => $user->email,
+        'roles' => $user->roles,
+      ],
     );
 
     Log::channel('user_management')->info('User created', [

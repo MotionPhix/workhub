@@ -1,7 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import NavigationItem from "@/Components/Navigation/NavigationItem.vue";
 import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
 import {UserIcon} from "lucide-vue-next"
+import UserAvatar from "@/Layouts/UserAvatar.vue";
+import {getInitials} from "@/lib/stringUtils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/Components/ui/dropdown-menu";
+import {router} from "@inertiajs/vue3";
 
 const appName = import.meta.env.VITE_APP_NAME || 'WorkHub'
 
@@ -9,7 +20,6 @@ const desktopNavItems = [
   {label: 'Dashboard', route: 'dashboard'},
   {label: 'Work Entries', route: 'work-entries.index'},
   {label: 'Reports', route: 'reports.index'},
-  {label: 'Profile', icon: UserIcon, route: 'profile.index'}
 ]
 </script>
 
@@ -34,6 +44,30 @@ const desktopNavItems = [
           </NavigationItem>
 
           <ThemeSwitcher />
+
+          <DropdownMenu :modal="false">
+            <DropdownMenuTrigger>
+              <UserAvatar
+                :fallback="getInitials($page.props.auth.user.name)"
+              />
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>
+                <div class="grid">
+                  <strong>{{ $page.props.auth.user.name }}</strong>
+                  <span>{{ $page.props.auth.user.email }}</span>
+                </div>
+              </DropdownMenuLabel>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem @click="router.visit(route('profile.index'), { replace: true })">
+                <UserIcon />
+                Profile
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

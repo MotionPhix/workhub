@@ -27,11 +27,13 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
     'department',
     'manager_email',
     'is_active',
+    'joined_at',
     'last_login_at',
     'last_login_ip',
     'two_factor_secret',
     'two_factor_recovery_codes',
     'two_factor_confirmed_at',
+    'settings',
   ];
 
   protected $hidden = [
@@ -51,6 +53,8 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
       'last_login_at' => 'datetime',
       'password' => 'hashed',
       'is_active' => 'boolean',
+      'joined_at' => 'date',
+      'settings' => 'array',
     ];
   }
 

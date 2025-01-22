@@ -59,18 +59,19 @@ class ActivityLog extends Model
 
     // Determine severity
     $severity = $options['severity'] ?? 'info';
+
     return self::create([
       'user_id' => $user?->id,
       'action' => $action,
       'description' => $description,
       'ip_address' => $ipAddress,
       'user_agent' => Request::userAgent(),
-      'subject_type' => $subject ? get_class($subject) : null,
-      'subject_id' => $subject?->id,
+      'subject_type' => $subject && get_class($subject),
+      'subject_id' => $subject && $subject->id,
       'metadata' => $metadata,
       'severity' => $severity,
-      'country' => $location?->countryName,
-      'city' => $location?->cityName
+      'country' => $location && $location->countryName,
+      'city' => $location && $location->cityName
     ]);
   }
 

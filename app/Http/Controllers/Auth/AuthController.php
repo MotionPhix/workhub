@@ -38,10 +38,10 @@ class AuthController extends Controller
         'User logged in successfully'
       );
 
-      return redirect()->intended(route('dashboard'))
-        ->with('success', 'Logged in successfully');
+      return redirect()->intended(route('profile.index'))
+        ->with('status', 'Logged in successfully');
     } catch (\Exception $e) {
-      return back()->with('error', $e->getMessage());
+      return back()->with('status', $e->getMessage());
     }
   }
 
@@ -54,14 +54,6 @@ class AuthController extends Controller
   {
     try {
       $user = $this->userService->createUser($request->validated());
-
-      // Log registration activity
-      ActivityLog::log(
-        $user,
-        'registration',
-        'New user registered',
-        $user
-      );
 
       return redirect()->route('login')
         ->with('flush', 'Account created successfully. Please login');
