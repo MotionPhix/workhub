@@ -1,0 +1,149 @@
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue'
+import { useForm } from '@inertiajs/vue3'
+import { format } from 'date-fns'
+import {
+  CalendarIcon,
+} from 'lucide-vue-next'
+import {cn} from "@/lib/utils"
+import {Popover, PopoverTrigger, PopoverContent} from "@/Components/ui/popover";
+import {Calendar} from "@/Components/ui/v-calendar";
+import {Textarea} from "@/Components/ui/textarea";
+import AppLayout from '@/Layouts/AppLayout.vue'
+
+const props = defineProps<{
+  projects: Array<{
+    id: number
+    name: string
+    uuid?: string
+  }>,
+
+  workEntry: {}
+}>()
+
+const form = useForm({
+  work_date: new Date(),
+  project: null,
+  hours_worked: 0,
+  description: '',
+  tags: []
+})
+
+const options = computed(() => props.projects.map(project => ({ value: project.id, label: project.name })))
+const isSubmitting = ref(false)
+
+const availableTags = [
+  'Development',
+  'Design',
+  'Meeting',
+  'Research',
+  'Documentation'
+]
+
+const submitWorkEntry = async () => {
+  isSubmitting.value = true
+
+  try {
+    await form.post(route('work-entries.store'), {
+      onSuccess: () => {
+        isOpen.value = false
+        form.reset()
+      },
+      onError: (errors) => {
+        // Handle validation errors
+        console.error(errors)
+      }
+    })
+  } finally {
+    isSubmitting.value = false
+  }
+}
+</script>
+
+<template>
+  <app-layout>
+  <Card>
+      <CardHeader>
+        <CardTitle>Create New Work Entry</CardTitle>
+        <CardDescription>
+          Log your daily work and track your productivity
+        </CardDescription>
+      </CardHeader>
+      <form @submit.prevent="submitWorkEntry" class="space-y-4">
+
+<CardContent>
+        <div>
+          <Label>Work Date</Label>
+          <Popover>
+            <PopoverTrigger as-child>
+              <Button
+                variant="outline"
+                :class="cn(
+                  'w-full justify-start text-left font-normal',
+                  !form.work_date && 'text-muted-foreground'
+                )"
+              >
+                <CalendarIcon class="w-4 h-4 mr-2" />
+                {{ form.work_date ? format(form.work_date, 'PPP') : 'Pick a date' }}
+              </Button>
+            </PopoverTrigger>
+
+            <PopoverContent class="w-auto p-0">
+              <Calendar
+                v-model="form.work_date"
+                mode="single"
+                :disabled="(date) => date > new Date()"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div>
+          <FormField
+          type="select"
+            v-model="form.project"
+            placeholder="Select a project"
+            label="Project"
+            :options="options"
+          />
+        </div>
+
+        <div>
+          <Label>Hours Worked</Label>
+          <Input
+            type="number"
+            v-model="form.hours_worked"
+            min="0"
+            max="24"
+            step="0.5"
+          />
+        </div>
+
+        <div>
+          <Label>Description</Label>
+          <Textarea
+            v-model="form.description"
+            placeholder="Describe your work today"
+          />
+        </div>
+
+        <div>
+          <Label>Tags</Label>
+          <!-- <MultiSelect
+            v-model="form.tags"
+            :options="availableTags"
+            placeholder="Select tags"
+          /> -->
+        </div>
+
+      </CardContent>
+
+        <CardFooter>
+          <Button type="submit" :disabled="isSubmitting">
+            {{ isSubmitting ? 'Saving...' : 'Save Work Entry' }}
+          </Button>
+        </CardFooter>
+      </form>
+  </Card>
+</app-layout>
+</template>

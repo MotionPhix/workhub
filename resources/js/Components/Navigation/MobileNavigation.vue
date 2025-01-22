@@ -1,19 +1,4 @@
-<template>
-  <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg">
-    <div class="flex justify-around py-3">
-      <NavigationItem
-        v-for="item in mobileNavItems"
-        :key="item.route"
-        :href="route(item.route)"
-        :active="route().current(item.route)">
-        <component :is="item.icon" class="h-5 w-5" />
-        <span class="text-xs">{{ item.label }}</span>
-      </NavigationItem>
-    </div>
-  </nav>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import {
   HomeIcon,
   ClipboardListIcon,
@@ -21,6 +6,7 @@ import {
   UserIcon
 } from 'lucide-vue-next'
 import NavigationItem from "@/Components/Navigation/NavigationItem.vue";
+import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
 
 const mobileNavItems = [
   {
@@ -45,3 +31,20 @@ const mobileNavItems = [
   }
 ]
 </script>
+
+<template>
+  <nav class="fixed bottom-0 left-0 right-0 bg-white shadow-lg dark:bg-gray-800">
+    <div class="flex justify-around py-3">
+      <NavigationItem
+        v-for="item in mobileNavItems"
+        :key="item.route"
+        :href="route(item.route)"
+        :active="route().current(item.route)">
+        <component :is="item.icon" class="w-5 h-5" />
+        <span class="text-xs">{{ item.label }}</span>
+      </NavigationItem>
+
+      <ThemeSwitcher />
+    </div>
+  </nav>
+</template>

@@ -1,6 +1,6 @@
 <script setup>
 import { cn } from '@/lib/utils';
-import { CalendarHeading, useForwardProps } from 'radix-vue';
+import { ComboboxEmpty } from 'radix-vue';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -14,18 +14,13 @@ const delegatedProps = computed(() => {
 
   return delegated;
 });
-
-const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
-  <CalendarHeading
-    v-slot="{ headingValue }"
-    :class="cn('text-sm font-medium', props.class)"
-    v-bind="forwardedProps"
+  <ComboboxEmpty
+    v-bind="delegatedProps"
+    :class="cn('py-6 text-center text-sm', props.class)"
   >
-    <slot :heading-value>
-      {{ headingValue }}
-    </slot>
-  </CalendarHeading>
+    <slot />
+  </ComboboxEmpty>
 </template>

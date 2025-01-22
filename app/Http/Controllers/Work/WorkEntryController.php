@@ -15,10 +15,18 @@ class WorkEntryController extends Controller
   {
     $entries = WorkEntry::where('user_id', Auth::id())
       ->orderBy('work_date', 'desc')
-      ->get();
+      ->paginate(10);
 
     return Inertia('WorkEntries/Index', [
-      'entries' => $entries
+      'workEntries' => $entries
+    ]);
+  }
+
+  public function create(Request $request, ?WorkEntry $entry = null)
+  {
+    return Inertia('WorkEntries/WorkEntryForm', [
+      'workEntry' => $entry ?? new WorkEntry(),
+      'projects' => [],
     ]);
   }
 

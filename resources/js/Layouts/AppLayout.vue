@@ -4,8 +4,7 @@ import { usePage } from '@inertiajs/vue3'
 import MobileNavigation from '@/Components/Navigation/MobileNavigation.vue'
 import DesktopNavigation from '@/Components/Navigation/DesktopNavigation.vue'
 import ResponsiveFooter from '@/Components/Navigation/ResponsiveFooter.vue'
-import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
-import { useDeviceDetection } from '@/Composables/useDeviceDetection'
+import { useDeviceDetection } from '@/composables/useDeviceDetection'
 
 const darkMode = ref(false)
 const { isMobile, isDesktop } = useDeviceDetection()
@@ -18,23 +17,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300"
-    :class="{ 'dark': darkMode }"
-  >
+  <div class="min-h-screen transition-colors duration-300">
     <nav class="sticky top-0 z-50">
       <MobileNavigation v-if="isMobile" />
       <DesktopNavigation v-if="isDesktop" />
     </nav>
 
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="px-4 py-6 mx-auto sm:px-6 lg:px-8">
       <slot />
     </main>
 
     <footer>
       <ResponsiveFooter />
     </footer>
-
-    <ThemeSwitcher />
   </div>
 </template>

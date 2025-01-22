@@ -1,6 +1,6 @@
 <script setup>
 import { cn } from '@/lib/utils';
-import { CalendarHeadCell, useForwardProps } from 'radix-vue';
+import { ComboboxSeparator } from 'radix-vue';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -14,20 +14,13 @@ const delegatedProps = computed(() => {
 
   return delegated;
 });
-
-const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
-  <CalendarHeadCell
-    :class="
-      cn(
-        'w-8 rounded-md text-[0.8rem] font-normal text-muted-foreground',
-        props.class,
-      )
-    "
-    v-bind="forwardedProps"
+  <ComboboxSeparator
+    v-bind="delegatedProps"
+    :class="cn('-mx-1 h-px bg-border', props.class)"
   >
     <slot />
-  </CalendarHeadCell>
+  </ComboboxSeparator>
 </template>

@@ -12,16 +12,16 @@ const footerLinks = [
 </script>
 
 <template>
-  <footer class="bg-gray-100 dark:bg-gray-900 py-6">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col md:flex-row justify-between items-center">
+  <footer class="py-6">
+    <div class="container px-4 mx-auto sm:px-6 lg:px-8">
+      <div class="flex flex-col items-center justify-between md:flex-row">
         <div class="text-center md:text-left">
           <p class="text-gray-600 dark:text-gray-300">
             © {{ currentYear }} {{ appName }}. All rights reserved.
           </p>
         </div>
 
-        <div class="flex space-x-4 mt-4 md:mt-0">
+        <div class="flex mt-4 space-x-4 md:mt-0">
           <a
             v-for="link in footerLinks"
             :key="link.href"

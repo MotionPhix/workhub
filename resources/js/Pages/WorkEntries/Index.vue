@@ -1,11 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { format } from 'date-fns'
 import { EllipsisIcon } from 'lucide-vue-next'
-import {Card, CardContent} from "@/Components/ui/card";
 import AppLayout from "@/Layouts/AppLayout.vue";
-import {Button} from "@/Components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -14,12 +12,27 @@ import {
 } from "@/Components/ui/dropdown-menu";
 import DataTable from "@/Components/DataTable.vue";
 
-const props = defineProps({
+const props = defineProps<{
   workEntries: {
-    type: Array,
-    default: () => []
+    current_page: number
+    data: Array<{}>
+    first_page_url: string
+    from?: number
+    last_page: number
+    last_page_url: string
+    links: Array<{
+      url?: string
+      label: string
+      active: boolean
+    }>
+    next_page_url?: string
+    path: string
+    per_page: number
+    prev_page_url?: string
+    to?: number
+    total: number
   }
-})
+}>()
 
 const columns = [
   {
@@ -62,10 +75,9 @@ const deleteEntry = (entry) => {
 
 <template>
   <AppLayout>
-    <div class="container mx-auto p-6">
-      <div class="flex justify-between items-center mb-6">
+    <div class="mx-auto">
+      <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold">Work Entries</h1>
-<!--        <CreateWorkEntryModal />-->
       </div>
 
       <Card>
@@ -77,7 +89,7 @@ const deleteEntry = (entry) => {
               <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                   <Button variant="ghost" size="sm">
-                    <EllipsisIcon class="h-4 w-4" />
+                    <EllipsisIcon class="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>

@@ -1,6 +1,6 @@
 <script setup>
 import { cn } from '@/lib/utils';
-import { CalendarGrid, useForwardProps } from 'radix-vue';
+import { TagsInputItemText, useForwardProps } from 'radix-vue';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -19,10 +19,8 @@ const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
-  <CalendarGrid
-    :class="cn('w-full border-collapse space-y-1', props.class)"
+  <TagsInputItemText
     v-bind="forwardedProps"
-  >
-    <slot />
-  </CalendarGrid>
+    :class="cn('py-0.5 px-2 text-sm rounded bg-transparent', props.class)"
+  />
 </template>

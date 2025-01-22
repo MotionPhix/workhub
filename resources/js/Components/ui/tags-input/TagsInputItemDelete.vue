@@ -1,10 +1,10 @@
 <script setup>
 import { cn } from '@/lib/utils';
-import { CalendarCell, useForwardProps } from 'radix-vue';
+import { Cross2Icon } from '@radix-icons/vue';
+import { TagsInputItemDelete, useForwardProps } from 'radix-vue';
 import { computed } from 'vue';
 
 const props = defineProps({
-  date: { type: null, required: true },
   asChild: { type: Boolean, required: false },
   as: { type: null, required: false },
   class: { type: null, required: false },
@@ -20,15 +20,12 @@ const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
-  <CalendarCell
-    :class="
-      cn(
-        'relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([data-selected])]:rounded-md [&:has([data-selected])]:bg-accent [&:has([data-selected][data-outside-view])]:bg-accent/50',
-        props.class,
-      )
-    "
+  <TagsInputItemDelete
     v-bind="forwardedProps"
+    :class="cn('flex rounded bg-transparent mr-1', props.class)"
   >
-    <slot />
-  </CalendarCell>
+    <slot>
+      <Cross2Icon class="w-4 h-4" />
+    </slot>
+  </TagsInputItemDelete>
 </template>

@@ -13,14 +13,7 @@ import {
   AvatarImage,
   AvatarFallback,
 } from "@/Components/ui/avatar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/Components/ui/card";
+import {getInitials} from "@/lib/stringUtils"
 
 const props = defineProps({
   user: Object,
@@ -85,14 +78,14 @@ onMounted(async () => {
 
 <template>
   <AppLayout>
-    <div class="container mx-auto px-4 py-8 space-y-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="py-8 mx-auto space-y-8">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <!-- Profile Overview -->
         <Card class="lg:col-span-1">
           <CardHeader>
             <Avatar class="w-16 h-16 mx-auto mb-4">
               <AvatarImage :src="user.avatar ?? ''" :alt="user.name" />
-              <AvatarFallback>{{ user.name.charAt(0) }}</AvatarFallback>
+              <AvatarFallback class="text-2xl text-secondary-foreground">{{ getInitials(user.name) }}</AvatarFallback>
             </Avatar>
 
             <CardTitle class="text-center">{{ user.name }}</CardTitle>

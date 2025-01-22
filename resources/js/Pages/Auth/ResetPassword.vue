@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
-import PasswordStrengthIndicator from '@/Components/PasswordStrengthIndicator.vue'
+import PasswordStrengthIndicator from '@/Pages/Auth/PasswordStrengthIndicator.vue'
 import {Label} from "@/Components/ui/label";
 import {Input} from "@/Components/ui/input";
 import {Button} from "@/Components/ui/button";
@@ -44,9 +44,9 @@ const submitResetPassword = () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
+  <div class="flex items-center justify-center min-h-screen px-4 py-8 bg-gray-100">
     <div class="w-full max-w-md">
-      <div class="bg-white shadow-md rounded-xl p-8 space-y-6">
+      <div class="p-8 space-y-6 bg-white shadow-md rounded-xl">
         <h2 class="text-2xl font-bold text-center">
           Reset Your Password
         </h2>
@@ -113,7 +113,7 @@ const submitResetPassword = () => {
         <!-- Error Message -->
         <div
           v-if="Object.keys(errors).length > 0"
-          class="bg-red-50 border-l-4 border-red-400 p-4">
+          class="p-4 border-l-4 border-red-400 bg-red-50">
           <p class="text-sm text-red-700">
             {{ Object.values(errors)[0] }}
           </p>

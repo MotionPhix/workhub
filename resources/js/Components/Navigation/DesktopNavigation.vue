@@ -1,5 +1,6 @@
 <script setup>
 import NavigationItem from "@/Components/Navigation/NavigationItem.vue";
+import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
 import {UserIcon} from "lucide-vue-next"
 
 const appName = import.meta.env.VITE_APP_NAME || 'WorkHub'
@@ -31,6 +32,8 @@ const desktopNavItems = [
 
             {{ item.label }}
           </NavigationItem>
+
+          <ThemeSwitcher />
         </div>
       </div>
     </div>

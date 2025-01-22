@@ -1,173 +1,182 @@
-<script setup>
-import { ref, reactive } from 'vue'
-import { useForm } from '@inertiajs/vue3'
-import { format } from 'date-fns'
-import {
-  CalendarIcon,
-} from 'lucide-vue-next'
-import {Label} from "@/Components/ui/label";
-import {Button} from "@/Components/ui/button";
-import {
-  Dialog,
-  DialogHeader,
-  DialogContent,
-  DialogTrigger,
-  DialogFooter,
-  DialogTitle
-} from "@/Components/ui/dialog/index.js";
-import {Popover} from "@/Components/ui/popover";
-import {Calendar} from "@/Components/ui/calendar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-  SelectTrigger,
-  SelectGroup,
-  SelectLabel
-} from "@/Components/ui/select";
-
-const props = defineProps({
-  projects: {
-    type: Array,
-    default: () => []
-  }
-})
+<script setup lang="ts">
+import { useForm } from '@inertiajs/vue3';
+import { CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/Components/ui/command'
+import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText } from '@/Components/ui/tags-input'
+import { ComboboxAnchor, ComboboxContent, ComboboxInput, ComboboxPortal, ComboboxRoot } from 'radix-vue'
+import { computed, ref } from 'vue'
 
 const form = useForm({
-  work_date: new Date(),
-  project: null,
-  hours_worked: 0,
+  work_date: '',
   description: '',
-  tags: []
-})
+  hours_worked: '',
+  tags: [],
+  status: 'draft',
+});
 
-const isOpen = ref(false)
-const isSubmitting = ref(false)
+const tagsDropdownOpen = ref(false)
+const tagsSearchTerm = ref('')
 
+const errors = ref({});
 const availableTags = [
-  'Development',
-  'Design',
-  'Meeting',
-  'Research',
-  'Documentation'
-]
+  { id: 1, name: 'Urgent' },
+  { id: 2, name: 'Bug Fix' },
+  { id: 3, name: 'Meeting' },
+  { id: 4, name: 'Documentation' },
+];
 
-const submitWorkEntry = async () => {
-  isSubmitting.value = true
+const filteredTags = computed(() =>
+  (availableTags || []).filter(tag => !form.tags.includes(tag.name))
+);
 
-  try {
-    await form.post(route('work-entries.store'), {
-      onSuccess: () => {
-        isOpen.value = false
-        form.reset()
-      },
-      onError: (errors) => {
-        // Handle validation errors
-        console.error(errors)
-      }
-    })
-  } finally {
-    isSubmitting.value = false
-  }
-}
+
+const saveAsDraft = () => {
+  form.post('/work-entries', {
+    onError: (err) => {
+      errors.value = err;
+    },
+    onSuccess: () => {
+      errors.value = {};
+    },
+  });
+};
+
+const submitForm = () => {
+  form.put('/work-entries', {
+    onError: (err) => {
+      errors.value = err;
+    },
+    onSuccess: () => {
+      errors.value = {};
+    },
+  });
+};
 </script>
 
 <template>
-  <Dialog v-model:open="isOpen">
-    <DialogTrigger as-child>
-      <Button variant="outline">Add Work Entry</Button>
-    </DialogTrigger>
-    <DialogContent class="sm:max-w-[600px]">
-      <DialogHeader>
-        <DialogTitle>Create New Work Entry</DialogTitle>
-        <DialogDescription>
-          Log your daily work and track your productivity
-        </DialogDescription>
-      </DialogHeader>
+  <div class="container p-6 mx-auto">
+    <h1 class="mb-4 text-xl font-semibold">Log Your Task</h1>
+    <form @submit.prevent="submitForm" class="space-y-6">
+      <!-- Work Date -->
+      <div>
+        <label for="work_date" class="block text-sm font-medium text-gray-700">Work Date</label>
+        <input
+          type="date"
+          id="work_date"
+          v-model="form.work_date"
+          class="w-full input input-bordered"
+          :class="{ 'border-red-500': errors.work_date }"
+        />
+        <p v-if="errors.work_date" class="text-sm text-red-500">{{ errors.work_date }}</p>
+      </div>
 
-      <form @submit.prevent="submitWorkEntry" class="space-y-4">
-        <div>
-          <Label>Work Date</Label>
-          <Popover>
-            <PopoverTrigger as-child>
-              <Button
-                variant="outline"
-                :class="cn(
-                  'w-full justify-start text-left font-normal',
-                  !form.work_date && 'text-muted-foreground'
-                )"
+      <!-- Description -->
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+        <textarea
+          id="description"
+          v-model="form.description"
+          rows="4"
+          class="w-full textarea textarea-bordered"
+          :class="{ 'border-red-500': errors.description }"
+        ></textarea>
+        <p v-if="errors.description" class="text-sm text-red-500">{{ errors.description }}</p>
+      </div>
+
+      <!-- Hours Worked -->
+      <div>
+        <label for="hours_worked" class="block text-sm font-medium text-gray-700">Hours Worked</label>
+        <input
+          type="number"
+          id="hours_worked"
+          v-model="form.hours_worked"
+          class="w-full input input-bordered"
+          :class="{ 'border-red-500': errors.hours_worked }"
+        />
+        <p v-if="errors.hours_worked" class="text-sm text-red-500">{{ errors.hours_worked }}</p>
+      </div>
+
+      <!-- Tags -->
+<div>
+  <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+  <TagsInput v-model="form.tags" class="w-full gap-0 px-0">
+    <!-- Render existing tags -->
+    <div class="flex flex-wrap items-center gap-2 px-3">
+      <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
+        <TagsInputItemText />
+        <TagsInputItemDelete />
+      </TagsInputItem>
+    </div>
+    <!-- Input for adding new tags -->
+    <ComboboxRoot
+      v-model="form.tags"
+      v-model:open="tagsDropdownOpen"
+      v-model:search-term="tagsSearchTerm"
+      class="w-full"
+    >
+      <ComboboxAnchor as-child>
+        <ComboboxInput placeholder="Select or add tags..." as-child>
+          <TagsInputInput
+            class="w-full px-3"
+            :class="form.tags.length > 0 ? 'mt-2' : ''"
+            @keydown.enter.prevent
+          />
+        </ComboboxInput>
+      </ComboboxAnchor>
+      <!-- Dropdown for available tags -->
+      <ComboboxPortal>
+        <ComboboxContent>
+          <CommandList
+            position="popper"
+            class="w-[--radix-popper-anchor-width] rounded-md mt-2 border bg-popover text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out"
+          >
+            <CommandEmpty>No tags found.</CommandEmpty>
+            <CommandGroup heading="Available Tags">
+              <CommandItem
+                v-for="tag in filteredTags"
+                :key="tag.id"
+                :value="tag.name"
+                @select.prevent="(ev) => {
+                  if (typeof ev.detail.value === 'string') {
+                    tagsSearchTerm = ''
+                    form.tags.push(ev.detail.value)
+                  }
+                }"
               >
-                <CalendarIcon class="mr-2 h-4 w-4" />
-                {{ form.work_date ? format(form.work_date, 'PPP') : 'Pick a date' }}
-              </Button>
-            </PopoverTrigger>
+                {{ tag.name }}
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </ComboboxContent>
+      </ComboboxPortal>
+    </ComboboxRoot>
+  </TagsInput>
+  <!-- Validation errors -->
+  <p v-if="errors.tags" class="text-sm text-red-500">{{ errors.tags }}</p>
+</div>
 
-            <PopoverContent class="w-auto p-0">
-              <Calendar
-                v-model="form.work_date"
-                mode="single"
-                :disabled="(date) => date > new Date()"
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+      <!-- Status -->
+      <div>
+        <FormField
+          label="Status"
+          type="select"
+          v-model="form.status"
+          :options="[
+            { value: 'draft', label: 'Draft' },
+           { value: 'completed', label: 'Completed' },
+          { value: 'in_progress', label: 'In Progress' },
+          ]"
+        />
+      </div>
 
-        <div>
-          <Label>Project</Label>
-          <Select v-model="form.project">
-            <SelectTrigger>
-              <SelectValue placeholder="Select a project" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Your Projects</SelectLabel>
-                <SelectItem
-                  v-for="project in projects"
-                  :key="project.id"
-                  :value="project.id"
-                >
-                  {{ project.name }}
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label>Hours Worked</Label>
-          <Input
-            type="number"
-            v-model="form.hours_worked"
-            min="0"
-            max="24"
-            step="0.5"
-          />
-        </div>
-
-        <div>
-          <Label>Description</Label>
-          <Textarea
-            v-model="form.description"
-            placeholder="Describe your work today"
-          />
-        </div>
-
-        <div>
-          <Label>Tags</Label>
-          <MultiSelect
-            v-model="form.tags"
-            :options="availableTags"
-            placeholder="Select tags"
-          />
-        </div>
-
-        <DialogFooter>
-          <Button type="submit" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Saving...' : 'Save Work Entry' }}
-          </Button>
-        </DialogFooter>
-      </form>
-    </DialogContent>
-  </Dialog>
+      <!-- Actions -->
+      <div class="flex justify-end space-x-4">
+        <Button variant="outline" @click="saveAsDraft">
+          Save as Draft
+        </Button>
+        <Button type="submit" variant="primary">
+          Mark as Completed
+        </Button>
+      </div>
+    </form>
+  </div>
 </template>
