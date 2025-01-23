@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import NavigationItem from "@/Components/Navigation/NavigationItem.vue";
 import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
-import {UserIcon} from "lucide-vue-next"
+import {UserIcon, PowerIcon} from "lucide-vue-next"
 import UserAvatar from "@/Layouts/UserAvatar.vue";
 import {getInitials} from "@/lib/stringUtils";
 import {
@@ -62,9 +62,20 @@ const desktopNavItems = [
 
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem @click="router.visit(route('profile.index'), { replace: true })">
+              <DropdownMenuItem @click="router.visit(route('profile.index', $page.props.auth.user.uuid), { replace: true })">
                 <UserIcon />
                 Profile
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                @click="router.visit(route('logout'), {
+                  method: 'post',
+                  replace: true
+                })">
+                <PowerIcon />
+                Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

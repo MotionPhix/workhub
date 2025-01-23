@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\AuthenticationException;
 use App\Models\ActivityLog;
 use App\Models\User;
 use App\Notifications\PasswordResetNotification;
@@ -42,10 +43,10 @@ class AuthenticationService
       }
 
       // Check account status
-      $this->validateAccountStatus($user);
+      $validatedUser = $this->validateAccountStatus($user);
 
       // Validate password
-      $this->validatePassword($user, $credentials['password']);
+      $this->validatePassword($validatedUser, $credentials['password']);
 
       // Check for potential brute force
       $this->checkLoginAttempts($user);
@@ -86,21 +87,22 @@ class AuthenticationService
   {
     // Log failed login attempt
     ActivityLog::log(
-      null,
+      auth()->user(),
       'login_failed',
       'Failed login attempt',
       [
         'severity' => 'warning',
         'metadata' => [
           'email' => $email,
-          'ip_address' => request()->ip()
+          'ip_address' => \Request()->ip()
         ]
       ]
     );
 
-    throw ValidationException::withMessages([
-      'email' => ['The provided credentials are incorrect.'],
-    ]);
+    throw new AuthenticationException(
+      'The provided credentials are incorrect.',
+      ['email' => ['The provided credentials are incorrect.']]
+    );
   }
 
   /**
@@ -128,6 +130,8 @@ class AuthenticationService
         'email' => ['Your account is currently inactive.'],
       ]);
     }
+
+    return $user;
   }
 
   /**
@@ -188,7 +192,7 @@ class AuthenticationService
     cache()->forget("login_attempts_{$user->email}");
 
     // Record login details
-    $user->recordLogin(request());
+    $user->recordLogin(\Request());
 
     // Log successful login
     ActivityLog::log(
@@ -198,8 +202,8 @@ class AuthenticationService
       [
         'severity' => 'info',
         'metadata' => [
-          'ip_address' => request()->ip(),
-          'user_agent' => request()->userAgent()
+          'ip_address' => \Request()->ip(),
+          'user_agent' => \Request()->userAgent()
         ]
       ]
     );

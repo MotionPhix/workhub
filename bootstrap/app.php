@@ -17,12 +17,22 @@ return Application::configure(basePath: dirname(__DIR__))
     health: '/up',
   )
   ->withMiddleware(function (Middleware $middleware) {
+    $middleware->redirectGuestsTo('/login');
+
     $middleware->web(append: [
 
       \App\Http\Middleware\HandleInertiaRequests::class,
       \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
       EncryptHistoryMiddleware::class,
 
+    ]);
+
+    $middleware->api([
+      \Illuminate\Session\Middleware\StartSession::class,
+      \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+      \Illuminate\Cookie\Middleware\EncryptCookies::class,
+      \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+      \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
     ]);
 
     // Global middleware

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Department;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -17,19 +18,20 @@ class ProfileController extends Controller
   /**
    * Display the user's profile form.
    */
-  public function index(Request $request): Response
+  public function index(User $user): Response
   {
     return Inertia::render('Profile/Index', [
-      'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-      'user' => $request->user()->load('roles')
+      'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+      'user' => $user->load('roles')
     ]);
   }
 
   public function edit(Request $request, User $user)
   {
     return Inertia::modal('Profile/Partials/ProfileForm', [
-      'user' => $user
-    ])->baseRoute('profile.index');
+      'user' => $user,
+      'departments' => fn() => Department::all('id', 'uuid', 'name', 'description'),
+    ])->baseRoute('profile.index', ['user' => $user->uuid]);
   }
 
   /**

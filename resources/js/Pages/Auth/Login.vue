@@ -1,11 +1,10 @@
 <script setup>
-import Checkbox from '@/Components/Checkbox.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import {Button} from '@/Components/ui/button';
-import {Input} from '@/Components/ui/input';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import FormField from "@/Components/Forms/FormField.vue";
+import {LockIcon} from "lucide-vue-next";
 
 defineProps({
   canResetPassword: {
@@ -53,22 +52,16 @@ const submit = () => {
     <CardContent>
       <form @submit.prevent="submit">
         <div>
-          <InputLabel
-            for="email"
-            value="Email" />
-
-          <Input
-            id="email"
+          <FormField
             type="email"
-            class="mt-1 block w-full"
+            label="Email"
+            class="make-large"
             v-model="form.email"
-            required
+            placeholder="Enter your email address"
+            :error="form.errors.email"
             autofocus
-            make-large
-            placeholder="Enter your email address" />
-
-          <InputError class="mt-2"
-                      :message="form.errors.email" />
+            required
+          />
         </div>
 
         <div class="grid gap-2 mt-4">
@@ -83,33 +76,43 @@ const submit = () => {
             </Link>
           </div>
 
-          <Input
-            id="password"
+          <FormField
             v-model="form.password"
             placeholder="Enter your password"
+            class="make-large"
             type="password"
-            make-large
-            required />
+            :suffix="LockIcon"
+            required
+          />
+
+          <InputError :message="form.errors.password" />
         </div>
 
         <div class="mt-4 block">
-          <label class="flex items-center">
-            <Checkbox name="remember"
-                      v-model:checked="form.remember" />
-            <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
-          </label>
+          <Label class="flex items-center">
+            <Checkbox
+              name="remember"
+              class="h-5 w-5"
+              v-model:checked="form.remember"
+            />
+
+            <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">
+              Remember me
+            </span>
+          </Label>
         </div>
 
         <div class="mt-4 flex items-center justify-end">
 
           <Button
+            size="lg"
             type="submit"
             class="w-full"
-            size="lg"
             :class="{ 'opacity-25': form.processing }"
             :disabled="form.processing">
             Log in
           </Button>
+
         </div>
 
         <div class="mt-4 text-center text-sm">

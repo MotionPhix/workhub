@@ -24,17 +24,37 @@ class RolesAndPermissionsSeeder extends Seeder
     Permission::create(['name' => 'view all work entries']);
     Permission::create(['name' => 'generate reports']);
 
+    Permission::create(['name' => 'create departments']);
+    Permission::create(['name' => 'edit departments']);
+    Permission::create(['name' => 'delete departments']);
+    Permission::create(['name' => 'view departments']);
+    Permission::create(['name' => 'assign departments']);
+
     // Create Roles and assign permissions
     $employeeRole = Role::create(['name' => 'employee'])
       ->givePermissionTo([
         'create work entries',
-        'edit work entries'
+        'edit work entries',
+        'view departments',
+        'assign departments'
       ]);
 
-    $managerRole = Role::create(['name' => 'manager'])
+    $managerRole = Role::create(['name' => 'managing director'])
       ->givePermissionTo([
         'view all work entries',
-        'generate reports'
+        'generate reports',
+        'create departments',
+        'edit departments',
+        'delete departments',
+        'view departments',
+      ]);
+
+    $generalManagerRole  = Role::create(['name' => 'general manager'])
+      ->givePermissionTo([
+        'view all work entries',
+        'generate reports',
+        'edit departments',
+        'view departments',
       ]);
 
     $adminRole = Role::create(['name' => 'admin'])

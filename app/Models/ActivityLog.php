@@ -60,8 +60,18 @@ class ActivityLog extends Model
     // Determine severity
     $severity = $options['severity'] ?? 'info';
 
+    // Get caller file and line
+    $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+    $caller = $backtrace[1] ?? [];
+    $file = $caller['file'] ?? 'Unknown file';
+    $line = $caller['line'] ?? 'Unknown line';
+
+    // Add caller details to metadata
+    $metadata['file'] = $file;
+    $metadata['line'] = $line;
+
     return self::create([
-      'user_id' => $user?->id,
+      'user_id' => $user && $user->id ?? null,
       'action' => $action,
       'description' => $description,
       'ip_address' => $ipAddress,

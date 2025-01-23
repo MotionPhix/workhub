@@ -9,4 +9,14 @@ Route::middleware('auth:sanctum')->group(function () {
     '/reports/dashboard',
     [ReportsController::class, 'dashboard']
   );
+
+  Route::get(
+    '/insights/{user:uuid}',
+    \App\Http\Controllers\Api\Insights\Index::class
+  )->name('api.user.insights');
+
+  Route::get(
+    '/work-logs/{user:uuid}',
+    \App\Http\Controllers\Api\WorkLogs\Latest::class
+  )->name('api.user.work-logs');
 });

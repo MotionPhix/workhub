@@ -6,23 +6,43 @@ import ProductivityRadarChart from "@/Components/Visualizations/ProductivityRada
 import ProfileTable from "@/Pages/Profile/Partials/ProfileTable.vue";
 import StatCard from "@/Pages/Profile/Partials/StatCard.vue";
 import { visitModal } from "@inertiaui/modal-vue";
+import { getInitials } from "@/lib/stringUtils";
 import {
   Avatar,
   AvatarImage,
   AvatarFallback,
 } from "@/Components/ui/avatar";
-import { getInitials } from "@/lib/stringUtils";
 
-const props = defineProps({
-  user: Object,
-});
+const props = defineProps<{
+  user: {
+    id: number
+    uuid: string
+    name: string
+    avatar?: string
+    email: string
+    department?: string
+    joined_at?: string
+    roles?: Array<{
+      id: number
+      name: string
+    }>
+    settings?: {
+      notifications?: {
+        sms: boolean
+        email: boolean
+      },
+      play_sound?: boolean
+    }
+  },
+}>();
 
+const recentWorkEntries = ref([]);
 const productivityInsights = ref({});
+
 const stats = ref({
   total_entries: 0,
   total_hours: 0,
 });
-const recentWorkEntries = ref([]);
 
 const workEntryColumns = [
   {
@@ -45,7 +65,7 @@ const workEntryColumns = [
 ];
 
 const openEditProfile = () => {
-  visitModal(route("profile.edit", props.user.id), {
+  visitModal(route("profile.edit", props.user.uuid), {
     navigate: true,
   });
 };
@@ -55,10 +75,12 @@ const formatDate = (date: string) => format(new Date(date), "PPP");
 onMounted(async () => {
   try {
     // Fetch productivity insights and recent work entries
-    const response = await fetch(`/api/user/${props.user.id}/insights`);
+    const response = await fetch(route('api.user.insights', props.user.uuid));
     productivityInsights.value = await response.json();
 
-    const entriesResponse = await fetch(`/api/user/${props.user.id}/work-entries`);
+    console.log(response)
+
+    const entriesResponse = await fetch(route('api.user.work-logs', props.user.uuid));
     recentWorkEntries.value = await entriesResponse.json();
 
     // Calculate stats
@@ -101,9 +123,13 @@ onMounted(async () => {
             </div>
 
             <div class="border-b pb-4 items-center gap-6">
-              <Label class="text-gray-500">Role</Label>
-              <p class="text-lg font-medium text-muted-foreground capitalize">
-                {{ user.roles[0].name }}
+              <Label class="text-gray-500">Roles</Label>
+
+              <p
+                :key="role.id"
+                v-for="(role) in user.roles"
+                class="text-lg font-medium text-muted-foreground capitalize">
+                {{ role.name }}
               </p>
             </div>
 
@@ -184,29 +210,62 @@ onMounted(async () => {
 
       </Card>
 
-      <!-- Settings Section -->
-      <Card>
+      <Card v-if="user.settings">
         <CardHeader>
           <CardTitle>Settings</CardTitle>
+          <CardDescription>
+            Manage your settings and preferences.
+          </CardDescription>
         </CardHeader>
 
-        <CardContent class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Notifications -->
-          <div>
-            <Label>Notifications</Label>
-            <p class="text-sm text-gray-600">
-              Email:
-              <span class="font-semibold">
-                {{ user.settings?.notifications.email ? "Enabled" : "Disabled" }}
-              </span>
-            </p>
+        <CardContent>
+          <div class="grid grid-rows-3 gap-y-5">
+            <div class="flex items-center justify-between space-x-2">
+              <Label for="strictly_necessary" class="flex flex-col">
+                Email Notifications
+                <span
+                  class="mt-1 max-w-[18rem] text-xs text-muted-foreground">
+                  Primary communication will be done through email.
+                </span>
+              </Label>
 
-            <p class="text-sm text-gray-600">
-              SMS:
-              <span class="font-semibold">
-                {{ user.settings?.notifications.sms ? "Enabled" : "Disabled" }}
-              </span>
-            </p>
+              <Switch
+                id="strictly_necessary"
+                v-model:checked="user.settings.notifications.email"
+              />
+            </div>
+
+            <div class="flex items-center justify-between space-x-2">
+              <Label for="functional_cookies" class="flex flex-col">
+                SMS Notifications
+                <span
+                  class="mt-1 max-w-[18rem] text-xs text-muted-foreground">
+                  Enable this option to receive notifications via sms on your phone.
+                  This feature requires that you provide your phone number.
+                </span>
+              </Label>
+
+              <Switch
+                id="functional_cookies"
+                v-model:checked="user.settings.notifications.sms"
+              />
+            </div>
+
+            <div class="flex items-center justify-between space-x-2">
+              <Label for="performance_cookies" class="flex flex-col">
+                Play Sound
+                <span
+                  class="mt-1 max-w-[18rem] text-xs text-muted-foreground">
+                  For In-App notifications, if this option is enabled, the system will play
+                  a sound when you have a new notification.
+                </span>
+              </Label>
+
+              <Switch
+                id="performance_cookies"
+                v-model:checked="user.settings.play_sound"
+              />
+            </div>
           </div>
 
           <!-- Timezone -->
@@ -215,73 +274,6 @@ onMounted(async () => {
             <p class="text-sm text-gray-600">
               {{ user.settings?.timezone || "Not specified" }}
             </p>
-          </div>
-
-          <!-- Preferences -->
-          <div>
-            <Label>Preferences</Label>
-            <p class="text-sm text-gray-600">
-              Customize your profile settings and notifications to suit your needs.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle> Cookies Settings </CardTitle>
-          <CardDescription>
-            Manage your cookies preferences.
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <div class="grid grid-rows-3 gap-y-5">
-            <div class="flex items-center justify-between space-x-2">
-              <Label for="strictly_necessary" class="flex flex-col">
-                Strictly Necessary
-                <span
-                  class="mt-1 max-w-[18rem] text-xs text-muted-foreground"
-                >
-                        These cookies are essential in order to use the website
-                        and use its features.
-                      </span>
-              </Label>
-              <Switch
-                id="strictly_necessary"
-                v-model:checked="strictlyNecessarySwitch"
-              />
-            </div>
-            <div class="flex items-center justify-between space-x-2">
-              <Label for="functional_cookies" class="flex flex-col">
-                Functional Cookies
-                <span
-                  class="mt-1 max-w-[18rem] text-xs text-muted-foreground"
-                >
-                        These cookies enable the website to provide enhanced
-                        functionality and personalization.
-                      </span>
-              </Label>
-              <Switch
-                id="functional_cookies"
-                v-model:checked="functionalCookiesSwitch"
-              />
-            </div>
-            <div class="flex items-center justify-between space-x-2">
-              <Label for="performance_cookies" class="flex flex-col">
-                Performance Cookies
-                <span
-                  class="mt-1 max-w-[18rem] text-xs text-muted-foreground"
-                >
-                        These cookies are used to collect information about how
-                        you use our website.
-                      </span>
-              </Label>
-              <Switch
-                id="performance_cookies"
-                v-model:checked="performanceCookiesSwitch"
-              />
-            </div>
           </div>
         </CardContent>
       </Card>

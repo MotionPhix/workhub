@@ -104,6 +104,11 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
     return $this->belongsTo(User::class, 'manager_email', 'email');
   }
 
+  public function department()
+  {
+    return $this->belongsTo(Department::class);
+  }
+
   public function activityLogs()
   {
     return $this->hasMany(ActivityLog::class);

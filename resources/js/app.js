@@ -7,14 +7,19 @@ import {createApp, h} from 'vue';
 import {ZiggyVue} from '../../vendor/tightenco/ziggy';
 import VueApexCharts from "vue3-apexcharts";
 import {Modal, ModalLink, putConfig, renderApp} from '@inertiaui/modal-vue'
-import { createPinia } from 'pinia'
+import {createPinia} from 'pinia'
 
 // components
 import {Input} from '@/Components/ui/input'
 import {Calendar} from '@/Components/ui/v-calendar'
 import {Button} from '@/Components/ui/button'
 import {Label} from '@/Components/ui/label'
-import { Badge } from "@/Components/ui/badge";
+import {Badge} from "@/Components/ui/badge";
+import {Switch} from "@/Components/ui/switch";
+import {Checkbox} from "@/Components/ui/checkbox";
+import FormField from './Components/Forms/FormField.vue';
+import Loader from './Components/Forms/Loader.vue';
+import {OhVueIcon, addIcons} from "oh-vue-icons";
 import {
   Card,
   CardTitle,
@@ -23,9 +28,6 @@ import {
   CardContent,
   CardFooter
 } from '@/Components/ui/card'
-import FormField from './Components/Forms/FormField.vue';
-import Loader from './Components/Forms/Loader.vue';
-import { OhVueIcon, addIcons } from "oh-vue-icons";
 import {
   FaGoogle,
   FaFacebookSquare,
@@ -74,7 +76,7 @@ createInertiaApp({
       import.meta.glob('./Pages/**/*.vue'),
     ),
   setup({el, App, props, plugin}) {
-    return createApp({ render: renderApp(App, props) })
+    return createApp({render: renderApp(App, props)})
       .use(plugin)
       .use(ZiggyVue)
       .use(pinia)
@@ -88,8 +90,10 @@ createInertiaApp({
       .component('CardTitle', CardTitle)
       .component('Card', Card)
       .component('Input', Input)
+      .component('Checkbox', Checkbox)
       .component('Button', Button)
       .component('Label', Label)
+      .component('Switch', Switch)
       .component('Calendar', Calendar)
       .component('FormField', FormField)
       .component('Loader', Loader)

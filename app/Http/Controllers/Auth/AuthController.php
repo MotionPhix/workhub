@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Exceptions\AuthenticationException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -40,7 +41,27 @@ class AuthController extends Controller
 
       return redirect()->intended(route('profile.index'))
         ->with('status', 'Logged in successfully');
+    } catch (AuthenticationException $e) {
+      // Return validation-like errors to the frontend
+      return back()
+        ->withErrors($e->getErrors())
+        ->withInput($request->only('email'));
     } catch (\Exception $e) {
+      // Log error with file and line information
+      ActivityLog::log(
+        null,
+        'login_failed',
+        'Login attempt failed',
+        [
+          'severity' => 'error',
+          'metadata' => [
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+          ]
+        ]
+      );
+
       return back()->with('status', $e->getMessage());
     }
   }

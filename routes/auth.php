@@ -165,8 +165,8 @@ Route::middleware('auth')->group(function () {
 
   Route::prefix('profile')->name('profile.')->group(function () {
 
-    Route::get('/', [ProfileController::class, 'index'])->name('index');
-    Route::get('/e/{user}', [ProfileController::class, 'edit'])->name('edit');
+    Route::get('/{user:uuid}', [ProfileController::class, 'index'])->name('index');
+    Route::get('/e/{user:uuid}', [ProfileController::class, 'edit'])->name('edit');
     Route::patch('/u', [ProfileController::class, 'update'])->name('update');
     Route::delete('/d', [ProfileController::class, 'destroy'])->name('destroy');
 

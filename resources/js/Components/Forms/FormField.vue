@@ -25,7 +25,7 @@ import {
 import {usePage} from "@inertiajs/vue3";
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon } from 'lucide-vue-next'
+import {Calendar as CalendarIcon, LockOpenIcon} from 'lucide-vue-next'
 
 type Option = {
   value: string | number;
@@ -73,6 +73,8 @@ const props = withDefaults(defineProps<{
 const model = defineModel()
 const page = usePage()
 const id = uuidv4()
+const suffixIcon = ref(props.suffix)
+const tempType = ref(props.type)
 
 const currency = page.props?.currency ?? 'MWK'
 
@@ -100,6 +102,14 @@ const inputClasses = computed(() => {
 })
 
 const containerClasses = computed(() => props.containerClass || 'mb-4')
+
+function onToggle() {
+  tempType.value = tempType.value === 'password' ? 'text' : 'password';
+
+  if (tempType === 'password') {
+    suffixIcon.value = LockOpenIcon
+  }
+}
 </script>
 
 <template>
@@ -268,13 +278,19 @@ const containerClasses = computed(() => props.containerClass || 'mb-4')
             :max="max"
             :step="step"
             :class="inputClasses"
+            ref="input_ref"
           />
         </template>
       </slot>
 
       <slot name="suffix">
         <span v-if="suffix" class="absolute inset-y-0 right-3 flex items-center text-gray-500">
-          <component :is="suffix" v-if="typeof suffix === 'object'"/>
+          <component
+            :is="suffix"
+            v-if="typeof suffix === 'function'"
+            @click="onToggle()"
+          />
+
           <span v-else>{{ suffix }}</span>
         </span>
       </slot>
