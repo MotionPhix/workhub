@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { type Component, computed } from 'vue'
-import { v4 as uuidv4 } from 'uuid'
+import {type Component, computed, ref} from 'vue'
+import {v4 as uuidv4} from 'uuid'
 import InputError from "@/Components/InputError.vue";
 import {Textarea} from "@/Components/ui/textarea";
 import {
@@ -13,6 +13,7 @@ import {
   SelectGroup, SelectSeparator
 } from "@/Components/ui/select";
 import {RadioGroup, RadioGroupItem} from "@/Components/ui/radio-group";
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover'
 import {Checkbox} from "@/Components/ui/checkbox";
 import {
   NumberField,
@@ -22,6 +23,9 @@ import {
   NumberFieldInput,
 } from '@/Components/ui/number-field'
 import {usePage} from "@inertiajs/vue3";
+import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
+import { Calendar as CalendarIcon } from 'lucide-vue-next'
 
 type Option = {
   value: string | number;
@@ -54,6 +58,7 @@ const props = withDefaults(defineProps<{
   min?: number
   max?: number
   step?: number
+  isInline?: boolean
 }>(), {
   type: 'text',
   required: false,
@@ -108,7 +113,7 @@ const containerClasses = computed(() => props.containerClass || 'mb-4')
     <div class="relative" :class="{ 'mt-1': label }">
       <slot name="prefix">
         <span v-if="prefix" class="absolute inset-y-0 left-3 flex items-center text-gray-500">
-          <component :is="prefix" v-if="typeof prefix === 'object'" />
+          <component :is="prefix" v-if="typeof prefix === 'object'"/>
           <span v-else>{{ prefix }}</span>
         </span>
       </slot>
@@ -120,8 +125,8 @@ const containerClasses = computed(() => props.containerClass || 'mb-4')
             v-model="model"
             :required="required"
             :disabled="disabled">
-            <SelectTrigger class="!min-h-10 dark:bg-primary-foreground">
-              <SelectValue :placeholder="placeholder" />
+            <SelectTrigger class="make-large dark:bg-primary-foreground">
+              <SelectValue :placeholder="placeholder"/>
             </SelectTrigger>
 
             <SelectContent>
@@ -130,7 +135,7 @@ const containerClasses = computed(() => props.containerClass || 'mb-4')
                   v-for="(group, idx) in options as OptionGroup[]"
                   :key="group.label">
 
-                  <SelectSeparator v-if="idx !== 0" class="dark:bg-amber-200 bg-gray-300" />
+                  <SelectSeparator v-if="idx !== 0" class="dark:bg-amber-200 bg-gray-300"/>
 
                   <SelectLabel>{{ group.label }}</SelectLabel>
 
@@ -181,7 +186,7 @@ const containerClasses = computed(() => props.containerClass || 'mb-4')
             <div
               class="flex items-center space-x-2"
               v-for="option in options" :key="option.label">
-              <RadioGroupItem :id="option.label" :value="option.value" />
+              <RadioGroupItem :id="option.label" :value="option.value"/>
               <Label :for="option.label">{{ option.label }}</Label>
             </div>
           </RadioGroup>
@@ -214,11 +219,39 @@ const containerClasses = computed(() => props.containerClass || 'mb-4')
               currencySign: 'accounting',
             }">
             <NumberFieldContent>
-              <NumberFieldDecrement />
-              <NumberFieldInput class="dark:bg-primary-foreground" />
-              <NumberFieldIncrement />
+              <NumberFieldDecrement/>
+              <NumberFieldInput class="dark:bg-primary-foreground make-large"/>
+              <NumberFieldIncrement/>
             </NumberFieldContent>
           </NumberField>
+        </template>
+
+        <template v-else-if="type === 'date'">
+          <template v-if="isInline">
+            <!-- Inline Calendar -->
+            <Calendar />
+          </template>
+
+          <template v-else>
+            <!-- Popover Calendar -->
+            <Popover>
+              <PopoverTrigger as-child>
+                <Button
+                  :variant="'outline'"
+                  :class="cn(
+                    'w-[280px] justify-start text-left font-normal',
+                    !model && 'text-muted-foreground',
+                  )">
+                  <CalendarIcon class="mr-2 h-4 w-4" />
+                  <span>{{ model ? format(model as Date, "PPP") : "Pick a date" }}</span>
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent class="w-auto p-0">
+                <Calendar v-model="model" />
+              </PopoverContent>
+            </Popover>
+          </template>
         </template>
 
         <template v-else>
@@ -241,17 +274,17 @@ const containerClasses = computed(() => props.containerClass || 'mb-4')
 
       <slot name="suffix">
         <span v-if="suffix" class="absolute inset-y-0 right-3 flex items-center text-gray-500">
-          <component :is="suffix" v-if="typeof suffix === 'object'" />
+          <component :is="suffix" v-if="typeof suffix === 'object'"/>
           <span v-else>{{ suffix }}</span>
         </span>
       </slot>
 
       <div v-if="icon" class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <component :is="icon" class="h-5 w-5 text-gray-400" />
+        <component :is="icon" class="h-5 w-5 text-gray-400"/>
       </div>
 
       <slot name="error">
-        <InputError v-if="error" :message="Array.isArray(error) ? error.join(', ') : error" class="mt-2" />
+        <InputError v-if="error" :message="Array.isArray(error) ? error.join(', ') : error" class="mt-2"/>
       </slot>
     </div>
 

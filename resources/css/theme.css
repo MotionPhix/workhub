@@ -81,7 +81,7 @@
     @apply !bg-input !text-foreground placeholder:!text-muted-foreground;
   }
 
-  Input[make-large] {
-    @apply !min-h-11
+  .make-large {
+    @apply !min-h-10
   }
 }

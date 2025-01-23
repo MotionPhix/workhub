@@ -11,6 +11,7 @@ import { createPinia } from 'pinia'
 
 // components
 import {Input} from '@/Components/ui/input'
+import {Calendar} from '@/Components/ui/v-calendar'
 import {Button} from '@/Components/ui/button'
 import {Label} from '@/Components/ui/label'
 import { Badge } from "@/Components/ui/badge";
@@ -89,6 +90,7 @@ createInertiaApp({
       .component('Input', Input)
       .component('Button', Button)
       .component('Label', Label)
+      .component('Calendar', Calendar)
       .component('FormField', FormField)
       .component('Loader', Loader)
       .component('Badge', Badge)

@@ -154,7 +154,7 @@ Route::middleware('auth')->group(function () {
 
 
   Route::resource(
-    'work-entries',
+    'work-logs',
     \App\Http\Controllers\Work\WorkEntryController::class
   )->names('work-entries');
 

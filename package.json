@@ -14,7 +14,7 @@
     "@tanstack/vue-table": "^8.20.5",
     "@vee-validate/zod": "^4.15.0",
     "@vitejs/plugin-vue": "^5.0.0",
-    "@vueuse/core": "^12.4.0",
+    "@vueuse/core": "^12.5.0",
     "apexcharts": "^4.3.0",
     "autoprefixer": "^10.4.12",
     "axios": "^1.7.4",

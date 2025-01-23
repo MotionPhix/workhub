@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class WorkEntryController extends Controller
 {
@@ -24,10 +25,10 @@ class WorkEntryController extends Controller
 
   public function create(Request $request, ?WorkEntry $entry = null)
   {
-    return Inertia('WorkEntries/WorkEntryForm', [
+    return Inertia::modal('WorkEntries/WorkEntryForm', [
       'workEntry' => $entry ?? new WorkEntry(),
       'projects' => [],
-    ]);
+    ])->baseUrl('/work-logs');
   }
 
   public function store(Request $request)

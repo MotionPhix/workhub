@@ -1,6 +1,5 @@
 <script setup>
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
-import LocaleSelector from '@/Components/LocaleSelector.vue'
 import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
 </script>
 
@@ -16,7 +15,6 @@ import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
 
     <div class="mt-6 text-center">
       <ThemeSwitcher />
-      <LocaleSelector />
     </div>
   </div>
 </template>

@@ -63,7 +63,7 @@ const saveProfile = async () => {
 <template>
   <GlobalModal
     padding-classes="0" v-slot="{ close }"
-    panel-classes=" dark:bg-gray-800 rounded-xl"
+    panel-classes="dark:bg-gray-800 rounded-xl"
     :close-explicitly="true"
     :close-button="false">
     <!-- Header -->
