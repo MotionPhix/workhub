@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { format } from 'date-fns'
-import { EllipsisIcon } from 'lucide-vue-next'
+import { EllipsisIcon, PlusCircleIcon } from 'lucide-vue-next'
 import AppLayout from "@/Layouts/AppLayout.vue";
 import {
   DropdownMenu,
@@ -58,12 +57,20 @@ const columns = [
   }
 ]
 
+const addNewEntry = () => {
+  router.visit(route('work-entries.create'));
+};
+
 const viewEntry = (entry) => {
-  router.visit(route('work-entries.show', entry.id))
+  router.visit(route('work-entries.show', entry.id), {
+    replace: true
+  })
 }
 
 const editEntry = (entry) => {
-  router.visit(route('work-entries.edit', entry.id))
+  router.visit(route('work-entries.edit', entry.id), {
+    preserveScroll: true
+  })
 }
 
 const deleteEntry = (entry) => {
@@ -76,8 +83,13 @@ const deleteEntry = (entry) => {
 <template>
   <AppLayout>
     <div class="my-12">
+      <!-- Header Section -->
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold">Work Entries</h1>
+        <Button @click="addNewEntry">
+          <PlusCircleIcon class="w-5 h-5 mr-2" />
+          Add Work Entry
+        </Button>
       </div>
 
       <Card>

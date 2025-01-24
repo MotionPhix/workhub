@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Department;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -92,25 +94,22 @@ class UserController extends Controller
     $this->authorize('update', $user);
 
     return Inertia::render('Users/Edit', [
-      'user' => $user
+      'user' => $user,
+      'departments' => fn() => Department::all()->transform(fn($department) => [
+        'value' => $department->value,
+        'label' => $department->name,
+      ])
     ]);
   }
 
-  public function update(Request $request, User $user)
+  public function update(ProfileUpdateRequest $request, User $user)
   {
     $this->authorize('update', $user);
 
-    $validated = $request->validate([
-      'name' => ['sometimes', 'string', 'max:255'],
-      'email' => ['sometimes', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-      'department' => ['nullable', 'string', 'max:100'],
-      'manager_email' => ['nullable', 'email', 'exists:users,email']
-    ]);
+    $user->update($request->validated());
 
-    $user->update($validated);
-
-    return redirect()->route('users.index')
-      ->with('success', 'User updated successfully.');
+    return redirect(route('users.index'))
+      ->with('flush', 'User updated successfully.');
   }
 
   public function destroy(User $user)

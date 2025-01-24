@@ -74,7 +74,7 @@ const model = defineModel()
 const page = usePage()
 const id = uuidv4()
 const suffixIcon = ref(props.suffix)
-const tempType = ref(props.type)
+const tempType = ref<Component | string>(props.type)
 
 const currency = page.props?.currency ?? 'MWK'
 
@@ -108,6 +108,8 @@ function onToggle() {
 
   if (tempType === 'password') {
     suffixIcon.value = LockOpenIcon
+  } else {
+    suffixIcon.value = props.suffix
   }
 }
 </script>
@@ -239,35 +241,35 @@ function onToggle() {
         <template v-else-if="type === 'date'">
           <template v-if="isInline">
             <!-- Inline Calendar -->
-            <Calendar />
+<!--            <Calendar />-->
           </template>
 
           <template v-else>
             <!-- Popover Calendar -->
-            <Popover>
-              <PopoverTrigger as-child>
-                <Button
-                  :variant="'outline'"
-                  :class="cn(
-                    'w-[280px] justify-start text-left font-normal',
-                    !model && 'text-muted-foreground',
-                  )">
-                  <CalendarIcon class="mr-2 h-4 w-4" />
-                  <span>{{ model ? format(model as Date, "PPP") : "Pick a date" }}</span>
-                </Button>
-              </PopoverTrigger>
+<!--            <Popover>-->
+<!--              <PopoverTrigger as-child>-->
+<!--                <Button-->
+<!--                  :variant="'outline'"-->
+<!--                  :class="cn(-->
+<!--                    'justify-start text-left font-normal',-->
+<!--                    !model && 'text-muted-foreground',-->
+<!--                  )">-->
+<!--                  <CalendarIcon class="mr-2 h-4 w-4" />-->
+<!--                  <span>{{ model ? format(model as Date, "PPP") : "Pick a date" }}</span>-->
+<!--                </Button>-->
+<!--              </PopoverTrigger>-->
 
-              <PopoverContent class="w-auto p-0">
-                <Calendar v-model="model" />
-              </PopoverContent>
-            </Popover>
+<!--              <PopoverContent class="w-auto p-0">-->
+<!--                <Calendar v-model="model" />-->
+<!--              </PopoverContent>-->
+<!--            </Popover>-->
           </template>
         </template>
 
         <template v-else>
           <Input
             :id="id"
-            :type="type"
+            :type="tempType"
             v-model="model"
             :placeholder="placeholder"
             :required="required"
@@ -286,8 +288,8 @@ function onToggle() {
       <slot name="suffix">
         <span v-if="suffix" class="absolute inset-y-0 right-3 flex items-center text-gray-500">
           <component
-            :is="suffix"
-            v-if="typeof suffix === 'function'"
+            :is="suffixIcon"
+            v-if="typeof suffixIcon === 'function'"
             @click="onToggle()"
           />
 

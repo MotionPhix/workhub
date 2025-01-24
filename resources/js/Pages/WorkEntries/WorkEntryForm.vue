@@ -78,7 +78,6 @@ const submitForm = () => {
     <h1 class="mb-4 text-xl font-semibold">Log Your Task</h1>
 
     <form @submit.prevent="submitForm" class="space-y-6">
-      <!-- Work Date -->
       <div>
         <FormField
           type="date"
