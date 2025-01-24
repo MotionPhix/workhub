@@ -40,7 +40,7 @@ type OptionGroup = {
 const props = withDefaults(defineProps<{
   label?: string
   type?: string
-  format?: string
+  formatStyle?: string
   placeholder?: string
   required?: boolean
   disabled?: boolean
@@ -106,8 +106,10 @@ const containerClasses = computed(() => props.containerClass || 'mb-4')
 function onToggle() {
   tempType.value = tempType.value === 'password' ? 'text' : 'password';
 
-  if (tempType === 'password') {
+  if (tempType.value === 'text') {
     suffixIcon.value = LockOpenIcon
+  } else {
+    suffixIcon.value = props.suffix
   }
 }
 </script>
@@ -221,13 +223,25 @@ function onToggle() {
 
         <template v-else-if="type === 'number'">
           <NumberField
+            v-if="formatStyle"
             v-model="model" :step="step"
             :id="id" :max="max" :min="min"
             :format-options="{
-              style: format,
+              style: formatStyle,
               currency: currency,
               currencySign: 'accounting',
             }">
+            <NumberFieldContent>
+              <NumberFieldDecrement/>
+              <NumberFieldInput class="dark:bg-primary-foreground make-large"/>
+              <NumberFieldIncrement/>
+            </NumberFieldContent>
+          </NumberField>
+
+          <NumberField
+            v-else
+            v-model="model" :step="step"
+            :id="id" :max="max" :min="min">
             <NumberFieldContent>
               <NumberFieldDecrement/>
               <NumberFieldInput class="dark:bg-primary-foreground make-large"/>

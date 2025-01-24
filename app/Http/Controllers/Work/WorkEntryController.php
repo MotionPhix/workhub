@@ -15,6 +15,7 @@ class WorkEntryController extends Controller
   public function index()
   {
     $entries = WorkEntry::where('user_id', Auth::id())
+      ->with('tags')
       ->orderBy('work_date', 'desc')
       ->paginate(10);
 
@@ -23,37 +24,49 @@ class WorkEntryController extends Controller
     ]);
   }
 
-  public function create(Request $request, ?WorkEntry $entry = null)
+  public function form(Request $request, ?WorkEntry $entry = null)
   {
     return Inertia::modal('WorkEntries/WorkEntryForm', [
-      'workEntry' => $entry ?? new WorkEntry(),
-      'projects' => [],
+      'workLog' => $entry ?? new WorkEntry(),
+      'tags' => fn() => \Spatie\Tags\Tag::all()->pluck('name')
     ])->baseUrl('/work-logs');
   }
 
   public function store(Request $request)
   {
-    try {
+    /*try {*/
       $validated = $request->validate([
         'work_date' => ['required', 'date', 'before_or_equal:today'],
-        'description' => ['required', 'string', 'max:1000'],
         'hours_worked' => ['nullable', 'numeric', 'min:0', 'max:24'],
+        'description' => ['required', 'string', 'max:1000'],
+        'status' => 'in:draft,completed,in_progress',
         'tags' => 'nullable|array',
-        'status' => 'in:draft,completed,in_progress'
+        'tags.*' => 'string|distinct',
       ]);
 
       $entry = $request->user()->workEntries()->create($validated);
 
-      return back()->with('success', 'Work entry created successfully');
-    } catch (ValidationException $e) {
-      return back()
-        ->withErrors($e->validator)
-        ->withInput()
-        ->with('error', 'Please correct the errors in the form.');
-    } catch (\Exception $e) {
-      Log::error('Work entry creation failed: ' . $e->getMessage());
-      return back()->with('error', 'An unexpected error occurred. Please try again.');
-    }
+      // Handle tags
+      if (!empty($validated['tags'])) {
+        $tags = collect($validated['tags'])->map(function ($tag) {
+          $existingTag = \Spatie\Tags\Tag::whereRaw('LOWER(name) = ?', [strtolower($tag)])->first();
+          return $existingTag ? $existingTag->name : $tag;
+        });
+
+        // Attach tags to the WorkEntry
+        $entry->syncTags($tags);
+      }
+
+      return back()->with('flush', 'Work entry created successfully');
+      /*} catch (ValidationException $e) {
+        return back()
+          ->withErrors($e->validator)
+          ->withInput()
+          ->with('error', 'Please correct the errors in the form.');
+      } catch (\Exception $e) {
+        Log::error('Work entry creation failed: ' . $e->getMessage());
+        return back()->with('error', 'An unexpected error occurred. Please try again.');
+      }*/
 
   }
 }

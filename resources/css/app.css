@@ -4,3 +4,17 @@
 @tailwind utilities;
 
 html body { overflow: auto !important; padding-right: 0 !important; }
+
+/* Tiptap editor styles */
+.tiptap {
+  @apply min-h-36 border-none;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  outline: none;
+}
+
+.tiptap:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+

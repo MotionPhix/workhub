@@ -1,21 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { format } from 'date-fns'
-import { EllipsisIcon } from 'lucide-vue-next'
+import { EllipsisIcon, PlusCircleIcon } from 'lucide-vue-next'
+import DataTable from "@/Components/DataTable.vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
+import {visitModal} from '@inertiaui/modal-vue'
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
-import DataTable from "@/Components/DataTable.vue";
 
 const props = defineProps<{
   workEntries: {
     current_page: number
-    data: Array<{}>
+    data: Array<{
+      id: number
+      uuid: string
+      work_date: Date | string
+      description: string
+      hours_worked: number
+      tags?: Array<{}>,
+      status?: string
+    }>
     first_page_url: string
     from?: number
     last_page: number
@@ -38,19 +46,15 @@ const columns = [
   {
     accessorKey: 'work_date',
     header: 'Date',
-    cell: ({ row }) => format(new Date(row.original.work_date), 'PPP')
-  },
-  {
-    accessorKey: 'project',
-    header: 'Project'
+    cell: ({ row }) => format(row.work_date, 'PP')
   },
   {
     accessorKey: 'hours_worked',
     header: 'Hours'
   },
   {
-    accessorKey: 'description',
-    header: 'Description'
+    accessorKey: 'status',
+    header: 'Status'
   },
   {
     id: 'actions',
@@ -58,16 +62,25 @@ const columns = [
   }
 ]
 
+const onCreateLog = () => {
+  visitModal(route('work-entries.create'), {
+    navigate: true
+  })
+}
+
 const viewEntry = (entry) => {
-  router.visit(route('work-entries.show', entry.id))
+  router.visit(route('work-entries.show', entry.uuid))
 }
 
 const editEntry = (entry) => {
-  router.visit(route('work-entries.edit', entry.id))
+  console.log(entry)
+  visitModal(route('work-entries.edit', entry.uuid), {
+    navigate: true
+  })
 }
 
 const deleteEntry = (entry) => {
-  router.delete(route('work-entries.destroy', entry.id), {
+  router.delete(route('work-entries.destroy', entry.uuid), {
     onBefore: () => confirm('Are you sure you want to delete this entry?')
   })
 }
@@ -78,6 +91,11 @@ const deleteEntry = (entry) => {
     <div class="my-12">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold">Work Entries</h1>
+
+        <Button @click="onCreateLog">
+          <PlusCircleIcon />
+          New Work Log
+        </Button>
       </div>
 
       <Card>
@@ -93,13 +111,13 @@ const deleteEntry = (entry) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem @click="viewEntry(row.original)">
+                  <DropdownMenuItem @click="viewEntry(row)">
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem @click="editEntry(row.original)">
+                  <DropdownMenuItem @click="editEntry(row)">
                     Edit Entry
                   </DropdownMenuItem>
-                  <DropdownMenuItem @click="deleteEntry(row.original)">
+                  <DropdownMenuItem @click="deleteEntry(row)">
                     Delete Entry
                   </DropdownMenuItem>
                 </DropdownMenuContent>
