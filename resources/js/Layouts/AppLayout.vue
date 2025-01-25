@@ -4,6 +4,7 @@ import MobileNavigation from '@/Components/Navigation/MobileNavigation.vue'
 import DesktopNavigation from '@/Components/Navigation/DesktopNavigation.vue'
 import ResponsiveFooter from '@/Components/Navigation/ResponsiveFooter.vue'
 import { useDeviceDetection } from '@/composables/useDeviceDetection'
+import {Toaster} from "vue-sonner";
 
 const darkMode = ref(false)
 const { isMobile, isTablet, isDesktop } = useDeviceDetection()
@@ -16,6 +17,8 @@ onMounted(() => {
 </script>
 
 <template>
+  <Toaster rich-colors />
+
   <div class="min-h-screen transition-colors duration-300">
     <nav class="sticky top-0 z-50">
       <MobileNavigation v-if="isMobile" />

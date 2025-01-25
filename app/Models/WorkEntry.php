@@ -5,22 +5,22 @@ namespace App\Models;
 use App\Traits\BootUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Tags\HasTags;
 
 class WorkEntry extends Model
 {
-  use HasFactory, BootUuid;
+  use HasFactory, BootUuid, HasTags;
 
   protected $fillable = [
     'user_id',
     'work_date',
     'description',
     'hours_worked',
-    'tags',
     'status'
   ];
 
   protected $casts = [
-    'work_date' => 'date',
+    'work_date' => 'date:Y-m-d',
     'tags' => 'array'
   ];
 

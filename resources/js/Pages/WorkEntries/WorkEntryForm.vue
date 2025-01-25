@@ -20,64 +20,158 @@ import {
   ComboboxPortal,
   ComboboxRoot
 } from 'radix-vue'
-import {computed, ref} from 'vue'
+import {computed, onBeforeUnmount, ref} from 'vue'
+import {UnderlineIcon, ItalicIcon, BoldIcon, ListIcon, ListOrderedIcon, MinusIcon} from "lucide-vue-next";
 import InputError from "@/Components/InputError.vue";
+import {toast} from "vue-sonner";
+import {EditorContent, useEditor} from '@tiptap/vue-3';
+import Document from '@tiptap/extension-document'
+import ListItem from '@tiptap/extension-list-item'
+import Bold from '@tiptap/extension-bold'
+import OrderedList from '@tiptap/extension-ordered-list'
+import BulletList from '@tiptap/extension-bullet-list'
+import Italic from '@tiptap/extension-italic'
+import Heading from '@tiptap/extension-heading'
+import Paragraph from '@tiptap/extension-paragraph'
+import HorizontalRule from '@tiptap/extension-horizontal-rule'
+import Text from '@tiptap/extension-text'
+import Underline from '@tiptap/extension-underline'
+import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+
+const props = defineProps<{
+  workLog: {
+    id?: number
+    uuid?: string
+    work_date?: Date | string
+    description?: string
+    hours_worked?: number
+    status?: 'draft' | 'completed' | 'in_progress'
+  },
+  tags?: Array<{
+    id: number
+    name: string
+  }>
+}>()
 
 const form = useForm({
-  work_date: new Date(),
-  description: '',
-  hours_worked: 0,
-  tags: [],
-  status: 'draft',
+  work_date: props.workLog.work_date || new Date().toISOString().split('T')[0],
+  description: props.workLog.description || '',
+  hours_worked: props.workLog.hours_worked || 0,
+  tags: props.tags || [],
+  status: props.workLog.status || 'draft',
 });
 
-const tagsDropdownOpen = ref(false)
+// Initialize Tiptap editor
+const editor = useEditor({
+  extensions: [
+    Document,
+    Paragraph,
+    Text,
+    BulletList.configure({
+      HTMLAttributes: {
+        class: 'list-disc list-inside ml-6 space-y-2 text-gray-800 dark:text-gray-200'
+      },
+    }),
+    OrderedList.configure({
+      HTMLAttributes: {
+        class: 'list-decimal list-inside ml-6 space-y-2 text-gray-800 dark:text-gray-200',
+      },
+    }),
+    ListItem.configure({
+      HTMLAttributes: {
+        class: 'text-gray-700 dark:text-gray-300',
+      },
+    }),
+    Link,
+    HorizontalRule,
+    Bold,
+    Heading,
+    Italic,
+    Image,
+    Underline,
+  ],
+  content: form.description, // Bind to the form description
+  onUpdate: ({editor}) => {
+    form.description = editor.getHTML(); // Update form when content changes
+  },
+});
+
+const tagInputValue = ref('');
+const workLogRef = ref()
 const tagsSearchTerm = ref('')
 
-const availableTags = [
-  {id: 1, name: 'Urgent'},
-  {id: 2, name: 'Bug Fix'},
-  {id: 3, name: 'Meeting'},
-  {id: 4, name: 'Documentation'},
-];
+const filteredTags = computed(() => {
+  return props.tags.filter(tag => !form.tags.includes(tag)); // Filter out already selected tags
+});
 
-const filteredTags = computed(() =>
-  (availableTags || []).filter(tag => !form.tags.includes(tag.name))
-);
+const addTag = (tag) => {
+  const normalizedTag = tag.trim().toLowerCase();
 
+  // Check for case-insensitive uniqueness
+  if (form.tags.some(tag => tag.toLowerCase() === normalizedTag)) {
+    toast.error('Duplicate Entry', {
+      description: `${tag.toUpperCase()} already exists!`
+    })
 
-const saveAsDraft = () => {
-  form.post('/work-logs', {
+    return;
+  }
+
+  if (!form.tags.includes(tag)) {
+    form.tags.push(tag);
+  }
+
+  tagInputValue.value = ''; // Clear input after adding
+};
+
+const onClose = () => {
+  workLogRef.value.onClose()
+}
+
+const onSubmitForm = () => {
+  form.post(route('work-entries.store'), {
     onError: (err) => {
       console.log(err)
     },
-
     onSuccess: () => {
       form.reset()
+      workLogRef.value.onClose()
     },
   });
 };
 
-const submitForm = () => {
-  form.put('/work-logs', {
-    onError: (err) => {
-      console.log(err)
-    },
-    onSuccess: () => {
-      form.reset()
-    },
-  });
-};
+// Clean up editor instance when the component unmounts
+onBeforeUnmount(() => {
+  editor.value.destroy();
+});
 </script>
 
 <template>
   <GlobalModal
-    panel-classes="dark:bg-gray-800 rounded-xl"
-    :close-explicitly="true">
+    ref="workLogRef"
+    padding="px-4 pb-4 sm:px-5 sm:pb-5"
+    :manual-close="true"
+    :has-close-button="false">
 
-    <h1 class="mb-4 text-xl font-semibold">Log Your Task</h1>
+    <ModalHeader heading="Log your work">
+      <!-- Actions -->
+      <template #action>
+        <Button
+          @click="onClose"
+          variant="outline"
+          type="button">
+          Cancel
+        </Button>
 
-    <form @submit.prevent="submitForm" class="space-y-6">
+        <Button
+          @click="onSubmitForm"
+          type="button">
+          Save
+        </Button>
+      </template>
+    </ModalHeader>
+
+    <form class="space-y-6">
       <div>
         <FormField
           type="date"
@@ -85,69 +179,120 @@ const submitForm = () => {
           label="Work Date"
           v-model="form.work_date"
           :error="form.errors.work_date"
-          :class="{ 'border-red-500': form.errors.work_date }"
         />
       </div>
 
       <!-- Description -->
       <div>
-        <FormField
-          type="textarea"
-          label="Description"
-          v-model="form.description"
-          :error="form.errors.description"
-          placeholder="Describe your work, what have you worked on?"
-          :class="{ 'border-red-500': form.errors.description }"
-        />
+        <Label for="description">Description</Label>
+
+        <!-- Rich Text Editor -->
+        <!-- Toolbar -->
+        <div class="my-2 flex space-x-2">
+          <Button
+            size="icon"
+            type="button"
+            @click="editor.chain().focus().toggleBold().run()"
+            :variant="editor.isActive('bold') ? 'default' : 'secondary'">
+            <BoldIcon/>
+          </Button>
+
+          <Button
+            size="icon"
+            type="button"
+            :variant="editor.isActive('italic') ? 'default' : 'secondary'"
+            @click="editor.chain().focus().toggleItalic().run()">
+            <ItalicIcon/>
+          </Button>
+
+          <Button
+            size="icon"
+            type="button"
+            :variant="editor.isActive('underline') ? 'default' : 'secondary'"
+            @click="editor.chain().focus().toggleUnderline?.().run()">
+            <UnderlineIcon/>
+          </Button>
+
+          <!-- Unordered List -->
+          <Button
+            size="icon"
+            type="button"
+            :variant="editor.isActive('bulletList') ? 'default' : 'secondary'"
+            @click="editor.chain().focus().toggleBulletList().run()">
+            <ListIcon/>
+          </Button>
+
+          <!-- Ordered List -->
+          <Button
+            size="icon"
+            type="button"
+            :variant="editor.isActive('orderedList') ? 'default' : 'secondary'"
+            @click="editor.chain().focus().toggleOrderedList().run()">
+            <ListOrderedIcon/>
+          </Button>
+
+          <Button
+            size="icon"
+            type="button"
+            :variant="editor.isActive('orderedList') ? 'default' : 'secondary'"
+            @click="editor.chain().focus().setHorizontalRule().run()">
+            <MinusIcon/>
+          </Button>
+        </div>
+
+        <div class="prose prose-lg dark:prose-invert max-w-none">
+          <EditorContent
+            :editor="editor"
+            class="prose prose-lg border dark:prose-invert max-w-none p-3 rounded-lg dark:bg-gray-800 dark:text-white my-1"
+          />
+        </div>
+
+        <InputError :message="form.errors.description"/>
       </div>
 
       <!-- Tags -->
       <div>
         <Label for="tags">Tags</Label>
-        <TagsInput v-model="form.tags" class="w-full gap-0 px-0">
-          <!-- Render existing tags -->
-          <div class="flex flex-wrap items-center gap-2 px-3">
+        <TagsInput v-model="form.tags" class="w-full gap-0 p-0 !border-none mt-1">
+          <!-- Existing Tags -->
+          <div
+            class="flex flex-wrap items-center gap-2 px-2"
+            :class="{ 'py-1': form.tags.length }">
             <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
               <TagsInputItemText/>
-              <TagsInputItemDelete/>
+              <TagsInputItemDelete @click="form.tags = form.tags.filter(t => t !== tag)"/>
             </TagsInputItem>
           </div>
 
-          <!-- Input for adding new tags -->
+          <!-- Input for Adding Tags -->
           <ComboboxRoot
-            v-model="form.tags"
-            v-model:open="tagsDropdownOpen"
-            v-model:search-term="tagsSearchTerm"
+            v-model="tagInputValue"
+            v-model:search-term="tagInputValue"
             class="w-full">
             <ComboboxAnchor as-child>
-              <ComboboxInput placeholder="Select or add tags..." as-child>
+              <ComboboxInput
+                placeholder="Add or select tags..."
+                as-child>
                 <TagsInputInput
-                  class="w-full px-3"
-                  :class="form.tags.length > 0 ? 'mt-2' : ''"
-                  @keydown.enter.prevent
-                />
+                  class="w-full px-3 rounded-md make-large !border-none focus:ring-0"
+                  @keydown.enter.prevent="addTag(tagInputValue)"/>
               </ComboboxInput>
             </ComboboxAnchor>
-            <!-- Dropdown for available tags -->
+
+            <!-- Dropdown for Available Tags -->
             <ComboboxPortal>
               <ComboboxContent>
                 <CommandList
                   position="popper"
-                  class="w-[--radix-popper-anchor-width] rounded-md mt-2 border bg-popover text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out"
-                >
+                  class="w-[--radix-popper-anchor-width] rounded-md mt-2 bg-popover text-popover-foreground shadow-md">
                   <CommandEmpty>No tags found.</CommandEmpty>
                   <CommandGroup heading="Available Tags">
                     <CommandItem
                       v-for="tag in filteredTags"
-                      :key="tag.id"
-                      :value="tag.name"
-                      @select.prevent="(ev) => {
-                        if (typeof ev.detail.value === 'string') {
-                          tagsSearchTerm = ''
-                          form.tags.push(ev.detail.value)
-                        }
-                      }">
-                      {{ tag.name }}
+                      :key="tag"
+                      :value="tag"
+                      @select.prevent="addTag(tag)">
+                      {{ tag }}
                     </CommandItem>
                   </CommandGroup>
                 </CommandList>
@@ -156,8 +301,7 @@ const submitForm = () => {
           </ComboboxRoot>
         </TagsInput>
 
-        <!-- Validation errors -->
-        <InputError :message="form.errors.tags" />
+        <InputError :message="form.errors.tags"/>
       </div>
 
       <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -168,7 +312,6 @@ const submitForm = () => {
             label="Hours Worked"
             v-model="form.hours_worked"
             :error="form.errors.hours_worked"
-            :class="{ 'border-red-500': form.errors.hours_worked }"
           />
         </div>
 
@@ -186,23 +329,61 @@ const submitForm = () => {
           />
         </div>
       </section>
-
-      <!-- Actions -->
-      <div class="flex justify-end space-x-4">
-        <Button
-          size="lg"
-          type="button"
-          variant="outline"
-          @click="saveAsDraft">
-          Save Draft
-        </Button>
-
-        <Button
-          size="lg"
-          type="submit">
-          Mark Completed
-        </Button>
-      </div>
     </form>
   </GlobalModal>
 </template>
+
+<style lang="scss">
+/* Basic editor styles */
+.tiptap {
+  :first-child {
+    margin-top: 0;
+  }
+
+  /* Heading styles */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    line-height: 0.5;
+    margin-top: 2.5rem;
+  }
+
+  h1,
+  h2 {
+    margin-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-size: 1rem;
+  }
+
+  /* List styles */
+  ul,
+  ol {
+    padding: 0 1rem;
+    margin: 1.25rem 1rem 1.25rem 0.4rem;
+
+    li p {
+      margin-top: 0.25em;
+      margin-bottom: 0.25em;
+    }
+  }
+}
+</style>

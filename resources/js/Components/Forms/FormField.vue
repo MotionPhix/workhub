@@ -40,7 +40,7 @@ type OptionGroup = {
 const props = withDefaults(defineProps<{
   label?: string
   type?: string
-  format?: string
+  formatStyle?: string
   placeholder?: string
   required?: boolean
   disabled?: boolean
@@ -106,7 +106,7 @@ const containerClasses = computed(() => props.containerClass || 'mb-4')
 function onToggle() {
   tempType.value = tempType.value === 'password' ? 'text' : 'password';
 
-  if (tempType === 'password') {
+  if (tempType.value === 'text') {
     suffixIcon.value = LockOpenIcon
   } else {
     suffixIcon.value = props.suffix
@@ -223,13 +223,25 @@ function onToggle() {
 
         <template v-else-if="type === 'number'">
           <NumberField
+            v-if="formatStyle"
             v-model="model" :step="step"
             :id="id" :max="max" :min="min"
             :format-options="{
-              style: format,
+              style: formatStyle,
               currency: currency,
               currencySign: 'accounting',
             }">
+            <NumberFieldContent>
+              <NumberFieldDecrement/>
+              <NumberFieldInput class="dark:bg-primary-foreground make-large"/>
+              <NumberFieldIncrement/>
+            </NumberFieldContent>
+          </NumberField>
+
+          <NumberField
+            v-else
+            v-model="model" :step="step"
+            :id="id" :max="max" :min="min">
             <NumberFieldContent>
               <NumberFieldDecrement/>
               <NumberFieldInput class="dark:bg-primary-foreground make-large"/>
@@ -241,28 +253,28 @@ function onToggle() {
         <template v-else-if="type === 'date'">
           <template v-if="isInline">
             <!-- Inline Calendar -->
-<!--            <Calendar />-->
+            <Calendar />
           </template>
 
           <template v-else>
             <!-- Popover Calendar -->
-<!--            <Popover>-->
-<!--              <PopoverTrigger as-child>-->
-<!--                <Button-->
-<!--                  :variant="'outline'"-->
-<!--                  :class="cn(-->
-<!--                    'justify-start text-left font-normal',-->
-<!--                    !model && 'text-muted-foreground',-->
-<!--                  )">-->
-<!--                  <CalendarIcon class="mr-2 h-4 w-4" />-->
-<!--                  <span>{{ model ? format(model as Date, "PPP") : "Pick a date" }}</span>-->
-<!--                </Button>-->
-<!--              </PopoverTrigger>-->
+            <Popover>
+              <PopoverTrigger as-child>
+                <Button
+                  :variant="'outline'"
+                  :class="cn(
+                    'justify-start text-left font-normal',
+                    !model && 'text-muted-foreground',
+                  )">
+                  <CalendarIcon class="mr-2 h-4 w-4" />
+                  <span>{{ model ? format(model as Date, "PPP") : "Pick a date" }}</span>
+                </Button>
+              </PopoverTrigger>
 
-<!--              <PopoverContent class="w-auto p-0">-->
-<!--                <Calendar v-model="model" />-->
-<!--              </PopoverContent>-->
-<!--            </Popover>-->
+              <PopoverContent class="w-auto p-0">
+                <Calendar v-model="model" />
+              </PopoverContent>
+            </Popover>
           </template>
         </template>
 

@@ -21,8 +21,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup
 } from "@/Components/ui/dropdown-menu";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { Button } from "@/Components/ui/button";
 import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
@@ -166,7 +164,7 @@ watch(() => props.data, () => {
 <template>
   <div class="w-full">
     <!-- Table Filters (Optional) -->
-    <div v-if="showFilters" class="mb-4 flex justify-between items-center">
+    <div v-if="showFilters" class="my-4 flex justify-between items-center">
       <Input
         type="text"
         placeholder="Search..."
@@ -187,8 +185,7 @@ watch(() => props.data, () => {
               <DropdownMenuItem
                 v-for="column in columns"
                 :key="column.accessorKey"
-                @click="toggleColumnVisibility(column)"
-              >
+                @click="toggleColumnVisibility(column)">
                 <Checkbox
                   :checked="isColumnVisible(column)"
                   class="mr-2"
@@ -230,25 +227,24 @@ watch(() => props.data, () => {
             v-for="column in visibleColumns"
             :key="column.accessorKey"
             @click="handleSort(column)"
-            class="cursor-pointer hover:bg-gray-100 dark:hover:bg-accent">
+            class="cursor-pointer hover:bg-gray-100 dark:hover:bg-accent min-w-[8rem]">
             {{ column.header }}
             <ArrowUpDownIcon v-if="column.sortable" class="ml-2 h-4 w-4 inline" />
           </TableHead>
         </TableRow>
       </TableHeader>
+
       <TableBody>
         <TableRow
           v-for="row in processedData"
-          :key="row.id"
-        >
+          :key="row.id">
           <TableCell
+            class="align-top py-2"
             v-for="column in visibleColumns"
-            :key="column.accessorKey"
-          >
+            :key="column.accessorKey">
             <slot
               :name="column.accessorKey"
-              :row="row"
-            >
+              :row="row">
               {{
                 column.cell
                   ? column.cell({ row })
@@ -269,7 +265,7 @@ watch(() => props.data, () => {
     <div class="flex items-center justify-between mt-4">
       <div>
         Showing
-        {{ (data.current_page - 1) * data.per_page + 1 }} - <!-- Use per_page instead of last_page -->
+        {{ (data.current_page - 1) * data.per_page + 1 }} -
         {{ Math.min(data.current_page * data.per_page, data.total) }}
         of {{ data.total }} entries
       </div>

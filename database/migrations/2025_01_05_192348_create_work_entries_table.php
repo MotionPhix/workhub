@@ -17,7 +17,6 @@ return new class extends Migration {
       $table->date('work_date');
       $table->text('description');
       $table->integer('hours_worked')->nullable();
-      $table->json('tags')->nullable();
       $table->enum('status', ['draft', 'completed', 'in_progress'])->default('draft');
       $table->timestamps();
     });

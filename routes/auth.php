@@ -153,10 +153,39 @@ Route::middleware('auth')->group(function () {
   )->name('dashboard');
 
 
-  Route::resource(
-    'work-logs',
-    \App\Http\Controllers\Work\WorkEntryController::class
-  )->names('work-entries');
+  Route::prefix('work-logs')->name('work-entries.')->group(function () {
+
+    Route::get(
+      '/',
+      [\App\Http\Controllers\Work\WorkEntryController::class, 'index'],
+    )->name('index');
+
+    Route::get(
+      '/new-work-log',
+      [\App\Http\Controllers\Work\WorkEntryController::class, 'form'],
+    )->name('create');
+
+    Route::get(
+      '/e/{entry:uuid}',
+      [\App\Http\Controllers\Work\WorkEntryController::class, 'form'],
+    )->name('edit');
+
+    Route::post(
+      '/',
+      [\App\Http\Controllers\Work\WorkEntryController::class, 'store'],
+    )->name('store');
+
+    Route::put(
+      '/u/{entry:uuid}',
+      [\App\Http\Controllers\Work\WorkEntryController::class, 'update'],
+    )->name('update');
+
+    Route::delete(
+      '/d/{entry:uuid}',
+      [\App\Http\Controllers\Work\WorkEntryController::class, 'destroy'],
+    )->name('destroy');
+
+  });
 
   Route::get(
     '/productivity/predictions/{userId}',
