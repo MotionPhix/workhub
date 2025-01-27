@@ -60,11 +60,11 @@ const avatarBackgroundClass = computed(() => {
 
 <template>
   <Avatar
+    class="flex items-center justify-center"
     :class="[
       avatarBackgroundClass,
       avatarSize
-    ]"
-  >
+    ]">
     <AvatarImage
       :src="avatarSource"
       :alt="avatarAlt"

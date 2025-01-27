@@ -17,7 +17,12 @@ return new class extends Migration {
       $table->rememberToken();
 
       // Enhanced user metadata
-      $table->string('department')->nullable();
+      $table->foreignUuid('department_uuid')
+        ->nullable()
+        ->references('uuid')
+        ->on('departments')
+        ->nullOnDelete();
+
       $table->string('manager_email')->nullable();
 
       // Account status and security

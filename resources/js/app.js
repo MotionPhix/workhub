@@ -17,9 +17,11 @@ import {Label} from '@/Components/ui/label'
 import {Badge} from "@/Components/ui/badge";
 import {Switch} from "@/Components/ui/switch";
 import {Checkbox} from "@/Components/ui/checkbox";
-import FormField from './Components/Forms/FormField.vue';
-import GlobalModal from './Components/GlobalModal.vue';
-import Loader from './Components/Forms/Loader.vue';
+import Divider from "@/Components/Divider.vue";
+import FormField from '@/Components/Forms/FormField.vue';
+import DataTable from '@/Components/DataTable.vue';
+import GlobalModal from '@/Components/GlobalModal.vue';
+import Loader from '@/Components/Forms/Loader.vue';
 import ModalHeader from "@/Components/ModalHeader.vue";
 import {OhVueIcon, addIcons} from "oh-vue-icons";
 import {
@@ -46,7 +48,7 @@ addIcons(
   HiCheckCircle
 );
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'WorkHub';
 const pinia = createPinia()
 
 createInertiaApp({
@@ -77,7 +79,9 @@ createInertiaApp({
       .component('Switch', Switch)
       .component('Calendar', Calendar)
       .component('FormField', FormField)
+      .component('DataTable', DataTable)
       .component('ModalHeader', ModalHeader)
+      .component('Divider', Divider)
       .component('Loader', Loader)
       .component('Badge', Badge)
       .mount(el);

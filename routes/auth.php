@@ -147,9 +147,7 @@ Route::middleware('auth')->group(function () {
 
   Route::get(
     '/',
-    function () {
-      return Inertia('Dashboard');
-    }
+    [\App\Http\Controllers\DashboardController::class, 'index']
   )->name('dashboard');
 
 
@@ -169,6 +167,11 @@ Route::middleware('auth')->group(function () {
       '/e/{entry:uuid}',
       [\App\Http\Controllers\Work\WorkEntryController::class, 'form'],
     )->name('edit');
+
+    Route::get(
+      '/s/{entry:uuid}',
+      [\App\Http\Controllers\Work\WorkEntryController::class, 'show'],
+    )->name('show');
 
     Route::post(
       '/',
@@ -194,10 +197,12 @@ Route::middleware('auth')->group(function () {
 
   Route::prefix('profile')->name('profile.')->group(function () {
 
-    Route::get('/{user:uuid}', [ProfileController::class, 'index'])->name('index');
+    Route::get('/{user:uuid}', [UserController::class, 'profile'])->name('index');
     Route::get('/e/{user:uuid}', [ProfileController::class, 'edit'])->name('edit');
-    Route::patch('/u', [ProfileController::class, 'update'])->name('update');
+    Route::patch('/u', [UserController::class, 'update'])->name('update');
     Route::delete('/d', [ProfileController::class, 'destroy'])->name('destroy');
+
+    Route::put('/u/settings', [UserController::class, 'updateSettings'])->name('settings');
 
   });
 
@@ -209,7 +214,7 @@ Route::middleware('auth')->group(function () {
 
   Route::get(
     '/reports',
-    [\App\Http\Controllers\Report\ReportController::class, 'index']
+    [\App\Http\Controllers\Report\ReportsController::class, 'index']
   )->name('reports.index');
 
   //  });

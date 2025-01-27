@@ -21,8 +21,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup
 } from "@/Components/ui/dropdown-menu";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { Button } from "@/Components/ui/button";
 import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
@@ -229,7 +227,7 @@ watch(() => props.data, () => {
             v-for="column in visibleColumns"
             :key="column.accessorKey"
             @click="handleSort(column)"
-            class="cursor-pointer hover:bg-gray-100 min-w-[8rem]">
+            class="cursor-pointer hover:bg-gray-100 dark:hover:bg-accent min-w-[8rem]">
             {{ column.header }}
             <ArrowUpDownIcon v-if="column.sortable" class="ml-2 h-4 w-4 inline" />
           </TableHead>
@@ -267,7 +265,7 @@ watch(() => props.data, () => {
     <div class="flex items-center justify-between mt-4">
       <div>
         Showing
-        {{ (data.current_page - 1) * data.per_page + 1 }} - <!-- Use per_page instead of last_page -->
+        {{ (data.current_page - 1) * data.per_page + 1 }} -
         {{ Math.min(data.current_page * data.per_page, data.total) }}
         of {{ data.total }} entries
       </div>

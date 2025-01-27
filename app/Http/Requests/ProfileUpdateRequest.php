@@ -15,16 +15,13 @@ class ProfileUpdateRequest extends FormRequest
    */
   public function rules(): array
   {
-    dd(\DateTimeZone::listIdentifiers());
-
     return [
       'name' => ['required', 'string', 'max:255'],
       'department_uuid' => ['nullable', 'exists:departments,uuid'],
+      'gender' => ['nullable', Rule::in(['male', 'female'])],
+      'job_title' => ['required', 'string'],
       'manager_email' => ['nullable', 'email', 'exists:users,email'],
       'settings' => ['nullable', 'array'],
-      'settings.notifications' => ['nullable', 'array'],
-      'settings.notifications.*' => ['required', 'bool'],
-      'settings.play_sound' => ['nullable', 'bool'],
       'settings.timezone' => [
         'nullable', Rule::in(\DateTimeZone::listIdentifiers())
       ],

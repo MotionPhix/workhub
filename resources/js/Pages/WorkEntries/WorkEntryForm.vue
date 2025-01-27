@@ -38,12 +38,15 @@ import Text from '@tiptap/extension-text'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
+import Placeholder from '@tiptap/extension-placeholder';
+import {subDays, format, formatDate} from "date-fns";
 
 const props = defineProps<{
   workLog: {
     id?: number
     uuid?: string
     work_date?: Date | string
+    work_title?: string
     description?: string
     hours_worked?: number
     status?: 'draft' | 'completed' | 'in_progress'
@@ -56,6 +59,7 @@ const props = defineProps<{
 
 const form = useForm({
   work_date: props.workLog.work_date || new Date().toISOString().split('T')[0],
+  work_title: props.workLog.work_title || '',
   description: props.workLog.description || '',
   hours_worked: props.workLog.hours_worked || 0,
   tags: props.tags || [],
@@ -83,6 +87,10 @@ const editor = useEditor({
         class: 'text-gray-700 dark:text-gray-300',
       },
     }),
+    Placeholder.configure({
+      placeholder: 'Type your content here...', // Placeholder text
+      emptyEditorClass: 'is-empty', // Optional: Add a class when the editor is empty
+    }),
     Link,
     HorizontalRule,
     Bold,
@@ -97,9 +105,9 @@ const editor = useEditor({
   },
 });
 
+const now = new Date();
 const tagInputValue = ref('');
 const workLogRef = ref()
-const tagsSearchTerm = ref('')
 
 const filteredTags = computed(() => {
   return props.tags.filter(tag => !form.tags.includes(tag)); // Filter out already selected tags
@@ -128,16 +136,41 @@ const onClose = () => {
   workLogRef.value.onClose()
 }
 
-const submitForm = () => {
-  form.post(route('work-entries.store'), {
-    onError: (err) => {
-      console.log(err)
-    },
-    onSuccess: () => {
-      form.reset()
-      workLogRef.value.onClose()
-    },
-  });
+const onSubmitForm = () => {
+  if (props.workLog.uuid) {
+    form
+      .transform(data => {
+        return {
+          ...data,
+          work_date: format(data.work_date, 'yyyy-MM-dd'),
+        }
+      })
+      .put(route('work-entries.update', props.workLog.uuid), {
+        onError: (err) => {
+          console.log(err)
+        },
+        onSuccess: () => {
+          workLogRef.value.onClose()
+        },
+      })
+  } else {
+    form
+      .transform(data => {
+        return {
+          ...data,
+          work_date: format(data.work_date, 'yyyy-MM-dd'),
+        }
+      })
+      .post(route('work-entries.store'), {
+        onError: (err) => {
+          console.log(err)
+        },
+        onSuccess: () => {
+          form.reset()
+          workLogRef.value.onClose()
+        },
+      });
+  }
 };
 
 // Clean up editor instance when the component unmounts
@@ -153,17 +186,43 @@ onBeforeUnmount(() => {
     :manual-close="true"
     :has-close-button="false">
 
-    <ModalHeader heading="Log your work"/>
+    <ModalHeader :heading="workLog.uuid ? `Edit ${workLog.work_title} work log` : 'Log your work'">
+      <!-- Actions -->
+      <template #action>
+        <Button
+          @click="onClose"
+          variant="outline"
+          type="button">
+          Cancel
+        </Button>
 
-    <form @submit.prevent="submitForm" class="space-y-6">
-      <!-- Work Date -->
+        <Button
+          @click="onSubmitForm"
+          type="button">
+          Save
+        </Button>
+      </template>
+    </ModalHeader>
+
+    <form class="space-y-6">
       <div>
         <FormField
           type="date"
           :is-inline="true"
           label="Work Date"
           v-model="form.work_date"
+          :min-date="format(subDays(now, 2), 'yyyy-MM-dd')"
           :error="form.errors.work_date"
+          :max-date="now"
+        />
+      </div>
+
+      <div>
+        <FormField
+          label="Work Title"
+          v-model="form.work_title"
+          :error="form.errors.work_title"
+          placeholder="Write what you are working on in fewer words"
         />
       </div>
 
@@ -231,7 +290,7 @@ onBeforeUnmount(() => {
             class="prose prose-lg border dark:prose-invert max-w-none p-3 rounded-lg dark:bg-gray-800 dark:text-white my-1"
           />
         </div>
-        
+
         <InputError :message="form.errors.description"/>
       </div>
 
@@ -314,23 +373,6 @@ onBeforeUnmount(() => {
           />
         </div>
       </section>
-
-      <!-- Actions -->
-      <div class="flex justify-end space-x-4">
-        <Button
-          size="lg"
-          @click="onClose"
-          variant="outline"
-          type="button">
-          Cancel
-        </Button>
-
-        <Button
-          size="lg"
-          type="submit">
-          Save
-        </Button>
-      </div>
     </form>
   </GlobalModal>
 </template>
@@ -387,5 +429,19 @@ onBeforeUnmount(() => {
       margin-bottom: 0.25em;
     }
   }
+
+  .is-empty::before {
+    content: attr(data-placeholder);
+    color: #6b7280; /* Gray-500 */
+    font-style: italic;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  /* Dark mode support */
+  .dark .is-empty::before {
+    color: #9ca3af; /* Gray-400 for dark mode */
+  }
+
 }
 </style>

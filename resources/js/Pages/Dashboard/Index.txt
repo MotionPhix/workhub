@@ -1,0 +1,170 @@
+<script setup lang="ts">
+import {computed, ref, onMounted} from 'vue';
+import {usePage} from '@inertiajs/vue3';
+import StatCard from '@/Components/StatCard.vue';
+import AppLayout from "@/Layouts/AppLayout.vue";
+import WorkLogsTable from "@/Pages/Dashboard/Partials/WorkLogsTable.vue";
+import TeamOverviewCard from "@/Pages/Dashboard/Partials/TeamOverviewCard.vue";
+import { formatInTimeZone } from 'date-fns-tz';
+
+const props = defineProps({
+  user: Object,
+  team_size: Number,
+  team_hours_worked: Number,
+  top_performers: Array,
+  recent_team_entries: Array,
+  recent_entries: Array,
+  total_work_hours: Number,
+  average_daily_hours: Number,
+  productivity_trend: String,
+  recommended_work_hours: Number,
+  most_productive_days: Array,
+})
+
+// Inertia props
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+const role = computed(() => user.value.role); // Either 'employee' or 'manager'
+
+// Date and time handling
+const currentDate = ref(new Date());
+
+// Productivity insights for employees
+const productivityInsights = computed(() => {
+  return {
+    totalWorkHours: props.total_work_hours,
+    averageDailyHours: props.average_daily_hours,
+    productivityTrend: props.productivity_trend,
+    recommendedWorkHours: props.recommended_work_hours,
+  }
+})
+
+// Chart options for "Most Productive Days"
+const productivityChartOptions = computed(() => {
+  return {
+    chart: {
+      type: 'bar',
+      height: 350,
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        endingShape: 'rounded',
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    xaxis: {
+      categories: props.most_productive_days?.map((day) => day.date), // Use date from the backend
+    },
+    yaxis: {
+      title: {
+        text: 'Hours Worked',
+      },
+    },
+    fill: {
+      opacity: 1,
+    },
+  }
+})
+
+// Series for "Most Productive Days" chart
+const mostProductiveDaysSeries = computed(() => {
+  return [
+    {
+      name: 'Hours Worked',
+      data: props.most_productive_days?.map((day) => day.hours_worked), // Use hours worked from the backend
+    },
+  ]
+})
+
+onMounted(() => {
+  setInterval(() => {
+    currentDate.value = new Date()
+  }, 1000);
+});
+</script>
+
+<template>
+  <AppLayout>
+    <div class="my-12">
+      <!-- Header -->
+      <header class="py-6 px-8 bg-secondary text-secondary-foreground shadow-sm rounded-lg">
+        <h1 class="text-3xl font-medium">
+          Welcome back, {{ user.name }}!
+        </h1>
+
+        <p class="text-sm text-muted-foreground">
+          Today is {{ formatInTimeZone(currentDate, page.props.timezone as string, "do MMM, y | 'The time is ' HH:mm:ss") }}
+        </p>
+      </header>
+
+      <!-- Main Dashboard -->
+      <main class="p-6">
+        <!-- Stats Section -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard title="Total Work Entries" :value="30" icon="ClipboardList"/>
+          <StatCard title="Total Hours Worked" :value="120" icon="Clock"/>
+          <StatCard title="Productivity Trend" :value="productivityInsights.productivityTrend" trend="improving"
+                    icon="TrendingUp"/>
+          <StatCard title="Avg. Daily Hours" :value="productivityInsights.averageDailyHours" icon="Activity"/>
+        </div>
+
+        <!-- Dashboard Stats for Manager/Employee -->
+        <div v-if="page.props.auth.user.roles[0].name !== 'manager'">
+          <!-- Manager Overview Cards -->
+          <TeamOverviewCard
+            :team-size="props.team_size"
+            :team-hours-worked="props.team_hours_worked"
+            :top-performers="props.top_performers"
+          />
+
+          <!-- Most Productive Days Chart -->
+          <div class="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg shadow">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Most Productive Days</h3>
+            <apexchart type="bar" :options="productivityChartOptions" :series="mostProductiveDaysSeries"></apexchart>
+          </div>
+
+          <!-- Work Entries Table for Managers -->
+          <WorkLogsTable :entries="props.recent_team_entries" />
+        </div>
+
+        <!-- Dashboard for Employee -->
+        <div v-else>
+          <!-- Productivity Insights for Employee -->
+          <div class="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg shadow">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Your Productivity Insights</h3>
+            <ul class="space-y-4 mt-4">
+              <li>
+                <strong>Total Work Hours:</strong> {{ props.total_work_hours }} hours
+              </li>
+              <li>
+                <strong>Average Daily Hours:</strong> {{ props.average_daily_hours }} hours
+              </li>
+              <li>
+                <strong>Productivity Trend:</strong> {{ props.productivity_trend }}
+              </li>
+              <li>
+                <strong>Recommended Work Hours:</strong> {{ props.recommended_work_hours }} hours
+              </li>
+            </ul>
+          </div>
+
+          <!-- Recent Work Entries Table -->
+          <WorkLogsTable :entries="props.recent_entries" />
+        </div>
+
+        <!-- Manager-Specific Section -->
+        <div v-if="role === 'manager'" class="mt-8">
+          <h2 class="text-xl font-bold">Team Performance</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+            <StatCard title="Team Hours Worked" :value="350" icon="Users"/>
+            <StatCard title="Active Projects" :value="12" icon="Briefcase"/>
+            <StatCard title="Avg. Team Productivity" :value="85" icon="BarChart"/>
+          </div>
+        </div>
+      </main>
+    </div>
+  </AppLayout>
+</template>

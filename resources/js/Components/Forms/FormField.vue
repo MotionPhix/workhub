@@ -10,7 +10,8 @@ import {
   SelectTrigger,
   SelectLabel,
   SelectValue,
-  SelectGroup, SelectSeparator
+  SelectGroup,
+  SelectSeparator,
 } from "@/Components/ui/select";
 import {RadioGroup, RadioGroupItem} from "@/Components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover'
@@ -26,10 +27,12 @@ import {usePage} from "@inertiajs/vue3";
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import {Calendar as CalendarIcon, LockOpenIcon} from 'lucide-vue-next'
+import {SelectItemIndicator} from "radix-vue";
 
 type Option = {
   value: string | number;
   label: string;
+  description?: string
 };
 
 type OptionGroup = {
@@ -57,6 +60,8 @@ const props = withDefaults(defineProps<{
   autocomplete?: string
   min?: number
   max?: number
+  minDate?: string | Date | number
+  maxDate?: string | Date | number
   step?: number
   isInline?: boolean
 }>(), {
@@ -74,7 +79,7 @@ const model = defineModel()
 const page = usePage()
 const id = uuidv4()
 const suffixIcon = ref(props.suffix)
-const tempType = ref(props.type)
+const tempType = ref<Component | string>(props.type)
 
 const currency = page.props?.currency ?? 'MWK'
 
@@ -167,6 +172,12 @@ function onToggle() {
                   :key="item.value"
                   :value="item.value">
                   {{ item.label }}
+
+                  <SelectItemIndicator
+                    class="text-sm text-muted-foreground text-opacity-65"
+                    v-if="item.description">
+                    | {{ item.description }}
+                  </SelectItemIndicator>
                 </SelectItem>
               </template>
             </SelectContent>
@@ -253,7 +264,11 @@ function onToggle() {
         <template v-else-if="type === 'date'">
           <template v-if="isInline">
             <!-- Inline Calendar -->
-            <Calendar />
+            <Calendar
+              v-model="model"
+              :min-date="minDate ?? null"
+              :max-date="maxDate ?? null"
+            />
           </template>
 
           <template v-else>
@@ -263,7 +278,7 @@ function onToggle() {
                 <Button
                   :variant="'outline'"
                   :class="cn(
-                    'w-[280px] justify-start text-left font-normal',
+                    'justify-start text-left font-normal',
                     !model && 'text-muted-foreground',
                   )">
                   <CalendarIcon class="mr-2 h-4 w-4" />
@@ -281,7 +296,7 @@ function onToggle() {
         <template v-else>
           <Input
             :id="id"
-            :type="type"
+            :type="tempType"
             v-model="model"
             :placeholder="placeholder"
             :required="required"
@@ -300,8 +315,8 @@ function onToggle() {
       <slot name="suffix">
         <span v-if="suffix" class="absolute inset-y-0 right-3 flex items-center text-gray-500">
           <component
-            :is="suffix"
-            v-if="typeof suffix === 'function'"
+            :is="suffixIcon"
+            v-if="typeof suffixIcon === 'function'"
             @click="onToggle()"
           />
 
