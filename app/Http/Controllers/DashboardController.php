@@ -4,12 +4,56 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\WorkEntry;
+use App\Services\DashboardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+
+  public function __construct(protected DashboardService $dashboardService)
+  {
+  }
+
   public function index()
+  {
+    $user = Auth::user();
+    $stats = $this->getStatsByRole($user);
+
+    return Inertia('Dashboard/Index', [
+      'dashboard' => $stats
+    ]);
+  }
+
+  private function getStatsByRole(User $user): array
+  {
+    $baseStats = $this->dashboardService->getBaseStats($user->id);
+
+    if ($user->hasRole('admin')) {
+      return array_merge(
+        $baseStats,
+        $this->dashboardService->getAdminStats()
+      );
+    }
+
+    if ($user->hasRole(['managing director', 'general manager'])) {
+      return array_merge(
+        $baseStats,
+        $this->dashboardService->getManagerStats($user->email)
+      );
+    }
+
+    return array_merge(
+      $baseStats,
+      $this->dashboardService->getEmployeeStats($user->id)
+    );
+  }
+
+
+
+
+
+  /*public function index()
   {
     $user = Auth::user();
 
@@ -111,5 +155,5 @@ class DashboardController extends Controller
     $denominator = $n * $sumXSquared - $sumX * $sumX;
 
     return $denominator == 0 ? 0 : ($n * $sumXY - $sumX * $sumY) / $denominator;
-  }
+  }*/
 }

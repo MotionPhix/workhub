@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import {useMediaQuery} from "@vueuse/core"; // For responsiveness
-import {cn} from "@/lib/utils"; // Utility for class management
+import {useDeviceDetection} from "@/composables/useDeviceDetection"; // For responsiveness
+import {cn} from "@/lib/utils";
+import EmptyState from "@/Pages/WorkEntries/EmptyState.vue"; // Utility for class management
 
 // Props
 defineProps<{
@@ -14,13 +15,13 @@ defineProps<{
 }>();
 
 // Check for smaller screens
-const isSmallScreen = useMediaQuery("(max-width: 768px)");
+const { isMobile } = useDeviceDetection()
 </script>
 
 <template>
-  <div>
+  <div v-if="workLogs.length">
     <!-- Table for larger screens -->
-    <div v-if="!isSmallScreen" class="overflow-x-auto rounded-lg shadow">
+    <div v-if="!isMobile" class="overflow-x-auto rounded-lg shadow">
       <table class="min-w-full text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <thead class="bg-gray-100 dark:bg-gray-700">
           <tr>
@@ -82,5 +83,9 @@ const isSmallScreen = useMediaQuery("(max-width: 768px)");
         </div>
       </div>
     </div>
+  </div>
+
+  <div v-else>
+    <EmptyState />
   </div>
 </template>

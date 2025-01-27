@@ -4,6 +4,7 @@ namespace App\Models;
 
 
 use App\Traits\BootableUuid;
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -130,7 +131,8 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
   // Scopes
   public function scopeActive($query)
   {
-    return $query->where('is_active', true);
+    return $query->where('is_active', true)
+      ->orWhere('last_login_at', '>=', Carbon::now()->subDays(30));
   }
 
   public function scopeVerified($query)

@@ -356,6 +356,7 @@ onBeforeUnmount(() => {
             label="Hours Worked"
             v-model="form.hours_worked"
             :error="form.errors.hours_worked"
+            :step="0.01"
           />
         </div>
 
