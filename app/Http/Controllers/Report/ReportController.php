@@ -32,9 +32,9 @@ class ReportController extends Controller
     $stats = [
       'total_hours' => $reports->sum('hours_worked'),
       'average_hours_per_day' => $reports->avg('hours_worked'),
-      'departments' => DB::table('users')
-        ->select('department', DB::raw('count(*) as count'))
-        ->groupBy('department')
+      'departments' => DB::table('departments')
+        ->select('name', DB::raw('count(*) as count'))
+        ->groupBy('name')
         ->get()
     ];
 

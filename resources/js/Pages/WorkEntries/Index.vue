@@ -18,6 +18,7 @@ const props = defineProps<{
       id: number
       uuid: string
       work_date: Date | string
+      work_title: string
       description: string
       hours_worked: number
       tags?: Array<{}>,
@@ -46,6 +47,10 @@ const columns = [
     accessorKey: 'work_date',
     header: 'Date',
     cell: ({ row }) => format(row.work_date, 'PP')
+  },
+  {
+    accessorKey: 'work_title',
+    header: 'Worked on'
   },
   {
     accessorKey: 'hours_worked',
@@ -89,7 +94,7 @@ const onDeleteWorkLog = (entry) => {
     <div class="my-12">
       <!-- Header Section -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold">Work Entries</h1>
+        <h1 class="text-2xl font-bold">Work Logs</h1>
         <Button @click="onAddNewWorkLog">
           <PlusCircleIcon />
           New Work Log

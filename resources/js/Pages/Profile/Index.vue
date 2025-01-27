@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { format } from "date-fns";
+import {ref, onMounted} from "vue";
+import {format} from "date-fns";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import ProductivityRadarChart from "@/Components/Visualizations/ProductivityRadarChart.vue";
 import ProfileTable from "@/Pages/Profile/Partials/ProfileTable.vue";
-import StatCard from "@/Pages/Profile/Partials/StatCard.vue";
-import { visitModal } from "@inertiaui/modal-vue";
-import { getInitials } from "@/lib/stringUtils";
-import {
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-} from "@/Components/ui/avatar";
+import StatCard from "@/Components/StatCard.vue";
+import {visitModal} from "@inertiaui/modal-vue";
+import {getInitials} from "@/lib/stringUtils";
+import Divider from "@/Components/Divider.vue";
+import UpdatePasswordForm from "@/Pages/Profile/Partials/UpdatePasswordForm.vue";
+import UserAvatar from "@/Layouts/UserAvatar.vue";
+import ProfileSettings from "@/Pages/Profile/Partials/ProfileSettings.vue";
+import {PencilIcon} from "lucide-vue-next";
 
 const props = defineProps<{
   user: {
@@ -21,6 +21,10 @@ const props = defineProps<{
     avatar?: string
     email: string
     department?: string
+    department_name?: string
+    department_description?: string
+    gender?: string
+    job_title?: string
     joined_at?: string
     roles?: Array<{
       id: number
@@ -32,11 +36,12 @@ const props = defineProps<{
         email: boolean
       },
       play_sound?: boolean
+      timezone?: string
     }
   },
 }>();
 
-const recentWorkEntries = ref([]);
+const recentWorkLogs = ref({});
 const productivityInsights = ref({});
 
 const stats = ref({
@@ -48,11 +53,11 @@ const workEntryColumns = [
   {
     accessorKey: "work_date",
     header: "Date",
-    cell: ({ row }) => format(new Date(row.original.work_date), "PPP"),
+    cell: ({row}) => format(new Date(row.work_date), "PPP"),
   },
   {
-    accessorKey: "project",
-    header: "Project",
+    accessorKey: "work_title",
+    header: "Work Title",
   },
   {
     accessorKey: "hours_worked",
@@ -70,7 +75,7 @@ const openEditProfile = () => {
   });
 };
 
-const formatDate = (date: string) => format(new Date(date), "PPP");
+const formatDate = (date: string) => format(new Date(date), "do MMMM, y");
 
 onMounted(async () => {
   try {
@@ -78,14 +83,12 @@ onMounted(async () => {
     const response = await fetch(route('api.user.insights', props.user.uuid));
     productivityInsights.value = await response.json();
 
-    console.log(response)
-
     const entriesResponse = await fetch(route('api.user.work-logs', props.user.uuid));
-    recentWorkEntries.value = await entriesResponse.json();
+    recentWorkLogs.value = await entriesResponse.json();
 
     // Calculate stats
-    stats.value.total_entries = recentWorkEntries.value.length;
-    stats.value.total_hours = recentWorkEntries.value.reduce(
+    stats.value.total_entries = recentWorkLogs.value.total || 0;
+    stats.value.total_hours = recentWorkLogs.value.data.reduce(
       (total, entry) => total + entry.hours_worked,
       0
     );
@@ -101,28 +104,71 @@ onMounted(async () => {
       <!-- Profile Overview Section -->
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card class="lg:col-span-1 overflow-hidden">
-          <CardHeader class="px-0 pt-0">
-            <div class="flex flex-col items-center justify-center p-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-              <Avatar class="w-24 h-24 mb-4">
-                <AvatarImage :src="user.avatar ?? ''" :alt="user.name" />
-                <AvatarFallback class="text-2xl font-semibold">
-                  {{ getInitials(user.name) }}
-                </AvatarFallback>
-              </Avatar>
-              <CardTitle class="text-2xl font-bold">{{ user.name }}</CardTitle>
-              <CardDescription class="text-sm">{{ user.email }}</CardDescription>
+          <CardHeader class="px-0 py-0">
+            <div class="flex flex-col items-center justify-center p-6">
+              <UserAvatar
+                class="w-24 h-24 mb-4 text-2xl font-semibold"
+                :src="user.avatar ?? ''" :alt="user.name"
+                :fallback="getInitials(user.name)"
+              />
+
+              <CardTitle class="text-2xl font-bold">
+                {{ user.name }}
+                <Button
+                  size="icon"
+                  variant="outline"
+                  class="rounded-full"
+                  @click="openEditProfile">
+                  <PencilIcon/>
+                </Button>
+              </CardTitle>
+
+              <CardDescription class="text-sm">
+                {{ user.email }}
+              </CardDescription>
             </div>
           </CardHeader>
 
-          <CardContent class="p-6 space-y-6">
-            <div class="border-b pb-4">
+          <Divider/>
+
+          <CardContent class="p-6">
+            <div>
               <Label class="text-gray-500">Department</Label>
-              <p class="text-lg font-medium text-muted-foreground">
-                {{ user.department ?? "Not specified" }}
+              <p class="text-lg font-medium text-muted-foreground flex flex-row md:flex-col items-center md:items-start gap-2 sm:gap-0">
+                <span>{{ user.department_name ?? "Not specified" }}</span>
+
+                <span
+                  class="text-sm text-gray-400 flex items-center gap-2"
+                  v-if="user.department_name && user.department_description">
+                  <span class="md:hidden">|</span>
+                  <span>
+                    {{ user.department_description }}
+                  </span>
+                </span>
               </p>
             </div>
 
-            <div class="border-b pb-4 items-center gap-6">
+            <Divider/>
+
+            <div>
+              <Label class="text-gray-500">Job Title</Label>
+              <p class="text-lg font-medium text-muted-foreground">
+                {{ user.job_title ?? 'Not Specified' }}
+              </p>
+            </div>
+
+            <Divider/>
+
+            <div>
+              <Label class="text-gray-500">Joined</Label>
+              <p class="text-lg font-medium text-muted-foreground">
+                {{ (user.joined_at && formatDate(user.joined_at)) ?? 'Not Available yet' }}
+              </p>
+            </div>
+
+            <Divider/>
+
+            <div class="pb-4 items-center gap-6">
               <Label class="text-gray-500">Roles</Label>
 
               <p
@@ -132,23 +178,7 @@ onMounted(async () => {
                 {{ role.name }}
               </p>
             </div>
-
-            <div>
-              <Label class="text-gray-500">Joined</Label>
-              <p class="text-lg font-medium text-muted-foreground">
-                {{ (user.joined_at && formatDate(user.joined_at)) ?? 'Not Available yet' }}
-              </p>
-            </div>
           </CardContent>
-
-          <CardFooter>
-            <Button
-              size="lg"
-              class="w-full"
-              @click="openEditProfile">
-              Edit Profile
-            </Button>
-          </CardFooter>
         </Card>
 
         <!-- Productivity Insights -->
@@ -168,16 +198,23 @@ onMounted(async () => {
               :insights="productivityInsights"
             />
 
-            <div class="grid grid-cols-2 gap-4 mt-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
 
               <StatCard
-                title="Total Work Entries"
+                title="Total Work Logs"
                 :value="stats.total_entries"
               />
 
               <StatCard
                 title="Total Hours Worked"
                 :value="stats.total_hours"
+              />
+
+              <!-- Productivity Trend Stat Card -->
+              <StatCard
+                title="Productivity Trend"
+                :value="productivityInsights?.productivity_trend ?? 'Unknown'"
+                :trend="productivityInsights?.productivity_trend"
               />
 
             </div>
@@ -202,79 +239,34 @@ onMounted(async () => {
         <CardContent>
 
           <ProfileTable
+            v-if="recentWorkLogs.data?.length"
             :columns="workEntryColumns"
-            :data="recentWorkEntries"
+            :data="recentWorkLogs"
           />
+
+          <p v-else>No recent work logs available.</p>
 
         </CardContent>
 
       </Card>
 
-      <Card v-if="user.settings">
-        <CardHeader>
-          <CardTitle>Settings</CardTitle>
+      <ProfileSettings
+        :settings="user.settings"
+      />
+
+      <Card>
+        <CardHeader class="pb-0">
+          <CardTitle>Update Password</CardTitle>
           <CardDescription>
-            Manage your settings and preferences.
+            Ensure your account is using a long, random password to stay
+            secure.
           </CardDescription>
         </CardHeader>
 
+        <Divider/>
+
         <CardContent>
-          <div class="grid grid-rows-3 gap-y-5">
-            <div class="flex items-center justify-between space-x-2">
-              <Label for="strictly_necessary" class="flex flex-col">
-                Email Notifications
-                <span
-                  class="mt-1 max-w-[18rem] text-xs text-muted-foreground">
-                  Primary communication will be done through email.
-                </span>
-              </Label>
-
-              <Switch
-                id="strictly_necessary"
-                v-model:checked="user.settings.notifications.email"
-              />
-            </div>
-
-            <div class="flex items-center justify-between space-x-2">
-              <Label for="functional_cookies" class="flex flex-col">
-                SMS Notifications
-                <span
-                  class="mt-1 max-w-[18rem] text-xs text-muted-foreground">
-                  Enable this option to receive notifications via sms on your phone.
-                  This feature requires that you provide your phone number.
-                </span>
-              </Label>
-
-              <Switch
-                id="functional_cookies"
-                v-model:checked="user.settings.notifications.sms"
-              />
-            </div>
-
-            <div class="flex items-center justify-between space-x-2">
-              <Label for="performance_cookies" class="flex flex-col">
-                Play Sound
-                <span
-                  class="mt-1 max-w-[18rem] text-xs text-muted-foreground">
-                  For In-App notifications, if this option is enabled, the system will play
-                  a sound when you have a new notification.
-                </span>
-              </Label>
-
-              <Switch
-                id="performance_cookies"
-                v-model:checked="user.settings.play_sound"
-              />
-            </div>
-          </div>
-
-          <!-- Timezone -->
-          <div>
-            <Label>Timezone</Label>
-            <p class="text-sm text-gray-600">
-              {{ user.settings?.timezone || "Not specified" }}
-            </p>
-          </div>
+          <UpdatePasswordForm/>
         </CardContent>
       </Card>
     </div>

@@ -17,6 +17,7 @@ import {Label} from '@/Components/ui/label'
 import {Badge} from "@/Components/ui/badge";
 import {Switch} from "@/Components/ui/switch";
 import {Checkbox} from "@/Components/ui/checkbox";
+import Divider from "@/Components/Divider.vue";
 import FormField from '@/Components/Forms/FormField.vue';
 import DataTable from '@/Components/DataTable.vue';
 import GlobalModal from '@/Components/GlobalModal.vue';
@@ -80,6 +81,7 @@ createInertiaApp({
       .component('FormField', FormField)
       .component('DataTable', DataTable)
       .component('ModalHeader', ModalHeader)
+      .component('Divider', Divider)
       .component('Loader', Loader)
       .component('Badge', Badge)
       .mount(el);

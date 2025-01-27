@@ -12,21 +12,25 @@ const mobileNavItems = [
   {
     label: 'Home',
     route: 'dashboard',
+    current: 'dashboard.*',
     icon: HomeIcon
   },
   {
-    label: 'Work Entries',
+    label: 'Work Logs',
     route: 'work-entries.index',
+    current: 'work-entries.*',
     icon: ClipboardListIcon
   },
   {
     label: 'Reports',
     route: 'reports.index',
+    current: 'reports.*',
     icon: ChartBarIcon
   },
   {
     label: 'Profile',
     route: 'profile.index',
+    current: 'profile.*',
     icon: UserIcon
   }
 ]
@@ -38,8 +42,8 @@ const mobileNavItems = [
       <NavigationItem
         v-for="item in mobileNavItems"
         :key="item.route"
-        :href="route(item.route)"
-        :active="route().current(item.route)">
+        :href="item.route === 'profile.index' ? route(item.route, $page.props.auth.user.uuid) : route(item.route)"
+        :active="route().current(item.current)">
         <component :is="item.icon" class="w-5 h-5" />
         <span class="text-xs">{{ item.label }}</span>
       </NavigationItem>

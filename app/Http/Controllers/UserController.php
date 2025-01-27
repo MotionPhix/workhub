@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Department;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +24,7 @@ class UserController extends Controller
     // Only admin can list users
     $this->authorize('viewAny', User::class);
 
-    $users = User::query()
+    $users = User::query()->with('department')
       ->when($request->input('search'), function ($query, $search) {
         $query->where('name', 'like', "%{$search}%")
           ->orWhere('email', 'like', "%{$search}%");
@@ -63,7 +65,7 @@ class UserController extends Controller
           ->numbers()
           ->symbols()
       ],
-      'department' => ['nullable', 'string', 'max:100'],
+      'department_uuid' => ['nullable', 'string', 'exists:departments,uuid'],
       'manager_email' => ['nullable', 'email', 'exists:users,email'],
       'settings.notifications.email' => ['boolean'],
       'settings.notifications.sms' => ['boolean'],
@@ -74,7 +76,7 @@ class UserController extends Controller
       'name' => $validated['name'],
       'email' => $validated['email'],
       'password' => Hash::make($validated['password']),
-      'department' => $validated['department'] ?? null,
+      'department_uuid' => $validated['department_uuid'] ?? null,
       'manager_email' => $validated['manager_email'] ?? null,
       'settings' => [
         'notifications' => [
@@ -102,14 +104,64 @@ class UserController extends Controller
     ]);
   }
 
-  public function update(ProfileUpdateRequest $request, User $user)
+  public function profile(User $user)
   {
-    $this->authorize('update', $user);
+    $user->load('roles', 'permissions', 'department');
 
-    $user->update($request->validated());
+    return Inertia::render('Profile/Index', [
+      'user' => [
+        'id' => $user->id,
+        'uuid' => $user->uuid,
+        'name' => $user->name,
+        'gender' => $user->gender,
+        'email' => $user->email,
+        'job_title' => $user->job_title,
+        'joined_at' => Carbon::create($user->joined_at)->format('D, d M Y') ?? 'Unavailable',
+        'department_name' => $user->department?->name,
+        'department_description' => $user->department?->description,
+        'department_uuid' => $user->department?->uuid,
+        'settings' => $user->settings ?? [
+            'notifications' => [
+              'email' => false,
+              'sms' => false,
+            ],
+            'timezone' => '',
+            'play_sound' => false,
+          ],
+        'roles' => $user->roles,
+      ],
+      'activityLog' => $this->getUserActivityLog($user),
+      'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+    ]);
+  }
 
-    return redirect(route('users.index'))
+  public function update(ProfileUpdateRequest $request)
+  {
+    // $this->authorize('update', $user);
+
+    $validated = $request->validated();
+
+    auth()->user()->update($validated);
+
+    return redirect()->back()
       ->with('flush', 'User updated successfully.');
+  }
+
+  public function updateSettings(Request $request)
+  {
+    $user = Auth::user();
+
+    $validated = $request->validate([
+      'settings' => ['array'],
+      'settings.notifications' => ['array'],
+      'settings.notifications.*' => ['bool'],
+      'settings.play_sound' => ['bool'],
+      'settings.timezone' => ['string'],
+    ]);
+
+    $user->update($validated);
+
+    return back()->with('flush', 'Profile updated successfully.');
   }
 
   public function destroy(User $user)
@@ -132,38 +184,6 @@ class UserController extends Controller
 
     return redirect()->route('users.index')
       ->with('success', 'User account has been deactivated.');
-  }
-
-  public function profile()
-  {
-    $user = Auth::user()->load('roles', 'permissions');
-
-    return Inertia::render('Profile/Show', [
-      'user' => $user,
-      'activityLog' => $this->getUserActivityLog($user)
-    ]);
-  }
-
-  public function updateProfile(Request $request)
-  {
-    $user = Auth::user();
-
-    $validated = $request->validate([
-      'name' => ['sometimes', 'string', 'max:255'],
-      'email' => ['sometimes', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-      'avatar' => ['sometimes', 'image', 'max:2048'],
-      'department' => ['nullable', 'string', 'max:100'],
-    ]);
-
-    // Handle avatar upload
-    if ($request->hasFile('avatar')) {
-      $avatarPath = $request->file('avatar')->store('avatars', 'public');
-      $validated['avatar'] = $avatarPath;
-    }
-
-    $user->update($validated);
-
-    return back()->with('success', 'Profile updated successfully.');
   }
 
   public function changePassword(Request $request)

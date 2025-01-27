@@ -17,6 +17,6 @@ class Index extends Controller
     $insights = (new ProductivityInsightService())
       ->generateInsights($request->user()->id);
 
-    return response()->json(["message" => "Holla tee ve"], $insights);
+    return response()->json($insights);
   }
 }

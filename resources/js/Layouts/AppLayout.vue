@@ -5,6 +5,18 @@ import DesktopNavigation from '@/Components/Navigation/DesktopNavigation.vue'
 import ResponsiveFooter from '@/Components/Navigation/ResponsiveFooter.vue'
 import { useDeviceDetection } from '@/composables/useDeviceDetection'
 import {Toaster} from "vue-sonner";
+import {router} from "@inertiajs/vue3";
+import {PowerIcon, UserIcon} from "lucide-vue-next";
+import UserAvatar from "@/Layouts/UserAvatar.vue";
+import {getInitials} from "@/lib/stringUtils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/Components/ui/dropdown-menu";
 
 const darkMode = ref(false)
 const { isMobile, isTablet, isDesktop } = useDeviceDetection()
@@ -23,6 +35,42 @@ onMounted(() => {
     <nav class="sticky top-0 z-50">
       <MobileNavigation v-if="isMobile" />
       <DesktopNavigation v-if="isTablet || isDesktop" />
+
+      <DropdownMenu :modal="false">
+        <DropdownMenuTrigger v-if="isMobile" class="fixed top-5 right-5">
+          <UserAvatar
+            :fallback="getInitials($page.props.auth.user.name)"
+          />
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>
+            <div class="grid">
+              <strong>{{ $page.props.auth.user.name }}</strong>
+              <span>{{ $page.props.auth.user.email }}</span>
+            </div>
+          </DropdownMenuLabel>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            @click="router.visit(route('profile.index', $page.props.auth.user.uuid), { replace: true })">
+            <UserIcon />
+            Profile
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            @click="router.visit(route('logout'), {
+              method: 'post',
+              replace: true
+            })">
+            <PowerIcon />
+            Logout
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </nav>
 
     <main class="px-4 py-6 mx-auto sm:px-6 lg:px-8 max-w-4xl">

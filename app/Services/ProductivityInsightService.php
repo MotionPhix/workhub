@@ -55,15 +55,28 @@ class ProductivityInsightService
   {
     if ($data->isEmpty()) return 0;
 
-    $n = $data->count();
-    $sumX = $data->keys()->sum();
-    $sumY = $data->sum();
-    $sumXY = $data->keys()->zip($data)->map(fn($pair) => $pair[0] * $pair[1])->sum();
-    $sumXSquared = $data->keys()->map(fn($x) => $x * $x)->sum();
+    // Convert the dates to numeric indices (e.g., sequential days)
+    $keys = range(1, $data->count()); // Generate numeric indices (1, 2, 3, ...)
+    $values = $data->values(); // Extract the work hours
 
-    $slope = ($n * $sumXY - $sumX * $sumY) /
-      ($n * $sumXSquared - $sumX * $sumX);
+    $n = count($keys);
+    $sumX = array_sum($keys); // Sum of indices
+    $sumY = $values->sum(); // Sum of work hours
+    $sumXY = collect($keys)->zip($values)->map(fn($pair) => $pair[0] * $pair[1])->sum(); // Sum of x * y
+    $sumXSquared = collect($keys)->map(fn($x) => $x * $x)->sum(); // Sum of x^2
+
+    // Calculate denominator
+    $denominator = $n * $sumXSquared - $sumX * $sumX;
+
+    // Avoid division by zero
+    if ($denominator == 0) {
+      return 0; // Return 0 as the slope if there's no variance
+    }
+
+    // Calculate the slope
+    $slope = ($n * $sumXY - $sumX * $sumY) / $denominator;
 
     return $slope;
   }
+
 }

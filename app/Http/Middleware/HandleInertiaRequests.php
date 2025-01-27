@@ -32,9 +32,12 @@ class HandleInertiaRequests extends Middleware
     return [
       ...parent::share($request),
       'auth' => [
-        'user' => fn() => $request->user()?->only('id', 'uuid', 'name', 'email'),
+        'user' => fn() => $request->user()?->load('roles')->only('id', 'uuid', 'name', 'email', 'gender', 'avatar', 'roles')
       ],
-      'status' => session('flush')
+
+      'status' => session('flush'),
+
+      'timezone' => ($request->user()?->only('settings'))['settings']['timezone'] ?? 'Africa/Harare'
     ];
   }
 }

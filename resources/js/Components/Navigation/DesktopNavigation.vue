@@ -18,7 +18,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'WorkHub'
 
 const desktopNavItems = [
   {label: 'Dashboard', route: 'dashboard'},
-  {label: 'Work Entries', route: 'work-entries.index'},
+  {label: 'Work Logs', route: 'work-entries.index'},
   {label: 'Reports', route: 'reports.index'},
 ]
 </script>
@@ -26,13 +26,13 @@ const desktopNavItems = [
 <template>
   <nav class="bg-white shadow-md dark:bg-gray-800">
     <div class="container px-4 mx-auto sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between py-4">
+      <div class="flex items-center justify-between py-2">
 
         <div class="text-lg font-bold">
           {{ appName }}
         </div>
 
-        <div class="hidden space-x-4 md:flex">
+        <div class="hidden gap-4 sm:flex sm:items-center">
           <NavigationItem
             v-for="item in desktopNavItems"
             :key="item.route"

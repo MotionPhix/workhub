@@ -5,6 +5,7 @@ namespace App\Models;
 
 use App\Traits\BootableUuid;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -25,8 +26,9 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
     'email',
     'password',
     'gender',
-    'department',
+    'department_uuid',
     'manager_email',
+    'job_title',
     'is_active',
     'joined_at',
     'last_login_at',
@@ -59,21 +61,21 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
     ];
   }
 
-  // Register media conversions for different use cases
-  public function registerMediaConversions(Media $media = null): void
+  public function registerMediaCollections(): void
   {
-    // Avatar conversions
-    $this->addMediaConversion('avatar')
-      ->width(250)
-      ->height(250)
-      ->crop('crop-center', 250, 250)
-      ->sharpen(10);
+    $this->addMediaCollection('avatar')
+      ->singleFile() // Ensures only one avatar is kept
+      ->useFallbackUrl(url($this->defaultAvatar($this->gender)))
+      ->registerMediaConversions(function (Media $media) {
+        $this->addMediaConversion('thumb')
+          ->width(150)
+          ->height(150)
+          ->sharpen(10);
 
-    // Thumbnail conversion
-    $this->addMediaConversion('thumb')
-      ->width(100)
-      ->height(100)
-      ->crop('crop-center', 100, 100);
+        $this->addMediaConversion('medium')
+          ->width(300)
+          ->height(300);
+      });
   }
 
   // Custom method to set avatar
@@ -88,10 +90,20 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
   }
 
   // Get avatar URL
-  public function getAvatarUrl($conversion = 'avatar')
+  public function avatar($conversion = 'avatar'): Attribute
   {
-    $media = $this->getFirstMedia('avatar');
-    return $media ? $media->getUrl($conversion) : null;
+    return Attribute::get(
+      fn() => $this->getFirstMediaUrl('avatar', 'thumb')
+        ?: $this->getFirstMediaUrl('avatar')
+          ?: url($this->defaultAvatar($this->gendeer))
+    );
+  }
+
+  private function defaultAvatar(string $gender = null): string
+  {
+    return $gender
+      ? $gender === 'male' ? '/default-m-avatar.png' : '/default-f-avatar.png'
+      : '/default-m-avatar.png';
   }
 
   // Relationships
@@ -107,7 +119,7 @@ class User extends Authenticatable implements MustVerifyEmail, HasMedia
 
   public function department()
   {
-    return $this->belongsTo(Department::class);
+    return $this->belongsTo(Department::class, 'department_uuid', 'uuid');
   }
 
   public function activityLogs()

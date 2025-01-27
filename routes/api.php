@@ -1,14 +1,18 @@
 <?php
 
-use App\Http\Controllers\ReportsController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Report\ReportsController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
   Route::get(
+    '/export',
+    [ReportsController::class, 'export']
+  )->name('api.reports.export');
+
+  Route::get(
     '/reports/dashboard',
     [ReportsController::class, 'dashboard']
-  );
+  )->name('api.reports.dashboard');
 
   Route::get(
     '/insights/{user:uuid}',

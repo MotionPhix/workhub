@@ -29,8 +29,7 @@ class ProfileController extends Controller
   public function edit(Request $request, User $user)
   {
     return Inertia::modal('Profile/Partials/ProfileForm', [
-      'user' => $user,
-      'departments' => fn() => Department::all('id', 'uuid', 'name', 'description'),
+      'departments' => fn() => Department::all('uuid', 'name', 'description'),
     ])->baseRoute('profile.index', ['user' => $user->uuid]);
   }
 
@@ -47,7 +46,7 @@ class ProfileController extends Controller
 
     $request->user()->save();
 
-    return Redirect::route('profile.index');
+    return Redirect::route('profile.index', $request->user()->uuid);
   }
 
   /**
