@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\ActivityLog;
+use App\Models\Project;
 use App\Models\User;
+use App\Models\UserOnboarding;
 use App\Models\WorkEntry;
 use App\Models\Department;
 use Carbon\Carbon;
@@ -68,12 +71,26 @@ class DashboardService
   /**
    * Get system metrics for the dashboard.
    */
-  public function getSystemMetrics()
+  public function getSystemMetrics(): array
   {
     $totalUsers = User::count();
-    $activeUsers = User::where('active', true)->count();
+
+    // Exclude admin users when counting active users
+    $activeUsers = User::whereDoesntHave('roles', function ($query) {
+      $query->where('name', 'admin');
+    })
+      ->where('is_active', true)
+      ->count();
+
     $totalDepartments = Department::count();
-    $verifiedUsersPercentage = User::where('verified', true)->count() / max($totalUsers, 1) * 100;
+
+    $verifiedUsers = User::whereDoesntHave('roles', function ($query) {
+      $query->where('name', 'admin');
+    })
+      ->where('email_verified_at', '!=', null)
+      ->count();
+
+    $verifiedUsersPercentage = round(max($verifiedUsers, 1) / max($totalUsers, 1) * 100, 2);
 
     return [
       'total_users' => $totalUsers,
@@ -84,43 +101,80 @@ class DashboardService
   }
 
   /**
-   * Get organization metrics for the dashboard.
+   * Calculate company-wide efficiency based on department performance
    */
-  public function getOrganizationMetrics()
+  private function calculateCompanyWideEfficiency(): float
   {
-    $companyWideEfficiency = $this->calculateCompanyWideEfficiency();
-    $totalProjects = Project::count();
-    $activeProjects = Project::where('status', 'active')->count();
-    $departmentPerformance = $this->getDepartmentPerformance();
+    $departments = Department::with(['projects', 'workEntries'])->get();
 
-    return [
-      'company_wide_efficiency' => $companyWideEfficiency,
-      'total_projects' => $totalProjects,
-      'active_projects' => $activeProjects,
-      'department_performance' => $departmentPerformance,
-    ];
+    if ($departments->isEmpty()) {
+      return 0;
+    }
+
+    $totalEfficiency = $departments->sum(function ($department) {
+      $totalTasks = $department->projects()
+        ->withCount(['workEntries as completed_tasks' => function ($query) {
+          $query->where('status', 'completed');
+        }])
+        ->count();
+
+      $totalHours = $department->workEntries()->sum('hours_worked');
+
+      if ($totalTasks === 0 || $totalHours === 0) {
+        return 0;
+      }
+
+      // Calculate efficiency: (completed tasks / total tasks) * (expected hours / actual hours)
+      $completionRate = $department->projects()
+          ->whereHas('workEntries', function ($query) {
+            $query->where('status', 'completed');
+          })
+          ->count() / max(1, $totalTasks);
+
+      $expectedHours = $department->projects()->sum('estimated_hours');
+      $hoursEfficiency = $expectedHours > 0 ?
+        $expectedHours / max(1, $totalHours) : 1;
+
+      return ($completionRate * $hoursEfficiency * 100);
+    });
+
+    return round($totalEfficiency / $departments->count(), 2);
   }
 
   /**
-   * Calculate company-wide efficiency.
-   */
-  private function calculateCompanyWideEfficiency()
-  {
-    // Example calculation logic
-    $totalEfficiency = Department::sum('efficiency');
-    $departmentCount = Department::count();
-
-    return $departmentCount > 0 ? $totalEfficiency / $departmentCount : 0;
-  }
-
-  /**
-   * Get department performance data.
+   * Get department performance metrics
    */
   private function getDepartmentPerformance()
   {
-    return Department::select('name', 'efficiency', 'total_tasks', 'completed_tasks', 'total_hours', 'member_count')
+    return Department::with(['projects', 'workEntries', 'users'])
       ->get()
-      ->toArray();
+      ->map(function ($department) {
+        $totalTasks = $department->projects()->count();
+        $completedTasks = $department->projects()
+          ->whereHas('workEntries', function ($query) {
+            $query->where('status', 'completed');
+          })
+          ->count();
+
+        $totalHours = $department->workEntries()->sum('hours_worked');
+        $expectedHours = $department->projects()->sum('estimated_hours');
+
+        $efficiency = $this->calculateDepartmentEfficiency(
+          $completedTasks,
+          $totalTasks,
+          $totalHours,
+          $expectedHours
+        );
+
+        return [
+          'name' => $department->name,
+          'efficiency' => $efficiency,
+          'total_tasks' => $totalTasks,
+          'completed_tasks' => $completedTasks,
+          'total_hours' => round($totalHours, 2),
+          'member_count' => $department->users()->count()
+        ];
+      });
   }
 
   /**
@@ -226,8 +280,16 @@ class DashboardService
    */
   private function getResourceUtilization()
   {
-    $allocatedHours = Department::sum('allocated_hours');
-    $actualHours = Department::sum('actual_hours');
+    $departments = Department::with('projects')->get();
+
+    $allocatedHours = $departments->sum(function ($department) {
+      return $department->projects->sum('estimated_hours');
+    });
+
+    $actualHours = $departments->sum(function ($department) {
+      return $department->projects->sum('actual_hours');
+    });
+
     $utilizationRate = $actualHours / max($allocatedHours, 1) * 100;
 
     return [
@@ -242,12 +304,11 @@ class DashboardService
    */
   private function getCrossDepartmentCollaboration()
   {
-    // Example logic for collaboration metrics
     $collaboratingDepartments = Department::whereHas('projects', function ($query) {
-      $query->where('shared', true);
+      $query->where('is_shared', true);
     })->pluck('name')->toArray();
 
-    $sharedProjects = Project::where('shared', true)->count();
+    $sharedProjects = Project::where('is_shared', true)->count();
     $collaborationScore = $sharedProjects / max(count($collaboratingDepartments), 1) * 100;
 
     return [
@@ -260,18 +321,81 @@ class DashboardService
   /**
    * Get performance trends metrics.
    */
-  private function getPerformanceTrends()
+  private function getPerformanceTrends(): array
   {
-    // Example logic for performance trends
-    $weeklyEfficiency = Department::pluck('weekly_efficiency')->toArray();
-    $monthlyCompletionRates = Department::pluck('monthly_completion_rate')->toArray();
-    $yearOverYearGrowth = Department::sum('year_over_year_growth');
+    $now = Carbon::now();
+    $departments = Department::with(['projects', 'workEntries'])->get();
+
+    // Calculate weekly efficiency for the past 4 weeks
+    $weeklyEfficiency = collect(range(0, 3))->map(function ($weeksAgo) use ($departments, $now) {
+      $startDate = $now->copy()->subWeeks($weeksAgo)->startOfWeek();
+      $endDate = $startDate->copy()->endOfWeek();
+
+      return $departments->avg(function ($department) use ($startDate, $endDate) {
+        $entries = $department->workEntries()
+          ->whereBetween('work_date', [$startDate, $endDate])
+          ->get();
+
+        $completed = $entries->where('status', 'completed')->count();
+        $total = $entries->count();
+
+        return $total > 0 ? ($completed / $total) * 100 : 0;
+      });
+    })->toArray();
+
+    // Calculate monthly completion rates for the past 3 months
+    $monthlyCompletionRates = collect(range(0, 2))->map(function ($monthsAgo) use ($departments, $now) {
+      $startDate = $now->copy()->subMonths($monthsAgo)->startOfMonth();
+      $endDate = $startDate->copy()->endOfMonth();
+
+      return $departments->avg(function ($department) use ($startDate, $endDate) {
+        $entries = $department->workEntries()
+          ->whereBetween('work_date', [$startDate, $endDate])
+          ->get();
+
+        $completed = $entries->where('status', 'completed')->count();
+        $total = $entries->count();
+
+        return $total > 0 ? ($completed / $total) * 100 : 0;
+      });
+    })->toArray();
+
+    // Calculate year-over-year growth
+    $yearOverYearGrowth = $this->calculateYearOverYearGrowth($departments);
 
     return [
-      'weekly_efficiency' => $weeklyEfficiency,
-      'monthly_completion_rates' => $monthlyCompletionRates,
-      'year_over_year_growth' => $yearOverYearGrowth,
+      'weekly_efficiency' => array_map(function ($value) {
+        return round($value, 2);
+      }, $weeklyEfficiency),
+      'monthly_completion_rates' => array_map(function ($value) {
+        return round($value, 2);
+      }, $monthlyCompletionRates),
+      'year_over_year_growth' => round($yearOverYearGrowth, 2)
     ];
+  }
+
+  private function calculateYearOverYearGrowth(Collection $departments): float
+  {
+    $lastYear = Carbon::now()->subYear();
+    $thisYear = Carbon::now();
+
+    $lastYearMetrics = $departments->map(function ($department) use ($lastYear) {
+      return $department->workEntries()
+        ->whereYear('work_date', $lastYear->year)
+        ->count();
+    })->sum();
+
+    $thisYearMetrics = $departments->map(function ($department) use ($thisYear) {
+      return $department->workEntries()
+        ->whereYear('work_date', $thisYear->year)
+        ->count();
+    })->sum();
+
+    if ($lastYearMetrics === 0) {
+      return 0;
+    }
+
+    return (($thisYearMetrics - $lastYearMetrics) / $lastYearMetrics) * 100;
   }
 
   private function calculateCompletionRate(int $userId): float
@@ -334,43 +458,16 @@ class DashboardService
     return round(($completedTasks / $totalTasks) * 100, 2);
   }
 
-  private function getDepartmentPerformance(): array
-  {
-    return Department::with(['users', 'users.workEntries' => function ($query) {
-      $query->whereMonth('work_date', Carbon::now()->month);
-    }])
-      ->get()
-      ->map(function ($department) {
-        $entries = $department->users->flatMap(function ($user) {
-          return $user->workEntries;
-        });
-
-        $totalTasks = $entries->count();
-        $completedTasks = $entries->where('status', 'completed')->count();
-        $totalHours = $entries->sum('hours_worked');
-
-        return [
-          'name' => $department->name,
-          'efficiency' => $totalTasks > 0
-            ? round(($completedTasks / $totalTasks) * 100, 2)
-            : 0,
-          'total_tasks' => $totalTasks,
-          'completed_tasks' => $completedTasks,
-          'total_hours' => round($totalHours, 2),
-          'member_count' => $department->users->count()
-        ];
-      })
-      ->sortByDesc('efficiency')
-      ->values()
-      ->toArray();
-  }
-
   public function getAdminStats(): array
   {
+    $query = User::whereDoesntHave('roles', function ($query) {
+      $query->where('name', 'admin');
+    });
+
     return [
       'system_metrics' => [
-        'total_users' => User::count(),
-        'active_users' => User::active()->count(),
+        'total_users' => $query->count(),
+        'active_users' => $query->where('is_active', true)->count(),
         'total_departments' => Department::count(),
         'verified_users_percentage' => $this->calculateVerifiedUsersPercentage(),
       ],
@@ -685,10 +782,10 @@ class DashboardService
     $x = range(1, $n);
     $sumX = array_sum($x);
     $sumY = array_sum($scores);
-    $sumXY = array_sum(array_map(function($i, $score) {
+    $sumXY = array_sum(array_map(function ($i, $score) {
       return $i * $score;
     }, $x, $scores));
-    $sumXX = array_sum(array_map(function($i) {
+    $sumXX = array_sum(array_map(function ($i) {
       return $i * $i;
     }, $x));
 
@@ -1361,35 +1458,25 @@ class DashboardService
     })->toArray();
   }
 
-  private function calculateDepartmentEfficiency(array $teamIds): array
-  {
-    $currentMonth = Carbon::now()->startOfMonth();
+  /**
+   * Calculate efficiency for a single department
+   */
+  private function calculateDepartmentEfficiency(
+    int $completedTasks,
+    int $totalTasks,
+    float $actualHours,
+    float $expectedHours
+  ): float {
+    if ($totalTasks === 0 || $actualHours === 0) {
+      return 0;
+    }
 
-    // Get all department IDs for the team
-    $departmentIds = User::whereIn('id', $teamIds)
-      ->pluck('department_uuid')
-      ->unique();
+    $completionRate = $completedTasks / max(1, $totalTasks);
+    $hoursEfficiency = $expectedHours > 0
+      ? $expectedHours / max(1, $actualHours)
+      : 1;
 
-    return Department::whereIn('uuid', $departmentIds)
-      ->get()
-      ->mapWithKeys(function ($department) {
-        $departmentUsers = User::where('department_uuid', $department->uuid)->pluck('id');
-        $entries = WorkEntry::whereIn('user_id', $departmentUsers)
-          ->whereMonth('work_date', Carbon::now()->month)
-          ->get();
-
-        $completedTasks = $entries->where('status', 'completed')->count();
-        $totalTasks = $entries->count();
-        $efficiency = $totalTasks > 0 ? ($completedTasks / $totalTasks) * 100 : 0;
-
-        return [$department->uuid => [
-          'name' => $department->name,
-          'efficiency' => round($efficiency, 2),
-          'total_tasks' => $totalTasks,
-          'completed_tasks' => $completedTasks
-        ]];
-      })
-      ->toArray();
+    return round(($completionRate * $hoursEfficiency * 100), 2);
   }
 
   private function getOngoingProjects(array $teamIds): array
@@ -1426,6 +1513,178 @@ class DashboardService
         ];
       })
       ->toArray();
+  }
+
+  /**
+   * Get project metrics with trends for the admin dashboard
+   */
+  public function getProjectMetrics(): array
+  {
+    $now = Carbon::now();
+    $previousPeriod = $now->copy()->subMonth();
+
+    // Current period metrics
+    $currentProjects = Project::whereMonth('created_at', $now->month)->get();
+    $currentActive = $currentProjects->where('status', 'active')->count();
+    $currentCompleted = $currentProjects->where('status', 'completed')->count();
+    $currentHours = WorkEntry::whereMonth('work_date', $now->month)->sum('hours_worked');
+
+    // Previous period metrics for trend calculation
+    $previousProjects = Project::whereMonth('created_at', $previousPeriod->month)->count();
+    $previousActive = Project::whereMonth('created_at', $previousPeriod->month)
+      ->where('status', 'active')
+      ->count();
+    $previousHours = WorkEntry::whereMonth('work_date', $previousPeriod->month)
+      ->sum('hours_worked');
+
+    // Calculate trends
+    $projectTrend = $this->calculateTrend($currentProjects->count(), $previousProjects);
+    $activeTrend = $this->calculateTrend($currentActive, $previousActive);
+    $hoursTrend = $this->calculateTrend($currentHours, $previousHours);
+
+    return [
+      'total_projects' => $currentProjects->count(),
+      'active_projects' => $currentActive,
+      'completed_projects' => $currentCompleted,
+      'total_hours' => round($currentHours, 2),
+      'completion_rate' => $currentProjects->count() > 0
+        ? round(($currentCompleted / $currentProjects->count()) * 100, 2)
+        : 0,
+      'active_rate' => $currentProjects->count() > 0
+        ? round(($currentActive / $currentProjects->count()) * 100, 2)
+        : 0,
+      'trends' => [
+        'projects' => [
+          'direction' => $projectTrend['direction'],
+          'value' => $projectTrend['percentage'],
+          'label' => 'vs last month',
+          'comparison_period' => 'last month'
+        ],
+        'active' => [
+          'direction' => $activeTrend['direction'],
+          'value' => $activeTrend['percentage'],
+          'label' => 'vs last month',
+          'comparison_period' => 'last month'
+        ],
+        'completion' => [
+          'direction' => $this->calculateCompletionTrend($currentProjects, $previousPeriod),
+          'value' => $this->calculateCompletionTrendValue($currentProjects, $previousPeriod),
+          'label' => 'completion rate',
+          'comparison_period' => 'last month'
+        ],
+        'hours' => [
+          'direction' => $hoursTrend['direction'],
+          'value' => $hoursTrend['percentage'],
+          'label' => 'vs last month',
+          'comparison_period' => 'last month'
+        ]
+      ]
+    ];
+  }
+
+  /**
+   * Calculate trend direction and percentage change
+   */
+  private function calculateTrend(float $current, float $previous): array
+  {
+    if ($previous == 0) {
+      return [
+        'direction' => 'stable',
+        'percentage' => 0
+      ];
+    }
+
+    $percentageChange = (($current - $previous) / $previous) * 100;
+
+    return [
+      'direction' => $percentageChange > 0 ? 'up' : ($percentageChange < 0 ? 'down' : 'stable'),
+      'percentage' => abs(round($percentageChange, 2))
+    ];
+  }
+
+  /**
+   * Calculate completion trend direction
+   */
+  private function calculateCompletionTrend(Collection $currentProjects, Carbon $previousPeriod): string
+  {
+    $currentRate = $currentProjects->count() > 0
+      ? ($currentProjects->where('status', 'completed')->count() / $currentProjects->count())
+      : 0;
+
+    $previousProjects = Project::whereMonth('created_at', $previousPeriod->month)->get();
+    $previousRate = $previousProjects->count() > 0
+      ? ($previousProjects->where('status', 'completed')->count() / $previousProjects->count())
+      : 0;
+
+    if ($currentRate > $previousRate) {
+      return 'up';
+    } elseif ($currentRate < $previousRate) {
+      return 'down';
+    }
+    return 'stable';
+  }
+
+  /**
+   * Calculate completion trend value
+   */
+  private function calculateCompletionTrendValue(Collection $currentProjects, Carbon $previousPeriod): float
+  {
+    $currentRate = $currentProjects->count() > 0
+      ? ($currentProjects->where('status', 'completed')->count() / $currentProjects->count()) * 100
+      : 0;
+
+    $previousProjects = Project::whereMonth('created_at', $previousPeriod->month)->get();
+    $previousRate = $previousProjects->count() > 0
+      ? ($previousProjects->where('status', 'completed')->count() / $previousProjects->count()) * 100
+      : 0;
+
+    return abs(round($currentRate - $previousRate, 2));
+  }
+
+  /**
+   * Get organization metrics including project metrics
+   */
+  public function getOrganizationMetrics(string $timeFilter = 'month'): array
+  {
+    $dateRange = $this->getDateRangeFromFilter($timeFilter);
+
+    return [
+      'company_wide_efficiency' => $this->calculateCompanyWideEfficiency($dateRange),
+      'project_metrics' => $this->getProjectMetrics($dateRange),
+      'department_performance' => $this->getDepartmentPerformance($dateRange)
+    ];
+  }
+
+  private function getDateRangeFromFilter(string $timeFilter): array
+  {
+    $now = now();
+
+    return match($timeFilter) {
+      'week' => [
+        'start' => $now->startOfWeek(),
+        'end' => $now->endOfWeek(),
+        'previous_start' => $now->copy()->subWeek()->startOfWeek(),
+        'previous_end' => $now->copy()->subWeek()->endOfWeek(),
+      ],
+      'quarter' => [
+        'start' => $now->startOfQuarter(),
+        'end' => $now->endOfQuarter(),
+        'previous_start' => $now->copy()->subQuarter()->startOfQuarter(),
+        'previous_end' => $now->copy()->subQuarter()->endOfQuarter(),
+      ],
+      'year' => [
+        'start' => $now->startOfYear(),
+        'end' => $now->endOfYear(),
+        'previous_start' => $now->copy()->subYear()->startOfYear(),
+        'previous_end' => $now->copy()->subYear()->endOfYear(),
+      ],
+      default => [
+        'start' => $now->startOfMonth(),
+        'end' => $now->endOfMonth(),
+        'previous_start' => $now->copy()->subMonth()->startOfMonth(),
+        'previous_end' => $now->copy()->subMonth()->endOfMonth(),
+      ],
+    };
   }
 
   private function analyzeWorkloadDistribution(array $teamIds): array

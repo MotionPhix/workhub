@@ -1,23 +1,39 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import VueApexCharts from 'vue3-apexcharts'
+import {ref, onMounted, nextTick, onBeforeUnmount} from 'vue'
 import { gsap } from 'gsap'
 import {
-  Users,
+  Layout,
   Building2,
-  CheckCircle,
-  Activity,
-  TrendingUp,
-  BarChart3,
-  AlertCircle
+  UserCircle
 } from 'lucide-vue-next'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
+import { Card, CardHeader, CardTitle } from "@/Components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select"
+import MetricsGrid from "./Components/MetricsGrid.vue"
+import DepartmentChart from "./Components/DepartmentChart.vue"
+import UserActivityChart from "./Components/UserActivityChart.vue"
+import DepartmentTable from "./Components/DepartmentTable.vue"
+import ProjectsOverview from "./Components/ProjectsOverview.vue"
+import UserManagement from "./Components/UserManagement.vue"
+import DepartmentAnalytics from "./Components/DepartmentAnalytics.vue"
+import {useTabPersistence} from "@/composables/useTabPersistence";
 
+// Keep the interfaces as they are important for type checking
 interface AdminDashboardProps {
   base_metrics: {
     total_work_logs: number
     total_hours: number
     average_hours_per_day: number
     completed_tasks: number
+  }
+  recent_activity: {
+    recent_entries: Array<any>
+    activity_summary: {
+      total_entries_this_month: number
+      total_hours_this_month: number
+      completion_rate: number
+      daily_average: number
+    }
   }
   system_metrics: {
     total_users: number
@@ -81,454 +97,153 @@ interface EnhancedAdminDashboardProps extends AdminDashboardProps {
 const props = defineProps<EnhancedAdminDashboardProps>()
 
 // Reactive state
-const activeView = ref('overview')
+const { activeTab, handleTabChange, clearTabPersistence } = useTabPersistence()
 const selectedTimeframe = ref('month')
+const isLoading = ref(true)
 
-// Computed properties for charts
-const departmentEfficiencyChartOptions = computed(() => ({
-  chart: {
-    type: 'bar',
-    height: 350,
-    toolbar: { show: false },
-    animations: {
-      enabled: true,
-      easing: 'easeinout',
-      speed: 800
-    }
-  },
-  plotOptions: {
-    bar: {
-      horizontal: true,
-      borderRadius: 4,
-      dataLabels: {
-        position: 'top'
-      }
-    }
-  },
-  colors: ['#3B82F6'],
-  dataLabels: {
-    enabled: true,
-    formatter: (val: number) => `${val}%`,
-    offsetX: 30
-  },
-  xaxis: {
-    categories: props.organization_metrics.department_performance.map(d => d.name),
-    labels: {
-      style: { colors: '#64748b' }
-    }
-  },
-  yaxis: {
-    max: 100
-  }
-}))
+// Animation
+const animateIn = async () => {
+  await nextTick()
 
-const departmentEfficiencySeries = computed(() => [{
-  name: 'Efficiency',
-  data: props.organization_metrics.department_performance.map(d => d.efficiency)
-}])
-
-const userActivityChartOptions = computed(() => ({
-  chart: {
-    type: 'donut',
-    height: 350
-  },
-  labels: ['Active Users', 'Inactive Users'],
-  colors: ['#3B82F6', '#E5E7EB'],
-  plotOptions: {
-    pie: {
-      donut: {
-        size: '70%'
-      }
-    }
-  },
-  legend: {
-    position: 'bottom'
-  }
-}))
-
-const userActivitySeries = computed(() => [
-  props.system_metrics.active_users,
-  props.system_metrics.total_users - props.system_metrics.active_users
-])
-
-// Methods
-const getEfficiencyColor = (efficiency: number): string => {
-  if (efficiency >= 75) return 'text-green-500'
-  if (efficiency >= 50) return 'text-yellow-500'
-  return 'text-red-500'
-}
-
-const userOnboardingChartOptions = computed(() => ({
-  chart: {
-    type: 'radialBar',
-    height: 350
-  },
-  plotOptions: {
-    radialBar: {
-      hollow: {
-        size: '70%'
-      },
-      dataLabels: {
-        name: {
-          fontSize: '22px'
-        },
-        value: {
-          fontSize: '16px',
-          formatter: (val: number) => `${val}%`
-        }
-      }
-    }
-  },
-  labels: ['Onboarding Complete'],
-  colors: ['#3B82F6']
-}))
-
-const userOnboardingSeries = computed(() => [
-  props.user_metrics.onboarding_status.completion_rate
-])
-
-const departmentCollaborationChartOptions = computed(() => ({
-  chart: {
-    type: 'radar',
-    height: 350,
-    toolbar: { show: false }
-  },
-  xaxis: {
-    categories: props.organization_metrics.department_performance.map(d => d.name)
-  },
-  markers: {
-    size: 4
-  },
-  fill: {
-    opacity: 0.7
-  }
-}))
-
-const departmentCollaborationSeries = computed(() => [{
-  name: 'Collaboration Score',
-  data: props.department_analytics.cross_department_collaboration.collaborating_departments
-    .map(dept => props.department_analytics.cross_department_collaboration.collaboration_score)
-}])
-
-// Add new methods for enhanced functionality
-const getActivityTrend = (trend: string) => {
-  const trends = {
-    increasing: 'text-green-500',
-    decreasing: 'text-red-500',
-    stable: 'text-blue-500'
-  }
-  return trends[trend as keyof typeof trends] || 'text-gray-500'
-}
-
-const getUtilizationStatus = (rate: number) => {
-  if (rate > 90) return 'Overutilized'
-  if (rate > 70) return 'Optimal'
-  return 'Underutilized'
-}
-
-// Lifecycle hooks
-onMounted(() => {
-  gsap.from('.metric-card', {
-    y: 20,
+  // Set initial states
+  gsap.set('.metric-card', {
     opacity: 0,
-    duration: 0.6,
-    stagger: 0.1,
-    ease: 'power2.out'
+    y: 20
   })
+
+  gsap.set('.chart-container', {
+    opacity: 0,
+    scale: 0.95
+  })
+
+  // Create animation timeline
+  const timeline = gsap.timeline({
+    defaults: {
+      ease: 'power2.out',
+      clearProps: 'all' // Clear inline styles after animation
+    }
+  })
+
+  timeline
+    .to('.metric-card', {
+      opacity: 1,
+      y: 0,
+      duration: 0.6,
+      stagger: 0.1
+    })
+    .to('.chart-container', {
+      opacity: 1,
+      scale: 1,
+      duration: 0.5,
+      stagger: 0.1
+    }, '-=0.3')
+}
+
+onBeforeUnmount(() => {
+  clearTabPersistence()
+})
+
+onMounted(() => {
+  setTimeout(() => {
+    isLoading.value = false
+    animateIn()
+  }, 500)
 })
 </script>
 
 <template>
-  <div class="p-6 space-y-6">
-    <!-- Header -->
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-        Organization Dashboard
-      </h1>
-      <div class="flex space-x-2">
-        <button
-          v-for="view in ['overview', 'departments', 'users']"
-          :key="view"
-          @click="activeView = view"
-          :class="[
-            'px-4 py-2 rounded-lg transition-colors',
-            activeView === view
-              ? 'bg-primary text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          ]">
-          {{ view.charAt(0).toUpperCase() + view.slice(1) }}
-        </button>
-      </div>
-    </div>
+  <div class="space-y-6">
+    <Card>
+      <CardHeader>
+        <div class="flex justify-between items-center">
+          <CardTitle>Organization Dashboard</CardTitle>
 
-    <!-- System Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div
-        v-for="(metric, index) in [
-          {
-            icon: Users,
-            title: 'Total Users',
-            value: system_metrics.total_users,
-            subtitle: `${system_metrics.active_users} active`
-          },
-          {
-            icon: Building2,
-            title: 'Departments',
-            value: system_metrics.total_departments,
-            subtitle: 'Total departments'
-          },
-          {
-            icon: CheckCircle,
-            title: 'Verified Users',
-            value: system_metrics.verified_users_percentage,
-            subtitle: 'Verification rate',
-            suffix: '%'
-          },
-          {
-            icon: Activity,
-            title: 'Company Efficiency',
-            value: organization_metrics.company_wide_efficiency,
-            subtitle: 'Overall performance',
-            suffix: '%'
-          }
-        ]"
-        :key="index"
-        class="metric-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
-      >
-        <div class="flex items-center space-x-4">
-          <component
-            :is="metric.icon"
-            class="w-8 h-8 text-primary"
+          <Select v-model="selectedTimeframe">
+            <SelectTrigger class="w-[180px]">
+              <SelectValue :placeholder="selectedTimeframe" />
+            </SelectTrigger>
+
+            <SelectContent>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="quarter">This Quarter</SelectItem>
+              <SelectItem value="year">This Year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardHeader>
+    </Card>
+
+    <Tabs v-model="activeTab" class="space-y-6">
+      <TabsList class="grid grid-cols-3 lg:w-[400px]">
+        <TabsTrigger value="overview" @change="handleTabChange">
+          <Layout class="w-4 h-4 mr-2" />
+          Overview
+        </TabsTrigger>
+
+        <TabsTrigger value="departments" @change="handleTabChange">
+          <Building2 class="w-4 h-4 mr-2" />
+          Departments
+        </TabsTrigger>
+
+        <TabsTrigger value="users" @change="handleTabChange">
+          <UserCircle class="w-4 h-4 mr-2" />
+          Users
+        </TabsTrigger>
+      </TabsList>
+
+      <!-- Overview Tab -->
+      <TabsContent value="overview" class="space-y-6">
+        <MetricsGrid
+          :system_metrics="props.system_metrics"
+          :organization_metrics="props.organization_metrics"
+        />
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <DepartmentChart
+            :department-performance="props.organization_metrics.department_performance"
           />
-          <div>
-            <h3 class="text-sm text-gray-500 dark:text-gray-400">
-              {{ metric.title }}
-            </h3>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">
-              {{ metric.value }}{{ metric.suffix || '' }}
-            </p>
-            <p class="text-sm text-gray-500">{{ metric.subtitle }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Department Efficiency -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 class="text-lg font-semibold mb-6">Department Efficiency</h3>
-        <VueApexCharts
-          type="bar"
-          height="350"
-          :options="departmentEfficiencyChartOptions"
-          :series="departmentEfficiencySeries"
+          <UserActivityChart
+            :system-metrics="props.system_metrics"
+          />
+        </div>
+
+        <DepartmentTable
+          :department-performance="props.organization_metrics.department_performance"
         />
-      </div>
+      </TabsContent>
 
-      <!-- User Activity -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 class="text-lg font-semibold mb-6">User Activity Distribution</h3>
-        <VueApexCharts
-          type="donut"
-          height="350"
-          :options="userActivityChartOptions"
-          :series="userActivitySeries"
+      <!-- Departments Tab -->
+      <TabsContent value="departments" class="space-y-6">
+        <ProjectsOverview />
+        <DepartmentAnalytics
+          :department-analytics="props.department_analytics"
+          :department-performance="props.organization_metrics.department_performance"
         />
-      </div>
-    </div>
+      </TabsContent>
 
-    <!-- Department Details -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-      <h3 class="text-lg font-semibold mb-6">Department Performance</h3>
-      <div class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead>
-          <tr class="border-b dark:border-gray-700">
-            <th class="text-left py-3 px-4">Department</th>
-            <th class="text-left py-3 px-4">Members</th>
-            <th class="text-left py-3 px-4">Tasks</th>
-            <th class="text-left py-3 px-4">Hours</th>
-            <th class="text-left py-3 px-4">Efficiency</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr
-            v-for="dept in organization_metrics.department_performance"
-            :key="dept.name"
-            class="border-b dark:border-gray-700"
-          >
-            <td class="py-3 px-4">{{ dept.name }}</td>
-            <td class="py-3 px-4">{{ dept.member_count }}</td>
-            <td class="py-3 px-4">
-              {{ dept.completed_tasks }}/{{ dept.total_tasks }}
-            </td>
-            <td class="py-3 px-4">{{ dept.total_hours }}h</td>
-            <td class="py-3 px-4">
-                <span :class="getEfficiencyColor(dept.efficiency)">
-                  {{ dept.efficiency }}%
-                </span>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Projects Overview -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-lg font-semibold">Projects Overview</h3>
-        <div class="flex items-center space-x-4">
-          <div class="flex items-center space-x-2">
-            <span class="text-sm text-gray-500">Total Projects:</span>
-            <span class="font-semibold">
-              {{ organization_metrics.total_projects }}
-            </span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-sm text-gray-500">Active Projects:</span>
-            <span class="font-semibold">
-              {{ organization_metrics.active_projects }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-    <div class="flex justify-between items-center mb-6">
-      <h3 class="text-lg font-semibold">User Management</h3>
-      <button class="btn-primary">View All Users</button>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Onboarding Status -->
-      <div class="space-y-4">
-        <h4 class="font-medium">Onboarding Status</h4>
-        <VueApexCharts
-          type="radialBar"
-          height="250"
-          :options="userOnboardingChartOptions"
-          :series="userOnboardingSeries"
+      <!-- Users Tab -->
+      <TabsContent value="users" class="space-y-6">
+        <UserManagement
+          :user-metrics="props.user_metrics"
         />
-        <div class="text-center">
-          <p class="text-sm text-gray-500">
-            {{ props.user_metrics.onboarding_status.pending }} users pending
-          </p>
-        </div>
-      </div>
-
-      <!-- Activity Logs -->
-      <div class="space-y-4">
-        <h4 class="font-medium">Recent Activity</h4>
-        <div class="space-y-2">
-          <div class="flex justify-between items-center">
-            <span>Last 24 Hours</span>
-            <span class="font-medium">
-              {{ props.user_metrics.activity_logs.last_24h }} activities
-            </span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span>Last 7 Days</span>
-            <span class="font-medium">
-              {{ props.user_metrics.activity_logs.last_7d }} activities
-            </span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <TrendingUp
-              class="w-4 h-4"
-              :class="getActivityTrend(props.user_metrics.activity_logs.trend)"
-            />
-            <span :class="getActivityTrend(props.user_metrics.activity_logs.trend)">
-              {{ props.user_metrics.activity_logs.trend }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Department Distribution -->
-      <div class="space-y-4">
-        <h4 class="font-medium">Department Distribution</h4>
-        <div class="space-y-2">
-          <div
-            v-for="dept in props.user_metrics.department_distribution"
-            :key="dept.department_id"
-            class="flex justify-between items-center"
-          >
-            <span>{{ dept.department_id }}</span>
-            <span class="font-medium">{{ dept.percentage }}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- New Department Analytics Section -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-    <div class="flex justify-between items-center mb-6">
-      <h3 class="text-lg font-semibold">Department Analytics</h3>
-      <div class="flex space-x-2">
-        <button
-          v-for="period in ['Week', 'Month', 'Quarter']"
-          :key="period"
-          class="px-3 py-1 rounded-md text-sm"
-          :class="selectedTimeframe === period.toLowerCase()
-            ? 'bg-primary text-white'
-            : 'bg-gray-100 text-gray-600'"
-          @click="selectedTimeframe = period.toLowerCase()"
-        >
-          {{ period }}
-        </button>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Resource Utilization -->
-      <div class="space-y-4">
-        <h4 class="font-medium">Resource Utilization</h4>
-        <div class="space-y-2">
-          <div class="flex justify-between items-center">
-            <span>Allocated Hours</span>
-            <span class="font-medium">
-              {{ props.department_analytics.resource_utilization.allocated_hours }}h
-            </span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span>Actual Hours</span>
-            <span class="font-medium">
-              {{ props.department_analytics.resource_utilization.actual_hours }}h
-            </span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span>Utilization Rate</span>
-            <span
-              class="font-medium"
-              :class="getEfficiencyColor(props.department_analytics.resource_utilization.utilization_rate)"
-            >
-              {{ props.department_analytics.resource_utilization.utilization_rate }}%
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cross-Department Collaboration -->
-      <div class="space-y-4">
-        <h4 class="font-medium">Department Collaboration</h4>
-        <VueApexCharts
-          type="radar"
-          height="300"
-          :options="departmentCollaborationChartOptions"
-          :series="departmentCollaborationSeries"
-        />
-      </div>
-    </div>
+      </TabsContent>
+    </Tabs>
   </div>
 </template>
 
 <style scoped>
 .metric-card {
-  @apply transition-all duration-300 hover:shadow-md;
+  @apply transition-all duration-300;
+  will-change: transform, opacity;
+}
+
+.chart-container {
+  will-change: transform, opacity;
+}
+
+:deep(.dark .apexcharts-theme-light) {
+  @apply bg-background;
 }
 </style>

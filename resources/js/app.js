@@ -33,6 +33,15 @@ import {
   CardFooter
 } from '@/Components/ui/card'
 import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectItem,
+  SelectContent,
+  SelectSeparator,
+} from '@/Components/ui/select'
+import {
   FaGoogle,
   FaFacebookSquare,
   FaRegularBell,
@@ -78,6 +87,13 @@ createInertiaApp({
       .component('Label', Label)
       .component('Switch', Switch)
       .component('Calendar', Calendar)
+      .component('Select', Select)
+      .component('SelectTrigger', SelectTrigger)
+      .component('SelectValue', SelectValue)
+      .component('SelectGroup', SelectGroup)
+      .component('SelectItem', SelectItem)
+      .component('SelectContent', SelectContent)
+      .component('SelectSeparator', SelectSeparator)
       .component('FormField', FormField)
       .component('DataTable', DataTable)
       .component('ModalHeader', ModalHeader)

@@ -39,34 +39,45 @@ import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import {subDays, format, formatDate} from "date-fns";
+import {subDays, format} from "date-fns";
+import { Project } from '@/types'
+import EditorToolbarButton from "@/Pages/WorkEntries/Components/EditorToolbarButton.vue";
 
-const props = defineProps<{
-  workLog: {
-    id?: number
-    uuid?: string
-    work_date?: Date | string
-    work_title?: string
-    description?: string
-    hours_worked?: number
-    status?: 'draft' | 'completed' | 'in_progress'
-  },
+interface WorkLog {
+  id?: number
+  uuid?: string
+  work_date?: Date | string
+  work_title?: string
+  description?: string
+  hours_worked?: number
+  status?: 'draft' | 'completed' | 'in_progress'
+  project_uuid?: string
+}
+
+interface Props {
+  workLog: WorkLog
   tags?: Array<{
     id: number
     name: string
   }>
-}>()
+  projects?: Project[]
+}
 
+// Component props
+const props = defineProps<Props>()
+
+// Form initialization with default values
 const form = useForm({
   work_date: props.workLog.work_date || new Date().toISOString().split('T')[0],
   work_title: props.workLog.work_title || '',
   description: props.workLog.description || '',
   hours_worked: props.workLog.hours_worked || 0,
+  project_uuid: props.workLog.project_uuid || '',
   tags: props.tags || [],
-  status: props.workLog.status || 'draft',
-});
+  status: props.workLog.status || 'draft'
+})
 
-// Initialize Tiptap editor
+// Initialize Tiptap editor with configurations
 const editor = useEditor({
   extensions: [
     Document,
@@ -75,21 +86,21 @@ const editor = useEditor({
     BulletList.configure({
       HTMLAttributes: {
         class: 'list-disc list-inside ml-6 space-y-2 text-gray-800 dark:text-gray-200'
-      },
+      }
     }),
     OrderedList.configure({
       HTMLAttributes: {
-        class: 'list-decimal list-inside ml-6 space-y-2 text-gray-800 dark:text-gray-200',
-      },
+        class: 'list-decimal list-inside ml-6 space-y-2 text-gray-800 dark:text-gray-200'
+      }
     }),
     ListItem.configure({
       HTMLAttributes: {
-        class: 'text-gray-700 dark:text-gray-300',
-      },
+        class: 'text-gray-700 dark:text-gray-300'
+      }
     }),
     Placeholder.configure({
-      placeholder: 'Type your content here...', // Placeholder text
-      emptyEditorClass: 'is-empty', // Optional: Add a class when the editor is empty
+      placeholder: 'Type your content here...',
+      emptyEditorClass: 'is-empty'
     }),
     Link,
     HorizontalRule,
@@ -97,86 +108,136 @@ const editor = useEditor({
     Heading,
     Italic,
     Image,
-    Underline,
+    Underline
   ],
-  content: form.description, // Bind to the form description
-  onUpdate: ({editor}) => {
-    form.description = editor.getHTML(); // Update form when content changes
-  },
-});
+  content: form.description,
+  onUpdate: ({ editor }) => {
+    form.description = editor.getHTML()
+  }
+})
 
-const now = new Date();
-const tagInputValue = ref('');
+// State management
+const now = new Date()
+const tagInputValue = ref('')
 const workLogRef = ref()
 
+// Computed properties
 const filteredTags = computed(() => {
-  return props.tags.filter(tag => !form.tags.includes(tag)); // Filter out already selected tags
-});
+  return props.tags?.filter(tag => !form.tags.includes(tag)) || []
+})
 
-const addTag = (tag) => {
-  const normalizedTag = tag.trim().toLowerCase();
+const selectedProject = computed(() =>
+  props.projects?.find(p => p.uuid === form.project_uuid)
+)
 
-  // Check for case-insensitive uniqueness
-  if (form.tags.some(tag => tag.toLowerCase() === normalizedTag)) {
+const projectOptions = computed(() =>
+  props.projects?.map(project => ({
+    value: project.uuid,
+    label: project.name
+  })) || []
+)
+
+// Methods
+const addTag = (tag: string) => {
+  const normalizedTag = tag.trim().toLowerCase()
+
+  if (form.tags.some(t => t.toLowerCase() === normalizedTag)) {
     toast.error('Duplicate Entry', {
       description: `${tag.toUpperCase()} already exists!`
     })
-
-    return;
+    return
   }
 
   if (!form.tags.includes(tag)) {
-    form.tags.push(tag);
+    form.tags.push(tag)
   }
 
-  tagInputValue.value = ''; // Clear input after adding
-};
+  tagInputValue.value = ''
+}
 
 const onClose = () => {
   workLogRef.value.onClose()
 }
 
 const onSubmitForm = () => {
+  const transformedData = {
+    ...form,
+    work_date: format(new Date(form.work_date), 'yyyy-MM-dd')
+  }
+
+  const handleError = (err: any) => {
+    console.error('Form submission error:', err)
+    toast.error('Error', {
+      description: 'Failed to save work entry. Please try again.'
+    })
+  }
+
+  const handleSuccess = () => {
+    toast.success('Success', {
+      description: props.workLog.uuid
+        ? 'Work entry updated successfully'
+        : 'Work entry created successfully'
+    })
+    if (!props.workLog.uuid) {
+      form.reset()
+    }
+    workLogRef.value.onClose()
+  }
+
   if (props.workLog.uuid) {
     form
-      .transform(data => {
-        return {
-          ...data,
-          work_date: format(data.work_date, 'yyyy-MM-dd'),
-        }
-      })
+      .transform(() => transformedData)
       .put(route('work-entries.update', props.workLog.uuid), {
-        onError: (err) => {
-          console.log(err)
-        },
-        onSuccess: () => {
-          workLogRef.value.onClose()
-        },
+        onError: handleError,
+        onSuccess: handleSuccess
       })
   } else {
     form
-      .transform(data => {
-        return {
-          ...data,
-          work_date: format(data.work_date, 'yyyy-MM-dd'),
-        }
-      })
+      .transform(() => transformedData)
       .post(route('work-entries.store'), {
-        onError: (err) => {
-          console.log(err)
-        },
-        onSuccess: () => {
-          form.reset()
-          workLogRef.value.onClose()
-        },
-      });
+        onError: handleError,
+        onSuccess: handleSuccess
+      })
   }
-};
+}
 
-// Clean up editor instance when the component unmounts
+const editorTools = [
+  {
+    icon: BoldIcon,
+    title: 'Bold',
+    action: 'toggleBold'
+  },
+  {
+    icon: ItalicIcon,
+    title: 'Italic',
+    action: 'toggleItalic'
+  },
+  {
+    icon: UnderlineIcon,
+    title: 'Underline',
+    action: 'toggleUnderline'
+  },
+  {
+    icon: ListIcon,
+    title: 'Bullet List',
+    action: 'toggleBulletList'
+  },
+  {
+    icon: ListOrderedIcon,
+    title: 'Ordered List',
+    action: 'toggleOrderedList'
+  },
+  {
+    icon: MinusIcon,
+    title: 'Horizontal Rule',
+    action: 'horizontalRule'
+  }
+]
+
+// Cleanup
 onBeforeUnmount(() => {
-  editor.value.destroy();
-});
+  editor.value?.destroy()
+})
 </script>
 
 <template>
@@ -184,104 +245,63 @@ onBeforeUnmount(() => {
     ref="workLogRef"
     padding="px-4 pb-4 sm:px-5 sm:pb-5"
     :manual-close="true"
-    :has-close-button="false">
-
+    :has-close-button="false"
+  >
     <ModalHeader :heading="workLog.uuid ? `Edit ${workLog.work_title} work log` : 'Log your work'">
-      <!-- Actions -->
       <template #action>
-        <Button
-          @click="onClose"
-          variant="outline"
-          type="button">
+        <Button @click="onClose" variant="outline" type="button">
           Cancel
         </Button>
-
-        <Button
-          @click="onSubmitForm"
-          type="button">
+        <Button @click="onSubmitForm" type="button">
           Save
         </Button>
       </template>
     </ModalHeader>
 
     <form class="space-y-6">
-      <div>
-        <FormField
-          type="date"
-          :is-inline="true"
-          label="Work Date"
-          v-model="form.work_date"
-          :min-date="format(subDays(now, 2), 'yyyy-MM-dd')"
-          :error="form.errors.work_date"
-          :max-date="now"
-        />
-      </div>
+      <!-- Project Selection -->
+      <FormField
+        label="Project"
+        type="select"
+        v-model="form.project_uuid"
+        :error="form.errors.project_uuid"
+        :options="projectOptions"
+        placeholder="Select a project"
+      />
 
-      <div>
-        <FormField
-          label="Work Title"
-          v-model="form.work_title"
-          :error="form.errors.work_title"
-          placeholder="Write what you are working on in fewer words"
-        />
-      </div>
+      <!-- Work Date -->
+      <FormField
+        type="date"
+        :is-inline="true"
+        label="Work Date"
+        v-model="form.work_date"
+        :min-date="format(subDays(now, 2), 'yyyy-MM-dd')"
+        :error="form.errors.work_date"
+        :max-date="now"
+      />
 
-      <!-- Description -->
+      <!-- Work Title -->
+      <FormField
+        label="Work Title"
+        v-model="form.work_title"
+        :error="form.errors.work_title"
+        :placeholder="
+          selectedProject
+            ? `What are you working on in ${selectedProject.name}?`
+            : 'Write what you are working on in fewer words'
+        "
+      />
+
+      <!-- Rich Text Editor -->
       <div>
         <Label for="description">Description</Label>
-
-        <!-- Rich Text Editor -->
-        <!-- Toolbar -->
         <div class="my-2 flex space-x-2">
-          <Button
-            size="icon"
-            type="button"
-            @click="editor.chain().focus().toggleBold().run()"
-            :variant="editor.isActive('bold') ? 'default' : 'secondary'">
-            <BoldIcon/>
-          </Button>
-
-          <Button
-            size="icon"
-            type="button"
-            :variant="editor.isActive('italic') ? 'default' : 'secondary'"
-            @click="editor.chain().focus().toggleItalic().run()">
-            <ItalicIcon/>
-          </Button>
-
-          <Button
-            size="icon"
-            type="button"
-            :variant="editor.isActive('underline') ? 'default' : 'secondary'"
-            @click="editor.chain().focus().toggleUnderline?.().run()">
-            <UnderlineIcon/>
-          </Button>
-
-          <!-- Unordered List -->
-          <Button
-            size="icon"
-            type="button"
-            :variant="editor.isActive('bulletList') ? 'default' : 'secondary'"
-            @click="editor.chain().focus().toggleBulletList().run()">
-            <ListIcon/>
-          </Button>
-
-          <!-- Ordered List -->
-          <Button
-            size="icon"
-            type="button"
-            :variant="editor.isActive('orderedList') ? 'default' : 'secondary'"
-            @click="editor.chain().focus().toggleOrderedList().run()">
-            <ListOrderedIcon/>
-          </Button>
-
-          <Button
-            size="icon"
-            type="button"
-            :variant="editor.isActive('orderedList') ? 'default' : 'secondary'"
-            @click="editor.chain().focus().setHorizontalRule().run()">
-            <MinusIcon/>
-          </Button>
+          <EditorToolbarButton
+            v-for="(tool, index) in editorTools"
+            :key="index"
+            :editor="editor"
+            :tool="tool"
+          />
         </div>
 
         <div class="prose prose-lg dark:prose-invert max-w-none">
@@ -290,52 +310,47 @@ onBeforeUnmount(() => {
             class="prose prose-lg border dark:prose-invert max-w-none p-3 rounded-lg dark:bg-gray-800 dark:text-white my-1"
           />
         </div>
-
-        <InputError :message="form.errors.description"/>
+        <InputError :message="form.errors.description" />
       </div>
 
       <!-- Tags -->
       <div>
         <Label for="tags">Tags</Label>
         <TagsInput v-model="form.tags" class="w-full gap-0 p-0 !border-none mt-1">
-          <!-- Existing Tags -->
           <div
             class="flex flex-wrap items-center gap-2 px-2"
-            :class="{ 'py-1': form.tags.length }">
+            :class="{ 'py-1': form.tags.length }"
+          >
             <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
-              <TagsInputItemText/>
-              <TagsInputItemDelete @click="form.tags = form.tags.filter(t => t !== tag)"/>
+              <TagsInputItemText />
+              <TagsInputItemDelete @click="form.tags = form.tags.filter(t => t !== tag)" />
             </TagsInputItem>
           </div>
 
-          <!-- Input for Adding Tags -->
-          <ComboboxRoot
-            v-model="tagInputValue"
-            v-model:search-term="tagInputValue"
-            class="w-full">
+          <ComboboxRoot v-model="tagInputValue" v-model:search-term="tagInputValue" class="w-full">
             <ComboboxAnchor as-child>
-              <ComboboxInput
-                placeholder="Add or select tags..."
-                as-child>
+              <ComboboxInput placeholder="Add or select tags..." as-child>
                 <TagsInputInput
                   class="w-full px-3 rounded-md make-large !border-none focus:ring-0"
-                  @keydown.enter.prevent="addTag(tagInputValue)"/>
+                  @keydown.enter.prevent="addTag(tagInputValue)"
+                />
               </ComboboxInput>
             </ComboboxAnchor>
 
-            <!-- Dropdown for Available Tags -->
             <ComboboxPortal>
               <ComboboxContent>
                 <CommandList
                   position="popper"
-                  class="w-[--radix-popper-anchor-width] rounded-md mt-2 bg-popover text-popover-foreground shadow-md">
+                  class="w-[--radix-popper-anchor-width] rounded-md mt-2 bg-popover text-popover-foreground shadow-md"
+                >
                   <CommandEmpty>No tags found.</CommandEmpty>
                   <CommandGroup heading="Available Tags">
                     <CommandItem
                       v-for="tag in filteredTags"
                       :key="tag"
                       :value="tag"
-                      @select.prevent="addTag(tag)">
+                      @select.prevent="addTag(tag)"
+                    >
                       {{ tag }}
                     </CommandItem>
                   </CommandGroup>
@@ -344,48 +359,40 @@ onBeforeUnmount(() => {
             </ComboboxPortal>
           </ComboboxRoot>
         </TagsInput>
-
-        <InputError :message="form.errors.tags"/>
+        <InputError :message="form.errors.tags" />
       </div>
 
+      <!-- Hours and Status -->
       <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- Hours Worked -->
-        <div>
-          <FormField
-            type="number"
-            label="Hours Worked"
-            v-model="form.hours_worked"
-            :error="form.errors.hours_worked"
-            :step="0.01"
-          />
-        </div>
+        <FormField
+          type="number"
+          label="Hours Worked"
+          v-model="form.hours_worked"
+          :error="form.errors.hours_worked"
+          :step="0.01"
+        />
 
-        <!-- Status -->
-        <div>
-          <FormField
-            label="Status"
-            type="select"
-            v-model="form.status"
-            :options="[
-              { value: 'draft', label: 'Draft' },
-              { value: 'completed', label: 'Completed' },
-              { value: 'in_progress', label: 'In Progress' },
-            ]"
-          />
-        </div>
+        <FormField
+          label="Status"
+          type="select"
+          v-model="form.status"
+          :options="[
+            { value: 'draft', label: 'Draft' },
+            { value: 'completed', label: 'Completed' },
+            { value: 'in_progress', label: 'In Progress' }
+          ]"
+        />
       </section>
     </form>
   </GlobalModal>
 </template>
 
 <style lang="scss">
-/* Basic editor styles */
 .tiptap {
   :first-child {
     margin-top: 0;
   }
 
-  /* Heading styles */
   h1,
   h2,
   h3,
@@ -419,7 +426,6 @@ onBeforeUnmount(() => {
     font-size: 1rem;
   }
 
-  /* List styles */
   ul,
   ol {
     padding: 0 1rem;
@@ -433,16 +439,14 @@ onBeforeUnmount(() => {
 
   .is-empty::before {
     content: attr(data-placeholder);
-    color: #6b7280; /* Gray-500 */
+    color: #6b7280;
     font-style: italic;
     pointer-events: none;
     position: absolute;
   }
 
-  /* Dark mode support */
   .dark .is-empty::before {
-    color: #9ca3af; /* Gray-400 for dark mode */
+    color: #9ca3af;
   }
-
 }
 </style>

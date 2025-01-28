@@ -15,24 +15,33 @@ class DashboardController extends Controller
   {
   }
 
-  public function index()
+  public function index(Request $request)
   {
     $user = Auth::user();
-    $stats = $this->getStatsByRole($user);
+    $stats = $this->getStatsByRole($user, $request);
+
 
     return Inertia('Dashboard/Index', [
       'dashboard' => $stats
     ]);
   }
 
-  private function getStatsByRole(User $user): array
+  private function getStatsByRole(User $user, Request $request): array
   {
     $baseStats = $this->dashboardService->getBaseStats($user->id);
+    $timeFilter = $request->get('time_filter', 'month');
 
     if ($user->hasRole('admin')) {
       return array_merge(
         $baseStats,
-        $this->dashboardService->getAdminStats()
+        $this->dashboardService->getAdminStats(),
+        [
+          'time_filter' => $timeFilter,
+          'system_metrics' => $this->dashboardService->getSystemMetrics($timeFilter),
+          'organization_metrics' => $this->dashboardService->getOrganizationMetrics($timeFilter),
+          'department_analytics' => $this->dashboardService->getDepartmentAnalytics(),
+          'user_metrics' => $this->dashboardService->getUserMetrics(),
+        ]
       );
     }
 
@@ -49,8 +58,28 @@ class DashboardController extends Controller
     );
   }
 
+  /**
+   * Update dashboard time filter
+   */
+  public function updateTimeFilter(Request $request)
+  {
+    $validated = $request->validate([
+      'time_filter' => ['required', 'string', 'in:week,month,quarter,year'],
+    ]);
 
+    $user = Auth::user();
 
+    if ($user->hasRole('admin')) {
+      return [
+        'organization_metrics' => $this->dashboardService->getOrganizationMetrics($validated['time_filter']),
+        'system_metrics' => $this->dashboardService->getSystemMetrics($validated['time_filter']),
+      ];
+    }
+
+    return response()->json([
+      'message' => 'Unauthorized',
+    ], 403);
+  }
 
 
   /*public function index()

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use Mews\Purifier\Casts\CleanHtmlInput;
 use Spatie\Tags\HasTags;
@@ -17,6 +18,7 @@ class WorkEntry extends Model
 
   protected $fillable = [
     'user_id',
+    'project_id',
     'work_date',
     'work_title',
     'description',
@@ -26,62 +28,92 @@ class WorkEntry extends Model
 
   protected $casts = [
     'work_date' => 'date:Y-m-d',
-    'description'    => CleanHtmlInput::class,
-    'tags' => 'array'
+    'description' => CleanHtmlInput::class,
+    'hours_worked' => 'float',
   ];
 
-  public function user()
+  // Relationships
+  public function user(): BelongsTo
   {
     return $this->belongsTo(User::class);
   }
 
-  /**
-   * Update the work entry with the given attributes
-   *
-   * @param array $attributes
-   * @return bool
-   */
+  public function project(): BelongsTo
+  {
+    return $this->belongsTo(Project::class);
+  }
+
+  // Scopes
+  public function scopeForUser(Builder $query, int $userId): Builder
+  {
+    return $query->where('user_id', $userId);
+  }
+
+  public function scopeForProject(Builder $query, int $projectId): Builder
+  {
+    return $query->where('project_id', $projectId);
+  }
+
+  public function scopeCompleted(Builder $query): Builder
+  {
+    return $query->where('status', 'completed');
+  }
+
+  public function scopeInProgress(Builder $query): Builder
+  {
+    return $query->where('status', '!=', 'completed');
+  }
+
+  public function scopeInDateRange(Builder $query, $startDate, $endDate): Builder
+  {
+    return $query->whereBetween('work_date', [$startDate, $endDate]);
+  }
+
+  public function scopeThisMonth(Builder $query): Builder
+  {
+    return $query->whereMonth('work_date', Carbon::now()->month);
+  }
+
+  // Methods
   public function updateEntry(array $attributes): bool
   {
     return DB::transaction(function () use ($attributes) {
-      // Validate work date
       if (isset($attributes['work_date'])) {
         $attributes['work_date'] = Carbon::parse($attributes['work_date'])->format('Y-m-d');
       }
 
-      // Validate hours worked
       if (isset($attributes['hours_worked'])) {
         $attributes['hours_worked'] = (float) $attributes['hours_worked'];
       }
 
-      // Handle tags if present
       if (isset($attributes['tags'])) {
         $tags = $attributes['tags'];
         unset($attributes['tags']);
         $this->syncTags($tags);
       }
 
-      // Update the model attributes
       $updated = $this->update(array_filter($attributes));
 
-      // Fire model events if needed
-      if ($updated) {
-        $this->fireModelEvent('updated', false);
+      if ($updated && $this->project_id) {
+        $this->project->updateProgress();
       }
 
       return $updated;
     });
   }
 
-  /**
-   * Scope a query to only include entries for a specific user
-   *
-   * @param Builder $query
-   * @param int $userId
-   * @return Builder
-   */
-  public function scopeForUser(Builder $query, int $userId): Builder
+  protected static function booted()
   {
-    return $query->where('user_id', $userId);
+    static::created(function ($workEntry) {
+      if ($workEntry->project_id) {
+        $workEntry->project->updateProgress();
+      }
+    });
+
+    static::updated(function ($workEntry) {
+      if ($workEntry->project_id) {
+        $workEntry->project->updateProgress();
+      }
+    });
   }
 }

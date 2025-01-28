@@ -150,6 +150,19 @@ Route::middleware('auth')->group(function () {
     [\App\Http\Controllers\DashboardController::class, 'index']
   )->name('dashboard');
 
+  Route::prefix('onboarding')->group(function () {
+
+    Route::post(
+      '/complete-step',
+      \App\Http\Controllers\Onboarding\CompleteStep::class,
+    )->name('onboarding.complete-step');
+
+    Route::get(
+      '/status',
+      \App\Http\Controllers\Onboarding\Status::class,
+    )->name('onboarding.status');
+
+  });
 
   Route::prefix('work-logs')->name('work-entries.')->group(function () {
 
