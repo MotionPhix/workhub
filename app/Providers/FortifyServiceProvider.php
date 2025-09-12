@@ -34,24 +34,25 @@ class FortifyServiceProvider extends ServiceProvider
     Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
     // Custom views for authentication
-    Fortify::loginView(fn() => inertia('Auth/Login'));
-    Fortify::registerView(fn() => inertia('Auth/Register'));
+    Fortify::loginView(fn() => inertia('auth/Login'));
+    // Registration is invitation-only, so regular registration views are disabled
+    // Fortify::registerView(fn() => inertia('auth/Register'));
 
     Fortify::requestPasswordResetLinkView(
-      fn() => inertia('Auth/ForgotPassword')
+      fn() => inertia('auth/ForgotPassword')
     );
 
     Fortify::resetPasswordView(
-      fn($request) => inertia('Auth/ResetPassword', [
+      fn($request) => inertia('auth/ResetPassword', [
         'request' => $request
       ])
     );
     Fortify::verifyEmailView(
-      fn() => inertia('Auth/VerifyEmail')
+      fn() => inertia('auth/VerifyEmail')
     );
 
     Fortify::confirmPasswordView(
-      fn() => inertia('Auth/ConfirmPassword')
+      fn() => inertia('auth/ConfirmPassword')
     );
 
     RateLimiter::for('login', function (Request $request) {

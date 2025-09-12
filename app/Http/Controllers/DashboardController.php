@@ -21,7 +21,7 @@ class DashboardController extends Controller
     $stats = $this->getStatsByRole($user, $request);
 
 
-    return Inertia('Dashboard/Index', [
+    return Inertia('dashboard/Index', [
       'dashboard' => $stats
     ]);
   }
@@ -111,7 +111,7 @@ class DashboardController extends Controller
           ->get(),
       ];
 
-      return Inertia('Dashboard/Index', array_merge($commonData, $managerData));
+      return Inertia('dashboard/Index', array_merge($commonData, $managerData));
     }
 
     // Employee-specific insights
@@ -119,7 +119,7 @@ class DashboardController extends Controller
       'productivity_insights' => $this->getProductivityInsights($user->id),
     ];
 
-    return Inertia('Dashboard/Index', array_merge($commonData, $employeeData));
+    return Inertia('dashboard/Index', array_merge($commonData, $employeeData));
   }
 
   private function getTopPerformers($teamUsers)

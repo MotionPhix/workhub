@@ -54,12 +54,12 @@
       <form @submit.prevent="acceptInvitation" class="space-y-6">
         <!-- Password -->
         <div>
-          <InputLabel for="password" value="Create Password" />
-          <TextInput
+          <Label for="password">Create Password</Label>
+          <Input
             id="password"
             v-model="form.password"
             type="password"
-            class="mt-1 block w-full"
+            class="mt-1"
             required
             autocomplete="new-password"
           />
@@ -69,12 +69,12 @@
 
         <!-- Confirm Password -->
         <div>
-          <InputLabel for="password_confirmation" value="Confirm Password" />
-          <TextInput
+          <Label for="password_confirmation">Confirm Password</Label>
+          <Input
             id="password_confirmation"
             v-model="form.password_confirmation"
             type="password"
-            class="mt-1 block w-full"
+            class="mt-1"
             required
             autocomplete="new-password"
           />
@@ -104,14 +104,14 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center justify-between gap-4">
-          <SecondaryButton @click="declineInvitation" :disabled="form.processing">
+          <Button variant="outline" @click="declineInvitation" :disabled="form.processing">
             Decline
-          </SecondaryButton>
+          </Button>
 
-          <PrimaryButton :disabled="form.processing || !form.terms_accepted">
+          <Button :disabled="form.processing || !form.terms_accepted">
             <span v-if="form.processing">Creating Account...</span>
             <span v-else>Accept Invitation</span>
-          </PrimaryButton>
+          </Button>
         </div>
       </form>
 
@@ -136,11 +136,10 @@
 import { useForm } from '@inertiajs/vue3'
 import { AlertTriangle, X } from 'lucide-vue-next'
 import InputError from '@/components/InputError.vue'
-import InputLabel from '@/components/InputLabel.vue'
-import PrimaryButton from '@/components/PrimaryButton.vue'
-import SecondaryButton from '@/components/SecondaryButton.vue'
-import TextInput from '@/components/TextInput.vue'
-import Checkbox from '@/components/Checkbox.vue'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import PasswordStrengthIndicator from '@/pages/auth/PasswordStrengthIndicator.vue'
 
 const props = defineProps({

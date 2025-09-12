@@ -114,13 +114,6 @@ const submit = () => {
           </Button>
 
         </div>
-
-        <div class="mt-4 text-center text-sm">
-          Don't have an account?
-          <Link as="button" :href="route('register')" class="underline">
-            Sign up
-          </Link>
-        </div>
       </form>
     </CardContent>
   </GuestLayout>

@@ -23,7 +23,6 @@ import DataTable from '@/components/DataTable.vue';
 import GlobalModal from '@/components/GlobalModal.vue';
 import Loader from '@/components/Forms/Loader.vue';
 import ModalHeader from "@/components/ModalHeader.vue";
-import {OhVueIcon, addIcons} from "oh-vue-icons";
 import {
   Card,
   CardTitle,
@@ -41,21 +40,6 @@ import {
   SelectContent,
   SelectSeparator,
 } from '@/components/ui/select'
-import {
-  FaGoogle,
-  FaFacebookSquare,
-  FaRegularBell,
-  HiUpload,
-  HiCheckCircle
-} from "oh-vue-icons/icons";
-
-addIcons(
-  FaGoogle,
-  FaFacebookSquare,
-  FaRegularBell,
-  HiUpload,
-  HiCheckCircle
-);
 
 const appName = import.meta.env.VITE_APP_NAME || 'WorkHub';
 const pinia = createPinia()

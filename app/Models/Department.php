@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class Department extends Model
 {
@@ -284,15 +287,26 @@ class Department extends Model
 
   public function updateResourceUtilization(): void
   {
-    $this->allocated_hours = $this->projects()->sum('estimated_hours');
-    $this->actual_hours = $this->projects()->sum('actual_hours');
-    $this->save();
+    // Only update if projects table exists and has been migrated
+    try {
+      if (\Schema::hasTable('projects')) {
+        $this->allocated_hours = $this->projects()->sum('estimated_hours');
+        $this->actual_hours = $this->projects()->sum('actual_hours');
+        $this->saveQuietly(); // Use saveQuietly to avoid triggering the booted event again
+      }
+    } catch (\Exception $e) {
+      // Silently handle any database errors during migration/seeding
+      \Log::info('Could not update resource utilization for department: ' . $e->getMessage());
+    }
   }
 
   protected static function booted()
   {
-    static::saved(function ($project) {
-      $project->department->updateResourceUtilization();
+    static::saved(function ($department) {
+      // Only update resource utilization if we're not in a migration/seeding context
+      if (!\App::runningInConsole() || app()->environment('testing')) {
+        $department->updateResourceUtilization();
+      }
     });
   }
 }

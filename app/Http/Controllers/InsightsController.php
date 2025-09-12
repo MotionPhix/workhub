@@ -12,7 +12,7 @@ class InsightsController extends Controller
     $insights = (new ProductivityInsightService())
       ->generateInsights(auth()->id());
 
-    return Inertia('Insights/Index', [
+    return Inertia('insights/Index', [
       'insights' => $insights
     ]);
   }

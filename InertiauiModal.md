@@ -3,23 +3,23 @@ Inertia Modal is part of Inertia UI, a suite of packages designed for Laravel, I
 
 ## Here's a summary of the features:
 
-Zero backend configuration
-Super simple frontend API
-Support for Base Route / URL
-Modal and slideover support
-Headless support
-Nested/stacked modals support
-Reusable modals
-Multiple sizes and positions
-Reload props in modals
-Easy communication between nested/stacked modals
-Highly configurable
+- Zero backend configuration
+- Super simple frontend API
+- Support for Base Route / URL
+- Modal and slideover support
+- Headless support
+- Nested/stacked modals support
+- Reusable modals
+- Multiple sizes and positions
+- Reload props in modals
+- Easy communication between nested/stacked modals
+- Highly configurable
 
 # Example
 
 The package comes with two components: Modal and ModalLink. ModalLink is very similar to Inertia's built-in Link component, but it opens the linked route in a modal instead of a full page load. So, if you have a link that you want to open in a modal, you can simply replace Link with ModalLink.
 
-
+```vue
 <script setup>
 import { ModalLink } from '@inertiaui/modal-vue'
 </script>
@@ -27,10 +27,11 @@ import { ModalLink } from '@inertiaui/modal-vue'
 <template>
     <ModalLink href="/users/create">Create User</ModalLink>
 </template>
+```
 
 The page you linked can then use the Modal component to wrap its content in a modal.
 
-
+```vue
 <script setup>
 import { Modal } from '@inertiaui/modal-vue'
 </script>
@@ -43,22 +44,27 @@ import { Modal } from '@inertiaui/modal-vue'
         </form>
     </Modal>
 </template>
+```
 
 That's it! There is no need to change anything about your routes or controllers!
 
-
 # Basic Usage
+
 As described in the introduction, Inertia Modal is fairly simple to use. There are two main components: Modal and ModalLink. In the sections below, we will cover how to use these components.
 
 To use the components, you need to import them into your page:
 
+```vue
 <script setup>
 import { Modal, ModalLink } from '@inertiaui/modal-vue'
 </script>
+```
 
 # Modal Component
+
 The Modal component is used to wrap the content of the modal. You can place any content inside the Modal component, such as forms, tables, or other components.
 
+```vue
 <template>
     <Modal>
         <h1>Create User</h1>
@@ -67,15 +73,17 @@ The Modal component is used to wrap the content of the modal. You can place any 
         </form>
     </Modal>
 </template>
+```
 
 # Modal Events
+
 The Modal component emits several events that you can listen to:
 
-after-leave: Triggered after the modal has been removed from the DOM.
+- **after-leave**: Triggered after the modal has been removed from the DOM.
 blur: Triggered when the modal loses focus because another modal is opened on top of it.
-close: Triggered when the modal is closed.
-focus: Triggered when the modal gains focus because a modal on top of it has been closed.
-success: Triggered when the modal has been successfully fetched and opened.
+- **close**: Triggered when the modal is closed.
+- **focus**: Triggered when the modal gains focus because a modal on top of it has been closed.
+- **success**: Triggered when the modal has been successfully fetched and opened.
 
 <template>
     <Modal @close="doSomething">

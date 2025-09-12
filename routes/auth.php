@@ -11,15 +11,16 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get(
-        'register',
-        [\App\Http\Controllers\Auth\AuthController::class, 'showRegistrationForm']
-    )->name('register');
+    // Registration is invitation-only, so regular registration routes are disabled
+    // Route::get(
+    //     'register',
+    //     [\App\Http\Controllers\Auth\AuthController::class, 'showRegistrationForm']
+    // )->name('register');
 
-    Route::post(
-        'register',
-        [\App\Http\Controllers\Auth\AuthController::class, 'register']
-    )->middleware('rate.limit:registration');
+    // Route::post(
+    //     'register',
+    //     [\App\Http\Controllers\Auth\AuthController::class, 'register']
+    // )->middleware('rate.limit:registration');
 
     Route::get(
         'login',

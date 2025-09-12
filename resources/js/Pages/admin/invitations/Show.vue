@@ -37,25 +37,25 @@
 
               <!-- Actions Dropdown -->
               <div class="relative" v-if="invitation.status === 'pending' && !invitation.is_expired">
-                <Dropdown>
-                  <template #trigger>
-                    <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
                       Actions
-                      <ChevronDown class="ml-2 -mr-0.5 h-4 w-4" />
-                    </button>
-                  </template>
-                  <template #content>
-                    <DropdownLink @click="resendInvitation">
+                      <ChevronDown class="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem @click="resendInvitation">
                       Resend Invitation
-                    </DropdownLink>
-                    <DropdownLink @click="extendExpiry">
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="extendExpiry">
                       Extend Expiry
-                    </DropdownLink>
-                    <DropdownLink @click="cancelInvitation" class="text-red-600">
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="cancelInvitation" class="text-red-600 focus:text-red-600">
                       Cancel Invitation
-                    </DropdownLink>
-                  </template>
-                </Dropdown>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
@@ -201,10 +201,15 @@
 
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
-import { ChevronDown } from 'lucide-vue-next'
+import { ChevronDown, MoreVertical } from 'lucide-vue-next'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import Dropdown from '@/components/Dropdown.vue'
-import DropdownLink from '@/components/DropdownLink.vue'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
 import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
@@ -231,7 +236,7 @@ const resendInvitation = () => {
 
 const extendExpiry = () => {
   const days = prompt('Extend invitation by how many days?', '7')
-  if (days && !isNaN(days)) {
+  if (days && !isNaN(Number(days))) {
     router.patch(route('admin.invitations.update', props.invitation.id), {
       extend_days: parseInt(days)
     })

@@ -74,10 +74,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Customize views (optional, as Inertia handles this differently)
-        Fortify::loginView(fn () => Inertia('Auth/Login'));
-        Fortify::registerView(fn () => Inertia('Auth/Register'));
-        Fortify::requestPasswordResetLinkView(fn () => Inertia('Auth/ForgotPassword'));
-        Fortify::resetPasswordView(fn ($request) => Inertia('Auth/ResetPassword', [
+        Fortify::loginView(fn () => Inertia('auth/Login'));
+        // Registration is invitation-only, so regular registration views are disabled
+        // Fortify::registerView(fn () => Inertia('auth/Register'));
+        Fortify::requestPasswordResetLinkView(fn () => Inertia('auth/ForgotPassword'));
+        Fortify::resetPasswordView(fn ($request) => Inertia('auth/ResetPassword', [
             'token' => $request->token,
             'email' => $request->email,
         ]));

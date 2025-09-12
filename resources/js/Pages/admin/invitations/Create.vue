@@ -24,12 +24,12 @@
                 
                 <!-- Email -->
                 <div class="sm:col-span-2">
-                  <InputLabel for="email" value="Email Address" />
-                  <TextInput
+                  <Label for="email">Email Address</Label>
+                  <Input
                     id="email"
                     v-model="form.email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="mt-1"
                     required
                     autocomplete="email"
                     placeholder="user@example.com"
@@ -39,12 +39,12 @@
 
                 <!-- Name -->
                 <div>
-                  <InputLabel for="name" value="Full Name" />
-                  <TextInput
+                  <Label for="name">Full Name</Label>
+                  <Input
                     id="name"
                     v-model="form.name"
                     type="text"
-                    class="mt-1 block w-full"
+                    class="mt-1"
                     required
                     autocomplete="name"
                     placeholder="John Doe"
@@ -179,14 +179,14 @@
 
               <!-- Submit Buttons -->
               <div class="flex items-center justify-end gap-4">
-                <SecondaryButton :href="route('admin.invitations.index')">
+                <Button variant="outline" :href="route('admin.invitations.index')">
                   Cancel
-                </SecondaryButton>
+                </Button>
 
-                <PrimaryButton :disabled="form.processing">
+                <Button :disabled="form.processing">
                   <span v-if="form.processing">Sending...</span>
                   <span v-else>Send Invitation</span>
-                </PrimaryButton>
+                </Button>
               </div>
             </form>
             
@@ -219,10 +219,10 @@
                 </div>
 
                 <div class="flex items-center justify-end">
-                  <PrimaryButton :disabled="bulkForm.processing || !bulkForm.file">
+                  <Button :disabled="bulkForm.processing || !bulkForm.file">
                     <span v-if="bulkForm.processing">Processing...</span>
                     <span v-else>Send Bulk Invitations</span>
-                  </PrimaryButton>
+                  </Button>
                 </div>
               </form>
             </div>
@@ -237,13 +237,12 @@
 import { Head, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import InputError from '@/components/InputError.vue'
-import InputLabel from '@/components/InputLabel.vue'
-import PrimaryButton from '@/components/PrimaryButton.vue'
-import SecondaryButton from '@/components/SecondaryButton.vue'
-import TextInput from '@/components/TextInput.vue'
-import SelectInput from '@/components/SelectInput.vue'
-import Textarea from '@/components/Textarea.vue'
-import Checkbox from '@/components/Checkbox.vue'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const props = defineProps({
   departments: {
