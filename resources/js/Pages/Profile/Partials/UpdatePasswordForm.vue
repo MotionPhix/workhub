@@ -1,11 +1,10 @@
 <script setup>
 import InputError from '@/components/InputError.vue';
-import InputLabel from '@/components/InputLabel.vue';
-import PrimaryButton from '@/components/PrimaryButton.vue';
-import TextInput from '@/components/TextInput.vue';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {useForm} from '@inertiajs/vue3';
 import {ref} from 'vue';
-import {Button} from "@/components/ui/button/index.js";
 
 const passwordInput = ref(null);
 const currentPasswordInput = ref(null);

@@ -1,7 +1,7 @@
 <script setup>
 import GuestLayout from '@/layouts/GuestLayout.vue';
 import InputError from '@/components/InputError.vue';
-import InputLabel from '@/components/InputLabel.vue';
+import { Label } from '@/components/ui/label';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import FormField from "@/components/Forms/FormField.vue";
 import {LockIcon} from "lucide-vue-next";
@@ -66,7 +66,7 @@ const submit = () => {
 
         <div class="grid gap-2 mt-4">
           <div class="flex items-center">
-            <InputLabel for="password">Password</InputLabel>
+            <Label for="password">Password</Label>
             <Link
               as="button"
               v-if="canResetPassword"
