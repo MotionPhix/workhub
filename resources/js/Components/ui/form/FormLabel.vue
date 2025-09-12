@@ -1,5 +1,5 @@
 <script setup>
-import { Label } from '@/Components/ui/label';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useFormField } from './useFormField';
 
@@ -21,3 +21,5 @@ const { error, formItemId } = useFormField();
     <slot />
   </Label>
 </template>
+
+

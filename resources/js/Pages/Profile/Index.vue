@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import {ref, onMounted} from "vue";
 import {format} from "date-fns";
-import AppLayout from "@/Layouts/AppLayout.vue";
-import ProductivityRadarChart from "@/Components/Visualizations/ProductivityRadarChart.vue";
-import ProfileTable from "@/Pages/Profile/Partials/ProfileTable.vue";
-import StatCard from "@/Components/StatCard.vue";
+import AppLayout from "@/layouts/AppLayout.vue";
+import ProductivityRadarChart from "@/components/Visualizations/ProductivityRadarChart.vue";
+import ProfileTable from "@/pages/profile/partials/ProfileTable.vue";
+import StatCard from "@/components/StatCard.vue";
 import {visitModal} from "@inertiaui/modal-vue";
 import {getInitials} from "@/lib/stringUtils";
-import Divider from "@/Components/Divider.vue";
-import UpdatePasswordForm from "@/Pages/Profile/Partials/UpdatePasswordForm.vue";
-import UserAvatar from "@/Layouts/UserAvatar.vue";
-import ProfileSettings from "@/Pages/Profile/Partials/ProfileSettings.vue";
+import Divider from "@/components/Divider.vue";
+import UpdatePasswordForm from "@/pages/profile/partials/UpdatePasswordForm.vue";
+import UserAvatar from "@/layouts/UserAvatar.vue";
+import ProfileSettings from "@/pages/profile/partials/ProfileSettings.vue";
 import {PencilIcon} from "lucide-vue-next";
 
 const props = defineProps<{
@@ -272,3 +272,5 @@ onMounted(async () => {
     </div>
   </AppLayout>
 </template>
+
+

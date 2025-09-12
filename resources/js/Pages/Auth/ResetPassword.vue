@@ -1,10 +1,10 @@
 <script setup>
 import { computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
-import PasswordStrengthIndicator from '@/Pages/Auth/PasswordStrengthIndicator.vue'
-import {Label} from "@/Components/ui/label";
-import {Input} from "@/Components/ui/input";
-import {Button} from "@/Components/ui/button";
+import PasswordStrengthIndicator from '@/pages/auth/PasswordStrengthIndicator.vue'
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
 
 // Define props from the page
 const props = defineProps({
@@ -122,3 +122,5 @@ const submitResetPassword = () => {
     </div>
   </div>
 </template>
+
+

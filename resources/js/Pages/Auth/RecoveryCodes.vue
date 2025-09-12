@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/layouts/AppLayout.vue";
 import {
   Card,
   CardContent,
@@ -9,9 +9,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle
-} from "@/Components/ui/card";
-import {Button} from "@/Components/ui/button";
-import CodeBlock from "@/Components/CodeBlock.vue";
+} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import CodeBlock from "@/components/CodeBlock.vue";
 
 const props = defineProps({
   recoveryCodes: {
@@ -58,3 +58,5 @@ const regenerateCodes = () => {
     </div>
   </AppLayout>
 </template>
+
+

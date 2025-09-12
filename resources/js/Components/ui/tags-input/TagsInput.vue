@@ -47,3 +47,5 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
     <slot />
   </TagsInputRoot>
 </template>
+
+

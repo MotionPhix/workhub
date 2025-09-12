@@ -12,3 +12,5 @@ const props = defineProps({
 <template>
   <AvatarImage v-bind="props" class="h-full w-full object-cover" />
 </template>
+
+

@@ -267,3 +267,5 @@ const getTrendColor = (value: number) => {
   @apply bg-popover text-popover-foreground border-border;
 }
 </style>
+
+

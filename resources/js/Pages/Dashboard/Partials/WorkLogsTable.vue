@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {useDeviceDetection} from "@/composables/useDeviceDetection"; // For responsiveness
 import {cn} from "@/lib/utils";
-import EmptyState from "@/Pages/WorkEntries/EmptyState.vue"; // Utility for class management
+import EmptyState from "@/pages/work/EmptyState.vue"; // Utility for class management
 
 // Props
 defineProps<{
@@ -89,3 +89,5 @@ const { isMobile } = useDeviceDetection()
     <EmptyState />
   </div>
 </template>
+
+

@@ -29,3 +29,5 @@ const forwardedProps = useForwardProps(delegatedProps);
     </slot>
   </TagsInputItemDelete>
 </template>
+
+

@@ -10,19 +10,19 @@ import {ModalLink, renderApp} from '@inertiaui/modal-vue'
 import {createPinia} from 'pinia'
 
 // components
-import {Input} from '@/Components/ui/input'
-import {Calendar} from '@/Components/ui/v-calendar'
-import {Button} from '@/Components/ui/button'
-import {Label} from '@/Components/ui/label'
-import {Badge} from "@/Components/ui/badge";
-import {Switch} from "@/Components/ui/switch";
-import {Checkbox} from "@/Components/ui/checkbox";
-import Divider from "@/Components/Divider.vue";
-import FormField from '@/Components/Forms/FormField.vue';
-import DataTable from '@/Components/DataTable.vue';
-import GlobalModal from '@/Components/GlobalModal.vue';
-import Loader from '@/Components/Forms/Loader.vue';
-import ModalHeader from "@/Components/ModalHeader.vue";
+import {Input} from '@/components/ui/input'
+import {Calendar} from '@/components/ui/v-calendar'
+import {Button} from '@/components/ui/button'
+import {Label} from '@/components/ui/label'
+import {Badge} from "@/components/ui/badge";
+import {Switch} from "@/components/ui/switch";
+import {Checkbox} from "@/components/ui/checkbox";
+import Divider from "@/components/Divider.vue";
+import FormField from '@/components/Forms/FormField.vue';
+import DataTable from '@/components/DataTable.vue';
+import GlobalModal from '@/components/GlobalModal.vue';
+import Loader from '@/components/Forms/Loader.vue';
+import ModalHeader from "@/components/ModalHeader.vue";
 import {OhVueIcon, addIcons} from "oh-vue-icons";
 import {
   Card,
@@ -31,7 +31,7 @@ import {
   CardDescription,
   CardContent,
   CardFooter
-} from '@/Components/ui/card'
+} from '@/components/ui/card'
 import {
   Select,
   SelectTrigger,
@@ -40,7 +40,7 @@ import {
   SelectItem,
   SelectContent,
   SelectSeparator,
-} from '@/Components/ui/select'
+} from '@/components/ui/select'
 import {
   FaGoogle,
   FaFacebookSquare,
@@ -64,8 +64,8 @@ createInertiaApp({
   title: (title) => `${title} - ${appName}`,
   resolve: (name) =>
     resolvePageComponent(
-      `./Pages/${name}.vue`,
-      import.meta.glob('./Pages/**/*.vue'),
+      `./pages/${name}.vue`,
+      import.meta.glob('./pages/**/*.vue'),
     ),
   setup({el, App, props, plugin}) {
     return createApp({render: renderApp(App, props)})

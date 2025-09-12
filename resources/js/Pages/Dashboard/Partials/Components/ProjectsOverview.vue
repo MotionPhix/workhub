@@ -226,3 +226,5 @@ const getTrendColor = (direction: 'up' | 'down' | 'stable') => {
   @apply transition-all duration-300;
 }
 </style>
+
+

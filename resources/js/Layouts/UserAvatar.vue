@@ -3,7 +3,7 @@ import {
   Avatar,
   AvatarImage,
   AvatarFallback
-} from "@/Components/ui/avatar";
+} from "@/components/ui/avatar";
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import { computed, toRaw } from "vue";
@@ -75,3 +75,5 @@ const avatarBackgroundClass = computed(() => {
     </AvatarFallback>
   </Avatar>
 </template>
+
+

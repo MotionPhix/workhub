@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { AlertCircleIcon } from 'lucide-vue-next'
-import { Badge } from "@/Components/ui/badge"
+import { Badge } from "@/components/ui/badge"
 
 interface BurnoutRisk {
   user_id: number
@@ -93,3 +93,5 @@ defineProps<{
     </CardContent>
   </Card>
 </template>
+
+

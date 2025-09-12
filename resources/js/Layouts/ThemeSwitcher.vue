@@ -1,6 +1,6 @@
 <script setup>
 import {SunIcon, MoonIcon} from 'lucide-vue-next'
-import {Button} from '@/Components/ui/button'
+import {Button} from '@/components/ui/button'
 import {UseDark} from "@vueuse/components";
 </script>
 
@@ -17,3 +17,5 @@ import {UseDark} from "@vueuse/components";
     </UseDark>
   </div>
 </template>
+
+

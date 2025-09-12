@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import NavigationItem from "@/Components/Navigation/NavigationItem.vue";
-import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
+import NavigationItem from "@/components/Navigation/NavigationItem.vue";
+import ThemeSwitcher from "@/layouts/ThemeSwitcher.vue";
 import {UserIcon, PowerIcon} from "lucide-vue-next"
-import UserAvatar from "@/Layouts/UserAvatar.vue";
+import UserAvatar from "@/layouts/UserAvatar.vue";
 import {getInitials} from "@/lib/stringUtils";
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger
-} from "@/Components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import {router} from "@inertiajs/vue3";
 
 const appName = import.meta.env.VITE_APP_NAME || 'WorkHub'
@@ -84,3 +84,5 @@ const desktopNavItems = [
     </div>
   </nav>
 </template>
+
+

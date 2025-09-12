@@ -1,5 +1,5 @@
 <script setup>
-import { buttonVariants } from '@/Components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { RangeCalendarCellTrigger, useForwardProps } from 'radix-vue';
 import { computed } from 'vue';
@@ -46,3 +46,5 @@ const forwardedProps = useForwardProps(delegatedProps);
     <slot />
   </RangeCalendarCellTrigger>
 </template>
+
+

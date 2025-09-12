@@ -1,5 +1,5 @@
 <script setup>
-import { buttonVariants } from '@/Components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ChevronLeftIcon } from '@radix-icons/vue';
 import { RangeCalendarPrev, useForwardProps } from 'radix-vue';
@@ -38,3 +38,5 @@ const forwardedProps = useForwardProps(delegatedProps);
     </slot>
   </RangeCalendarPrev>
 </template>
+
+

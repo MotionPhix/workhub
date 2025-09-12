@@ -1,9 +1,9 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
+import GuestLayout from '@/layouts/GuestLayout.vue';
+import InputError from '@/components/InputError.vue';
+import InputLabel from '@/components/InputLabel.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import FormField from "@/Components/Forms/FormField.vue";
+import FormField from "@/components/Forms/FormField.vue";
 import {LockIcon} from "lucide-vue-next";
 
 defineProps({
@@ -125,3 +125,5 @@ const submit = () => {
     </CardContent>
   </GuestLayout>
 </template>
+
+

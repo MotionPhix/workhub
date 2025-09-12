@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { BrainIcon, ClockIcon } from 'lucide-vue-next'
 
 interface FocusAnalytics {
@@ -109,3 +109,5 @@ defineProps<{
     </CardContent>
   </Card>
 </template>
+
+

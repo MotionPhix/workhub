@@ -1,12 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
-import { TransitionRoot } from '@headlessui/vue'
-import {Label} from "@/Components/ui/label";
-import InputError from "@/Components/InputError.vue";
-import {Input} from "@/Components/ui/input"
-import {Button} from "@/Components/ui/button"
+import { CheckCircle } from 'lucide-vue-next'
+import {Label} from "@/components/ui/label";
+import InputError from "@/components/InputError.vue";
+import {Input} from "@/components/ui/input"
+import {Button} from "@/components/ui/button"
 
 // Form setup
 const form = useForm({
@@ -91,20 +91,15 @@ const submitPasswordResetRequest = () => {
       </div>
 
       <!-- Success Message -->
-      <TransitionRoot
-        :show="showSuccessMessage"
-        as="template"
-        enter="transition ease-out duration-300"
-        enter-from="opacity-0 translate-y-4"
-        enter-to="opacity-100 translate-y-0"
-        leave="transition ease-in duration-200"
-        leave-from="opacity-100 translate-y-0"
-        leave-to="opacity-0 translate-y-4">
-        <div
+      <Transition
+        name="fade"
+        appear
+      >
+        <div v-if="showSuccessMessage"
           class="mt-4 bg-green-50 border-l-4 border-green-400 p-4">
           <div class="flex">
             <div class="flex-shrink-0">
-              <Icon name="hi-check-circle"
+              <CheckCircle
                 class="h-5 w-5 text-green-400"
                 aria-hidden="true"
               />
@@ -117,7 +112,9 @@ const submitPasswordResetRequest = () => {
             </div>
           </div>
         </div>
-      </TransitionRoot>
+      </Transition>
     </div>
   </div>
 </template>
+
+

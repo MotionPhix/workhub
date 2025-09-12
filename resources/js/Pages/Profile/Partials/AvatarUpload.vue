@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from 'vue'
 import {useForm} from '@inertiajs/vue3'
-import {Avatar, AvatarImage} from "@/Components/ui/avatar";
+import {Avatar, AvatarImage} from "@/components/ui/avatar";
 
 const props = defineProps({
   currentAvatar: {
@@ -104,3 +104,5 @@ const uploadAvatar = () => {
     </p>
   </div>
 </template>
+
+

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {ref, watchEffect} from "vue";
 import {useDeviceDetection} from "@/composables/useDeviceDetection";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/Components/ui/table";
-import Divider from "@/Components/Divider.vue";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import Divider from "@/components/Divider.vue";
 
 const props = defineProps({
   columns: {
@@ -154,3 +154,5 @@ const goToPage = (url) => {
     </div>
   </div>
 </template>
+
+

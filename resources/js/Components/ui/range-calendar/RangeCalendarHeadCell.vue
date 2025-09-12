@@ -31,3 +31,5 @@ const forwardedProps = useForwardProps(delegatedProps);
     <slot />
   </RangeCalendarHeadCell>
 </template>
+
+

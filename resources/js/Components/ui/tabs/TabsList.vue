@@ -30,3 +30,5 @@ const delegatedProps = computed(() => {
     <slot />
   </TabsList>
 </template>
+
+

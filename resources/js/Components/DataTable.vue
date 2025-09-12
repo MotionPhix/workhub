@@ -13,14 +13,14 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from "@/Components/ui/table";
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuGroup
-} from "@/Components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
@@ -291,3 +291,5 @@ watch(() => props.data, () => {
     </div>
   </div>
 </template>
+
+

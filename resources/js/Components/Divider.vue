@@ -1,5 +1,5 @@
 <script setup lang=ts>
-import {Separator} from "@/Components/ui/separator";
+import {Separator} from "@/components/ui/separator";
 
 withDefaults(
   defineProps<{
@@ -15,3 +15,5 @@ withDefaults(
   <Separator :class="spacing" />
 
 </template>
+
+

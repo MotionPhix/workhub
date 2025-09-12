@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import ProductivityChart from '@/Components/Charts/ProductivityChart.vue'
-import WorkHeatmap from '@/Components/Heatmaps/WorkHeatmap.vue'
-import ProductivityInsights from '@/Components/Insights/ProductivityInsights.vue'
-import {Card, CardContent, CardHeader, CardTitle} from "@/Components/ui/card";
+import ProductivityChart from '@/components/Charts/ProductivityChart.vue'
+import WorkHeatmap from '@/components/Heatmaps/WorkHeatmap.vue'
+import ProductivityInsights from '@/components/Insights/ProductivityInsights.vue'
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 const chartData = ref([])
 const workEntries = ref([])
@@ -34,3 +34,5 @@ onMounted(async () => {
     </CardContent>
   </Card>
 </template>
+
+

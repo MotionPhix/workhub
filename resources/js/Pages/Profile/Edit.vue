@@ -1,8 +1,8 @@
 <script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import DeleteUserForm from './Partials/DeleteUserForm.vue';
-import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import DeleteUserForm from './partials/DeleteUserForm.vue';
+import UpdatePasswordForm from './partials/UpdatePasswordForm.vue';
+import UpdateProfileInformationForm from './partials/UpdateProfileInformationForm.vue';
 import {Head} from '@inertiajs/vue3';
 
 defineProps({
@@ -54,3 +54,5 @@ defineProps({
     </div>
   </AppLayout>
 </template>
+
+

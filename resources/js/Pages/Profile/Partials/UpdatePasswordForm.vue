@@ -1,11 +1,11 @@
 <script setup>
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
+import InputError from '@/components/InputError.vue';
+import InputLabel from '@/components/InputLabel.vue';
+import PrimaryButton from '@/components/PrimaryButton.vue';
+import TextInput from '@/components/TextInput.vue';
 import {useForm} from '@inertiajs/vue3';
 import {ref} from 'vue';
-import {Button} from "@/Components/ui/button/index.js";
+import {Button} from "@/components/ui/button/index.js";
 
 const passwordInput = ref(null);
 const currentPasswordInput = ref(null);
@@ -93,3 +93,5 @@ const updatePassword = () => {
     </form>
   </section>
 </template>
+
+

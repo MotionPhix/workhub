@@ -17,10 +17,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
   DropdownMenuSeparator
-} from "@/Components/ui/dropdown-menu"
-import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/card"
-import { Button } from "@/Components/ui/button"
-import { RangeCalendar } from '@/Components/ui/range-calendar'
+} from "@/components/ui/dropdown-menu"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { RangeCalendar } from '@/components/ui/range-calendar'
 import { getLocalTimeZone, today, CalendarDate, parseDate } from '@internationalized/date'
 import {
   Dialog,
@@ -29,17 +29,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger
-} from "@/Components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select"
+} from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useDeviceDetection } from '@/composables/useDeviceDetection'
-import AppLayout from "@/Layouts/AppLayout.vue"
-import ReportTable from "@/Pages/Reports/Partials/ReportTable.vue"
+import AppLayout from "@/layouts/AppLayout.vue"
+import ReportTable from "@/pages/reports/partials/ReportTable.vue"
 import {useDark} from "@vueuse/core";
 import {format, format as simpleFormat} from "date-fns";
-import ReportProductivityChart from "@/Pages/Reports/Partials/ReportProductivityChart.vue";
-import BurnoutRiskCard from "@/Pages/Reports/Partials/BurnoutRiskCard.vue";
-import FocusAnalyticsCard from "@/Pages/Reports/Partials/FocusAnalyticsCard.vue";
-import ExportReports from "@/Pages/Reports/Partials/ExportReports.vue";
+import ReportProductivityChart from "@/pages/reports/partials/ReportProductivityChart.vue";
+import BurnoutRiskCard from "@/pages/reports/partials/BurnoutRiskCard.vue";
+import FocusAnalyticsCard from "@/pages/reports/partials/FocusAnalyticsCard.vue";
+import ExportReports from "@/pages/reports/partials/ExportReports.vue";
 
 // Interfaces remain the same...
 interface Report {
@@ -381,3 +381,5 @@ const getStatusVariant = (status: string) => {
     </div>
   </AppLayout>
 </template>
+
+

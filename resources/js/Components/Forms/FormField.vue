@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {type Component, computed, ref} from 'vue'
 import {v4 as uuidv4} from 'uuid'
-import InputError from "@/Components/InputError.vue";
-import {Textarea} from "@/Components/ui/textarea";
+import InputError from "@/components/InputError.vue";
+import {Textarea} from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -12,17 +12,17 @@ import {
   SelectValue,
   SelectGroup,
   SelectSeparator,
-} from "@/Components/ui/select";
-import {RadioGroup, RadioGroupItem} from "@/Components/ui/radio-group";
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover'
-import {Checkbox} from "@/Components/ui/checkbox";
+} from "@/components/ui/select";
+import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {Checkbox} from "@/components/ui/checkbox";
 import {
   NumberField,
   NumberFieldContent,
   NumberFieldDecrement,
   NumberFieldIncrement,
   NumberFieldInput,
-} from '@/Components/ui/number-field'
+} from '@/components/ui/number-field'
 import {usePage} from "@inertiajs/vue3";
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -338,3 +338,5 @@ function onToggle() {
     </p>
   </div>
 </template>
+
+

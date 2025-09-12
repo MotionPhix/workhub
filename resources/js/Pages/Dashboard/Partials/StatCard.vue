@@ -75,3 +75,5 @@ const trendIcon = computed(() => {
     </div>
   </div>
 </template>
+
+

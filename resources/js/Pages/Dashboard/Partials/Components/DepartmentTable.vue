@@ -207,3 +207,5 @@ const getCompletionPercentage = (completed: number, total: number): number => {
   }
 }
 </style>
+
+

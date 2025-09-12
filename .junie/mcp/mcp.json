@@ -1,0 +1,20 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "C:\\Users\\Amelia\\.config\\herd\\bin\\php84\\php.exe",
+            "args": [
+                "G:\\Herd\\workhub\\artisan",
+                "boost:mcp"
+            ]
+        },
+        "herd": {
+            "command": "C:\\Users\\Amelia\\.config\\herd\\bin\\php84\\php.exe",
+            "args": [
+                "C:/Users/Amelia/.config/herd/bin/herd-mcp.phar"
+            ],
+            "env": {
+                "SITE_PATH": "G:\\Herd\\workhub"
+            }
+        }
+    }
+}

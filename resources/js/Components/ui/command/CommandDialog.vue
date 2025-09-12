@@ -1,5 +1,5 @@
 <script setup>
-import { Dialog, DialogContent } from '@/Components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useForwardPropsEmits } from 'radix-vue';
 import Command from './Command.vue';
 
@@ -24,3 +24,5 @@ const forwarded = useForwardPropsEmits(props, emits);
     </DialogContent>
   </Dialog>
 </template>
+
+

@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue'
-import {Card, CardContent, CardHeader, CardTitle} from "@/Components/ui/card";
-import {Label} from "@/Components/ui/label";
-import {Badge} from "@/Components/ui/badge"
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Label} from "@/components/ui/label";
+import {Badge} from "@/components/ui/badge"
 
 const props = defineProps({
   insights: {
@@ -60,3 +60,5 @@ const insightLevel = computed(() => {
     </CardContent>
   </Card>
 </template>
+
+

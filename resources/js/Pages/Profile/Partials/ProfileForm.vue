@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, ref} from "vue";
 import {useForm, usePage} from "@inertiajs/vue3";
-import ModalHeader from "@/Components/ModalHeader.vue";
+import ModalHeader from "@/components/ModalHeader.vue";
 import {useDeviceDetection} from "@/composables/useDeviceDetection";
 import {useUserStore} from "@/stores/user";
 import {toast} from "vue-sonner";
@@ -248,3 +248,5 @@ const saveProfile = async () => {
     </form>
   </GlobalModal>
 </template>
+
+

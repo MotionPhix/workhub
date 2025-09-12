@@ -121,3 +121,5 @@ function updateSettings(key: string, value: any) {
     </CardContent>
   </Card>
 </template>
+
+

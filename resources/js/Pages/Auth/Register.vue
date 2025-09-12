@@ -1,12 +1,12 @@
 <script setup>
 import { computed } from 'vue'
 import { useForm, Link } from '@inertiajs/vue3'
-import {Label} from "@/Components/ui/label"
-import {Input} from "@/Components/ui/input"
-import Checkbox from "@/Components/Checkbox.vue";
-import PasswordStrengthIndicator from "@/Pages/Auth/PasswordStrengthIndicator.vue";
-import InputError from "@/Components/InputError.vue";
-import GuestLayout from "@/Layouts/GuestLayout.vue"
+import {Label} from "@/components/ui/label"
+import {Input} from "@/components/ui/input"
+import Checkbox from "@/components/Checkbox.vue";
+import PasswordStrengthIndicator from "@/pages/auth/PasswordStrengthIndicator.vue";
+import InputError from "@/components/InputError.vue";
+import GuestLayout from "@/layouts/GuestLayout.vue"
 
 const form = useForm({
   name: '',
@@ -139,3 +139,5 @@ const socialLogin = (provider) => {
         </CardContent>
     </guest-layout>
 </template>
+
+

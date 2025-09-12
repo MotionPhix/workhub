@@ -18,7 +18,7 @@ import {
   TrendingDown,
   Minus
 } from 'lucide-vue-next'
-import UserOnboarding from "@/Components/UserOnboarding.vue";
+import UserOnboarding from "@/components/UserOnboarding.vue";
 
 interface UserMetrics {
   onboarding_status: {
@@ -194,3 +194,5 @@ const sortedDepartments = computed(() => {
   @apply transition-all duration-300;
 }
 </style>
+
+

@@ -15,3 +15,5 @@ const forwardedProps = useForwardProps(props);
     <slot />
   </DropdownMenuTrigger>
 </template>
+
+

@@ -5,8 +5,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from "@/Components/ui/dropdown-menu"
-import { Button } from "@/Components/ui/button"
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import { DownloadIcon, FileTextIcon, FileSpreadsheetIcon } from 'lucide-vue-next'
 import {toast} from "vue-sonner";
 
@@ -112,3 +112,5 @@ const exportReport = async (format: string) => {
     </DropdownMenuContent>
   </DropdownMenu>
 </template>
+
+

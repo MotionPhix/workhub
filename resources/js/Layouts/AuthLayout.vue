@@ -1,6 +1,6 @@
 <script setup>
-import ApplicationLogo from '@/Components/ApplicationLogo.vue'
-import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
+import ApplicationLogo from '@/components/ApplicationLogo.vue'
+import ThemeSwitcher from "@/layouts/ThemeSwitcher.vue";
 </script>
 
 <template>
@@ -18,3 +18,5 @@ import ThemeSwitcher from "@/Layouts/ThemeSwitcher.vue";
     </div>
   </div>
 </template>
+
+

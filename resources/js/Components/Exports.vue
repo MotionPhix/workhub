@@ -32,3 +32,5 @@ const exportReport = async (format) => {
     <button @click="exportReport('excel')">Export as Excel</button>
   </div>
 </template>
+
+

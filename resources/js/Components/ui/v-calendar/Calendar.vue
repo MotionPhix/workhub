@@ -1,5 +1,5 @@
 <script setup>
-import { buttonVariants } from '@/Components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ChevronLeftIcon, ChevronRightIcon } from '@radix-icons/vue';
 import { useVModel } from '@vueuse/core';
@@ -322,3 +322,5 @@ const vCalendarSlots = computed(() => {
   @apply ml-0.5;
 }
 </style>
+
+

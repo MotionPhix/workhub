@@ -6,9 +6,9 @@ import {
   Building2,
   UserCircle
 } from 'lucide-vue-next'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
-import { Card, CardHeader, CardTitle } from "@/Components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import MetricsGrid from "./Components/MetricsGrid.vue"
 import DepartmentChart from "./Components/DepartmentChart.vue"
 import UserActivityChart from "./Components/UserActivityChart.vue"
@@ -247,3 +247,5 @@ onMounted(() => {
   @apply bg-background;
 }
 </style>
+
+

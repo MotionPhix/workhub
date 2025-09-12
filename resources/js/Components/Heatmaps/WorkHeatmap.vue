@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import {Card, CardContent, CardHeader, CardTitle} from "@/Components/ui/card";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 const props = defineProps({
   entries: {
@@ -60,3 +60,5 @@ const getColor = (intensity) => {
     </CardContent>
   </Card>
 </template>
+
+

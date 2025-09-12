@@ -4,7 +4,7 @@ import { usePage } from '@inertiajs/vue3'
 import AdminDashboard from '@/Pages/Dashboard/Partials/AdminDashboard.vue'
 import ManagerDashboard from '@/Pages/Dashboard/Partials/ManagerDashboard.vue'
 import EmployeeDashboard from '@/Pages/Dashboard/Partials/EmployeeDashboard.vue'
-import AppLayout from '@/Layouts/AppLayout.vue'
+import AppLayout from '@/layouts/AppLayout.vue'
 
 interface User {
   id: number
@@ -79,3 +79,5 @@ const dashboardTitle = computed(() => {
   @apply transition-all duration-300;
 }
 </style>
+
+

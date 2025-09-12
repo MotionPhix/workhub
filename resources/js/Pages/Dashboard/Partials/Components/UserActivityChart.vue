@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { Progress } from '@/components/ui/progress'
 import { Users, Activity, TrendingUp, TrendingDown } from 'lucide-vue-next'
-import EmptyState from "@/Pages/Dashboard/Partials/Components/EmptyState.vue";
+import EmptyState from "@/pages/dashboard/partials/Components/EmptyState.vue";
 
 interface SystemMetrics {
   total_users: number
@@ -213,3 +213,5 @@ const hasData = computed(() => {
   @apply bg-background;
 }
 </style>
+
+

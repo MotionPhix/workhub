@@ -6,8 +6,7 @@
     "dev": "vite"
   },
   "devDependencies": {
-    "@headlessui/vue": "^1.7.23",
-    "@inertiajs/vue3": "^2.0.0",
+    "@inertiajs/vue3": "^2.1.5",
     "@inertiaui/modal-vue": "file:vendor/inertiaui/modal/vue",
     "@radix-icons/vue": "^1.0.0",
     "@tailwindcss/forms": "^0.5.3",
@@ -46,7 +45,7 @@
     "oh-vue-icons": "^1.0.0-rc3",
     "pinia": "^2.3.1",
     "postcss": "^8.4.31",
-    "pusher-js": "^8.4.0-rc2",
+    "pusher-js": "^8.4.0",
     "radix-vue": "^1.9.12",
     "sass-embedded": "^1.83.4",
     "tailwind-merge": "^2.6.0",

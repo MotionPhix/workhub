@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import EmptyState from "@/Pages/Dashboard/Partials/Components/EmptyState.vue";
+import EmptyState from "@/pages/dashboard/partials/Components/EmptyState.vue";
 
 interface DepartmentPerformance {
   name: string
@@ -236,3 +236,5 @@ const departmentMetrics = computed(() => {
   @apply bg-popover text-popover-foreground border-border;
 }
 </style>
+
+
