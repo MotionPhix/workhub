@@ -27,13 +27,13 @@ class DatabaseSeeder extends Seeder
       'name' => 'Admin User',
       'email' => 'admin@workhub.com',
       'department_uuid' => $itDepartment?->uuid,
-      'password' => Hash::make('Pa$$w0rd'), // Explicit password for testing
+      'password' => Hash::make('password'), // Using standard test password
     ]);
 
     $user->syncRoles('admin');
     
     $this->command->info('✅ Admin user created:');
     $this->command->line('   Email: admin@workhub.com');  
-    $this->command->line('   Password: Pa$$w0rd');
+    $this->command->line('   Password: password');
   }
 }
