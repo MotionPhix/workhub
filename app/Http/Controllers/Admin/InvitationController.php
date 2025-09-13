@@ -15,10 +15,7 @@ use Inertia\Inertia;
 
 class InvitationController extends Controller
 {
-    public function __construct(private InvitationService $invitationService)
-    {
-        $this->middleware(['auth', 'can:manage-invitations']);
-    }
+    public function __construct(private InvitationService $invitationService) {}
 
     public function index(Request $request)
     {

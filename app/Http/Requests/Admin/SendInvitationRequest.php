@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class SendInvitationRequest extends FormRequest
 {
@@ -28,7 +27,7 @@ class SendInvitationRequest extends FormRequest
                 'nullable',
                 'email',
                 'exists:users,email',
-                Rule::different('email'), // Can't be their own manager
+                'different:email', // Can't be their own manager
             ],
             'job_title' => 'nullable|string|max:255',
             'role_name' => 'nullable|string|exists:roles,name',

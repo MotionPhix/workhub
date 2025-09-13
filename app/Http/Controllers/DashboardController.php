@@ -7,6 +7,7 @@ use App\Models\WorkEntry;
 use App\Services\DashboardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -18,44 +19,20 @@ class DashboardController extends Controller
   public function index(Request $request)
   {
     $user = Auth::user();
-    $stats = $this->getStatsByRole($user, $request);
 
-
-    return Inertia('dashboard/Index', [
-      'dashboard' => $stats
-    ]);
-  }
-
-  private function getStatsByRole(User $user, Request $request): array
-  {
-    $baseStats = $this->dashboardService->getBaseStats($user->id);
-    $timeFilter = $request->get('time_filter', 'month');
-
+    // Redirect users to their role-appropriate dashboards
     if ($user->hasRole('admin')) {
-      return array_merge(
-        $baseStats,
-        $this->dashboardService->getAdminStats(),
-        [
-          'time_filter' => $timeFilter,
-          'system_metrics' => $this->dashboardService->getSystemMetrics($timeFilter),
-          'organization_metrics' => $this->dashboardService->getOrganizationMetrics($timeFilter),
-          'department_analytics' => $this->dashboardService->getDepartmentAnalytics(),
-          'user_metrics' => $this->dashboardService->getUserMetrics(),
-        ]
-      );
+        return redirect()->route('admin.dashboard');
     }
 
-    if ($user->hasRole(['managing director', 'general manager'])) {
-      return array_merge(
-        $baseStats,
-        $this->dashboardService->getManagerStats($user->email)
-      );
+    if ($user->hasRole('manager')) {
+        return redirect()->route('manager.dashboard');
     }
 
-    return array_merge(
-      $baseStats,
-      $this->dashboardService->getEmployeeStats($user->id)
-    );
+    // Employee dashboard data only
+    $employeeData = $this->dashboardService->getEmployeeStats($user->id);
+
+    return Inertia::render('dashboard/Index', $employeeData);
   }
 
   /**

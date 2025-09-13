@@ -331,7 +331,7 @@ class ManagerAnalyticsService
 
         $upcomingReports = DB::table('user_report_schedules')
             ->whereIn('user_id', $teamIds)
-            ->where('is_active', true)
+            ->where('user_report_schedules.is_active', true)
             ->where('next_due_at', '<=', now()->addDays(7))
             ->join('users', 'user_report_schedules.user_id', '=', 'users.id')
             ->select([

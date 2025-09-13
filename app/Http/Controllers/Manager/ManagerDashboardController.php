@@ -24,7 +24,7 @@ class ManagerDashboardController extends Controller
 
         $dashboardData = $this->analyticsService->getManagerDashboardData(auth()->user());
 
-        return Inertia::render('Manager/Dashboard', [
+        return Inertia::render('manager/Dashboard', [
             'dashboardData' => $dashboardData,
             'currentUser' => auth()->user(),
         ]);
@@ -70,7 +70,7 @@ class ManagerDashboardController extends Controller
 
         $reports = $query->paginate(15);
 
-        return Inertia::render('Manager/TeamReports', [
+        return Inertia::render('manager/TeamReports', [
             'reports' => $reports,
             'filters' => $filters,
             'teamMembers' => User::where('manager_email', auth()->user()->email)
@@ -120,7 +120,7 @@ class ManagerDashboardController extends Controller
         $period = $request->get('period', 'current_month');
         $dashboardData = $this->analyticsService->getManagerDashboardData(auth()->user());
 
-        return Inertia::render('Manager/TeamPerformance', [
+        return Inertia::render('manager/TeamPerformance', [
             'performanceData' => $dashboardData['performance_analytics'],
             'complianceData' => $dashboardData['compliance_status'],
             'trendingData' => $dashboardData['trending_insights'],
@@ -144,7 +144,7 @@ class ManagerDashboardController extends Controller
             ];
         }
 
-        return Inertia::render('Manager/TeamSchedules', [
+        return Inertia::render('manager/TeamSchedules', [
             'schedules' => $schedules,
             'upcomingReports' => collect($schedules)
                 ->flatMap(fn ($data) => $data['schedules'])

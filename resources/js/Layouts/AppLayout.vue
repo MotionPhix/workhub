@@ -1,13 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import MobileNavigation from '@/components/Navigation/MobileNavigation.vue'
-import DesktopNavigation from '@/components/Navigation/DesktopNavigation.vue'
-import ResponsiveFooter from '@/components/Navigation/ResponsiveFooter.vue'
+import MobileNavigation from '@/components/navigation/MobileNavigation.vue'
+import DesktopNavigation from '@/components/navigation/DesktopNavigation.vue'
+import ResponsiveFooter from '@/components/navigation/ResponsiveFooter.vue'
 import { useDeviceDetection } from '@/composables/useDeviceDetection'
 import {Toaster} from "vue-sonner";
 import {router} from "@inertiajs/vue3";
 import {PowerIcon, UserIcon} from "lucide-vue-next";
-import UserAvatar from "@/layouts/UserAvatar.vue";
+import UserAvatar from "@/components/UserAvatar.vue";
 import {getInitials} from "@/lib/stringUtils";
 import {
   DropdownMenu,

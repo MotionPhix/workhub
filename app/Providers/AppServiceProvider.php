@@ -87,5 +87,56 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-invitations', function (User $user) {
             return $user->hasRole(['admin', 'manager']);
         });
+
+        // Manager dashboard access
+        Gate::define('access-manager-dashboard', function (User $user) {
+            return $user->hasRole('manager');
+        });
+
+        // Admin panel access
+        Gate::define('access-admin-panel', function (User $user) {
+            return $user->hasRole('admin');
+        });
+
+        // Manager permissions
+        Gate::define('view-team-reports', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
+
+        Gate::define('view-team-performance', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
+
+        Gate::define('manage-team-schedules', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
+
+        Gate::define('export-team-analytics', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
+
+        Gate::define('bulk-approve-reports', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
+
+        Gate::define('view-team-members', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
+
+        Gate::define('manage-team-members', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
+
+        Gate::define('view-team-work-entries', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
+
+        Gate::define('approve-work-entries', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
+
+        Gate::define('view-team-insights', function (User $user) {
+            return $user->hasRole(['manager', 'admin']);
+        });
     }
 }

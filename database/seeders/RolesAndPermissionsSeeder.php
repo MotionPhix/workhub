@@ -2,62 +2,343 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
-  /**
-   * Run the database seeds.
-   */
-  public function run(): void
-  {
-    // Reset cached roles and permissions
-    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-    // Create Permissions
-    Permission::create(['name' => 'create work entries']);
-    Permission::create(['name' => 'edit work entries']);
-    Permission::create(['name' => 'delete work entries']);
-    Permission::create(['name' => 'view all work entries']);
-    Permission::create(['name' => 'generate reports']);
+        // ================================
+        // ADMIN PANEL & SYSTEM PERMISSIONS
+        // ================================
+        $adminPermissions = [
+            'access-admin-panel',
+            'view-system-dashboard',
+            'manage-system-settings',
+            'view-system-logs',
+            'manage-system-maintenance',
+        ];
 
-    Permission::create(['name' => 'create departments']);
-    Permission::create(['name' => 'edit departments']);
-    Permission::create(['name' => 'delete departments']);
-    Permission::create(['name' => 'view departments']);
-    Permission::create(['name' => 'assign departments']);
+        // ================================
+        // USER MANAGEMENT PERMISSIONS
+        // ================================
+        $userPermissions = [
+            'view-users',
+            'view-any-user',
+            'create-users',
+            'edit-users',
+            'edit-any-user',
+            'delete-users',
+            'delete-any-user',
+            'activate-users',
+            'deactivate-users',
+            'impersonate-users',
+            'assign-user-roles',
+            'manage-user-permissions',
+        ];
 
-    // Create Roles and assign permissions
-    $employeeRole = Role::create(['name' => 'employee'])
-      ->givePermissionTo([
-        'create work entries',
-        'edit work entries',
-        'view departments',
-        'assign departments'
-      ]);
+        // ================================
+        // INVITATION MANAGEMENT PERMISSIONS
+        // ================================
+        $invitationPermissions = [
+            'view-invitations',
+            'create-invitations',
+            'edit-invitations',
+            'delete-invitations',
+            'resend-invitations',
+            'cancel-invitations',
+            'bulk-invite-users',
+            'manage-invitation-settings',
+        ];
 
-    $managerRole = Role::create(['name' => 'managing director'])
-      ->givePermissionTo([
-        'view all work entries',
-        'generate reports',
-        'create departments',
-        'edit departments',
-        'delete departments',
-        'view departments',
-      ]);
+        // ================================
+        // ROLE & PERMISSION MANAGEMENT
+        // ================================
+        $rolePermissions = [
+            'view-roles',
+            'create-roles',
+            'edit-roles',
+            'delete-roles',
+            'assign-permissions-to-roles',
+            'view-permissions',
+            'create-permissions',
+            'edit-permissions',
+            'delete-permissions',
+        ];
 
-    $generalManagerRole  = Role::create(['name' => 'general manager'])
-      ->givePermissionTo([
-        'view all work entries',
-        'generate reports',
-        'edit departments',
-        'view departments',
-      ]);
+        // ================================
+        // DEPARTMENT MANAGEMENT PERMISSIONS
+        // ================================
+        $departmentPermissions = [
+            'view-departments',
+            'view-any-department',
+            'create-departments',
+            'edit-departments',
+            'edit-any-department',
+            'delete-departments',
+            'delete-any-department',
+            'assign-users-to-departments',
+            'manage-department-hierarchy',
+        ];
 
-    $adminRole = Role::create(['name' => 'admin'])
-      ->givePermissionTo(Permission::all());
-  }
+        // ================================
+        // WORK ENTRY PERMISSIONS
+        // ================================
+        $workEntryPermissions = [
+            // Own work entries
+            'view-own-work-entries',
+            'create-work-entries',
+            'edit-own-work-entries',
+            'delete-own-work-entries',
+
+            // Team work entries (for managers)
+            'view-team-work-entries',
+            'edit-team-work-entries',
+            'delete-team-work-entries',
+            'approve-team-work-entries',
+            'reject-team-work-entries',
+
+            // All work entries (for admins)
+            'view-all-work-entries',
+            'edit-all-work-entries',
+            'delete-all-work-entries',
+            'approve-all-work-entries',
+            'bulk-manage-work-entries',
+        ];
+
+        // ================================
+        // REPORTING & ANALYTICS PERMISSIONS
+        // ================================
+        $reportingPermissions = [
+            // Personal reports
+            'view-own-reports',
+            'generate-own-reports',
+            'export-own-reports',
+
+            // Team reports (for managers)
+            'view-team-reports',
+            'generate-team-reports',
+            'export-team-reports',
+
+            // System reports (for admins)
+            'view-all-reports',
+            'view-system-reports',
+            'generate-system-reports',
+            'export-system-reports',
+            'schedule-reports',
+            'manage-report-templates',
+
+            // Advanced analytics
+            'view-productivity-insights',
+            'view-team-analytics',
+            'view-system-analytics',
+            'create-custom-reports',
+            'manage-dashboard-widgets',
+        ];
+
+        // ================================
+        // INSIGHTS & ANALYTICS PERMISSIONS
+        // ================================
+        $insightPermissions = [
+            'view-personal-insights',
+            'view-team-insights',
+            'view-system-insights',
+            'view-productivity-metrics',
+            'view-performance-analytics',
+            'create-insight-reports',
+            'export-insights',
+            'configure-insight-alerts',
+        ];
+
+        // ================================
+        // PROFILE & SETTINGS PERMISSIONS
+        // ================================
+        $profilePermissions = [
+            'view-own-profile',
+            'edit-own-profile',
+            'delete-own-profile',
+            'view-any-profile',
+            'edit-any-profile',
+            'manage-profile-settings',
+            'change-own-password',
+            'force-password-change',
+        ];
+
+        // ================================
+        // NOTIFICATION PERMISSIONS
+        // ================================
+        $notificationPermissions = [
+            'view-notifications',
+            'create-notifications',
+            'send-notifications',
+            'broadcast-notifications',
+            'manage-notification-templates',
+            'configure-notification-settings',
+        ];
+
+        // ================================
+        // AUDIT & COMPLIANCE PERMISSIONS
+        // ================================
+        $auditPermissions = [
+            'view-audit-logs',
+            'view-user-activity',
+            'view-system-activity',
+            'export-audit-logs',
+            'manage-compliance-reports',
+            'configure-audit-settings',
+        ];
+
+        // Create all permissions
+        $allPermissions = array_merge(
+            $adminPermissions,
+            $userPermissions,
+            $invitationPermissions,
+            $rolePermissions,
+            $departmentPermissions,
+            $workEntryPermissions,
+            $reportingPermissions,
+            $insightPermissions,
+            $profilePermissions,
+            $notificationPermissions,
+            $auditPermissions
+        );
+
+        foreach ($allPermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
+        // ================================
+        // CREATE ROLES AND ASSIGN PERMISSIONS
+        // ================================
+
+        // EMPLOYEE ROLE - Basic work entry capabilities
+        $employeeRole = Role::firstOrCreate(['name' => 'employee']);
+        $employeeRole->syncPermissions([
+            // Work entries
+            'view-own-work-entries',
+            'create-work-entries',
+            'edit-own-work-entries',
+            'delete-own-work-entries',
+
+            // Profile
+            'view-own-profile',
+            'edit-own-profile',
+            'change-own-password',
+
+            // Reports (own)
+            'view-own-reports',
+            'generate-own-reports',
+            'export-own-reports',
+
+            // Insights (personal)
+            'view-personal-insights',
+
+            // Departments (view only)
+            'view-departments',
+
+            // Notifications
+            'view-notifications',
+        ]);
+
+        // MANAGER ROLE - Team management capabilities
+        $managerRole = Role::firstOrCreate(['name' => 'manager']);
+        $managerRole->syncPermissions([
+            // All employee permissions
+            ...$employeeRole->permissions->pluck('name')->toArray(),
+
+            // Team work entries
+            'view-team-work-entries',
+            'edit-team-work-entries',
+            'approve-team-work-entries',
+            'reject-team-work-entries',
+
+            // Team reports
+            'view-team-reports',
+            'generate-team-reports',
+            'export-team-reports',
+
+            // Team insights
+            'view-team-insights',
+            'view-productivity-metrics',
+
+            // Department management (limited)
+            'view-any-department',
+            'edit-departments',
+
+            // User management (limited)
+            'view-users',
+
+            // Notifications
+            'create-notifications',
+            'send-notifications',
+        ]);
+
+        // ADMIN ROLE - Full system access
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole->syncPermissions(Permission::all());
+
+        // ================================
+        // CREATE DEFAULT ADMIN USER
+        // ================================
+
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@workhub.local'],
+            [
+                'name' => 'System Administrator',
+                'email' => 'admin@workhub.local',
+                'password' => Hash::make('AdminPass123!'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Assign admin role to the admin user
+        $adminUser->assignRole('admin');
+
+        // ================================
+        // CREATE DEMO MANAGER USER
+        // ================================
+
+        $managerUser = User::firstOrCreate(
+            ['email' => 'manager@workhub.local'],
+            [
+                'name' => 'Demo Manager',
+                'email' => 'manager@workhub.local',
+                'password' => Hash::make('ManagerPass123!'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $managerUser->assignRole('manager');
+
+        // ================================
+        // CREATE DEMO EMPLOYEE USER
+        // ================================
+
+        $employeeUser = User::firstOrCreate(
+            ['email' => 'employee@workhub.local'],
+            [
+                'name' => 'Demo Employee',
+                'email' => 'employee@workhub.local',
+                'password' => Hash::make('EmployeePass123!'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $employeeUser->assignRole('employee');
+
+        $this->command->info('✅ Roles and permissions seeded successfully!');
+        $this->command->info('🔐 Admin User: admin@workhub.local / AdminPass123!');
+        $this->command->info('👨‍💼 Manager User: manager@workhub.local / ManagerPass123!');
+        $this->command->info('👨‍💻 Employee User: employee@workhub.local / EmployeePass123!');
+    }
 }

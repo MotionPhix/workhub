@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\User;
 use App\Models\UserInvite;
-use App\Models\Department;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,7 +24,7 @@ class UserInviteFactory extends Factory
             'invited_by' => User::factory(),
             'email' => fake()->unique()->safeEmail(),
             'name' => fake()->name(),
-            'department_uuid' => Department::factory(),
+            'department_uuid' => null,
             'manager_email' => null,
             'job_title' => fake()->jobTitle(),
             'role_name' => 'employee',

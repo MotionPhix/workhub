@@ -23,7 +23,27 @@ class LoginResponse implements LoginResponseContract
       'User logged in successfully'
     );
 
-    // Redirect to intended page or dashboard
-    return redirect()->intended(route('dashboard'));
+    // Determine redirect based on user role
+    $redirectUrl = $this->getRedirectUrlByRole($user);
+
+    // Redirect to intended page or role-based dashboard
+    return redirect()->intended($redirectUrl);
+  }
+
+  /**
+   * Get the appropriate redirect URL based on user role
+   */
+  private function getRedirectUrlByRole($user): string
+  {
+    if ($user->hasRole('admin')) {
+      return route('admin.dashboard');
+    }
+
+    if ($user->hasRole('manager')) {
+      return route('manager.dashboard');
+    }
+
+    // Default to employee dashboard
+    return route('dashboard');
   }
 }

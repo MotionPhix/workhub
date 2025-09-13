@@ -32,6 +32,10 @@ class InvitationService
                 throw new \InvalidArgumentException('A pending invitation already exists for this email.');
             }
 
+            // Generate secure token first
+            $rawToken = bin2hex(random_bytes(32));
+            $hashedToken = hash('sha256', $rawToken);
+
             // Create the invitation
             $invite = UserInvite::create([
                 'invited_by' => $inviter->id,
@@ -41,6 +45,7 @@ class InvitationService
                 'manager_email' => $inviteData['manager_email'] ?? null,
                 'job_title' => $inviteData['job_title'] ?? null,
                 'role_name' => $inviteData['role_name'] ?? 'employee',
+                'token' => $hashedToken,
                 'invited_at' => now(),
                 'expires_at' => now()->addDays($inviteData['expires_in_days'] ?? 7),
                 'status' => 'pending',
@@ -51,11 +56,11 @@ class InvitationService
                 ],
             ]);
 
-            // Generate secure token
-            $token = $invite->generateToken();
+            // Use the raw token for the email
+            $token = $rawToken;
 
             // Send invitation email
-            SendUserInviteJob::dispatch($invite, $token)->onQueue('emails');
+            // SendUserInviteJob::dispatch($invite, $token)->onQueue('emails');
 
             // Log the invitation
             Log::info('User invitation sent', [
@@ -94,7 +99,7 @@ class InvitationService
                 'department_uuid' => $invite->department_uuid,
                 'manager_email' => $invite->manager_email,
                 'job_title' => $invite->job_title,
-                'gender' => $userData['gender'] ?? null,
+                'gender' => $userData['gender'] ?? 'unknown',
                 'is_active' => true,
                 'joined_at' => now(),
                 'settings' => array_merge([
@@ -115,7 +120,7 @@ class InvitationService
             $invite->accept();
 
             // Send welcome notification to inviter
-            $invite->inviter->notify(new UserInvitedNotification($user, $invite, 'accepted'));
+            // $invite->inviter->notify(new UserInvitedNotification($user, $invite, 'accepted'));
 
             // Log successful registration
             Log::info('User registered via invitation', [
@@ -147,7 +152,7 @@ class InvitationService
         }
 
         // Notify inviter
-        $invite->inviter->notify(new UserInvitedNotification(null, $invite, 'declined', $reason));
+        // $invite->inviter->notify(new UserInvitedNotification(null, $invite, 'declined', $reason));
 
         Log::info('Invitation declined', [
             'invite_id' => $invite->id,
@@ -165,7 +170,7 @@ class InvitationService
         }
 
         // Send reminder email
-        SendUserInviteJob::dispatch($invite, null, true)->onQueue('emails');
+        // SendUserInviteJob::dispatch($invite, null, true)->onQueue('emails');
 
         $invite->sendReminder();
 
@@ -294,7 +299,7 @@ class InvitationService
         $validator = Validator::make($data, [
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required',
-            'gender' => 'nullable|in:male,female,other',
+            'gender' => 'nullable|in:male,female,unknown',
             'timezone' => 'nullable|string|max:50',
         ]);
 

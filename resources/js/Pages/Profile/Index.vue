@@ -9,7 +9,7 @@ import {visitModal} from "@inertiaui/modal-vue";
 import {getInitials} from "@/lib/stringUtils";
 import Divider from "@/components/Divider.vue";
 import UpdatePasswordForm from "@/pages/profile/partials/UpdatePasswordForm.vue";
-import UserAvatar from "@/layouts/UserAvatar.vue";
+import UserAvatar from "@/components/UserAvatar.vue";
 import ProfileSettings from "@/pages/profile/partials/ProfileSettings.vue";
 import {PencilIcon} from "lucide-vue-next";
 

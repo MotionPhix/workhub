@@ -3,7 +3,7 @@ import GuestLayout from '@/layouts/GuestLayout.vue';
 import InputError from '@/components/InputError.vue';
 import { Label } from '@/components/ui/label';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import FormField from "@/components/Forms/FormField.vue";
+import FormField from "@/components/forms/FormField.vue";
 import {LockIcon} from "lucide-vue-next";
 
 defineProps({
