@@ -4,7 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductivityPredictionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\Work\WorkEntryController;
+use App\Http\Controllers\WorkEntryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,22 +26,13 @@ require __DIR__.'/admin.php';
 // Include manager routes
 require __DIR__.'/manager.php';
 
-// Include authentication routes
-require __DIR__.'/auth.php';
-
-// Include admin routes
-require __DIR__.'/admin.php';
-
 Route::middleware(['auth', 'role.access'])->group(function () {
 
     // Member Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Member Onboarding
-    Route::prefix('onboarding')->name('onboarding.')->group(function () {
-        Route::post('/complete-step', \App\Http\Controllers\Onboarding\CompleteStep::class)->name('complete-step');
-        Route::get('/status', \App\Http\Controllers\Onboarding\Status::class)->name('status');
-    });
+    // Member Onboarding (if applicable - e.g., first login, profile incomplete, etc.)
+    // Route::get('/onboarding', [\App\Http\Controllers\Onboarding::class, 'index'])->name('onboarding');
 
     // Work Entries (Member's own work logs)
     Route::prefix('work-logs')->name('work-entries.')->group(function () {
@@ -69,9 +60,9 @@ Route::middleware(['auth', 'role.access'])->group(function () {
 
     // Member Reports (personal reports only)
     Route::middleware(['can:view-own-reports'])->group(function () {
-        Route::get('/reports', [\App\Http\Controllers\Report\ReportsController::class, 'memberIndex'])
+        Route::get('/reports', [\App\Http\Controllers\ReportsController::class, 'memberIndex'])
             ->name('reports.index');
-        Route::get('/reports/{report:uuid}', [\App\Http\Controllers\Report\ReportsController::class, 'memberShow'])
+        Route::get('/reports/{report:uuid}', [\App\Http\Controllers\ReportsController::class, 'memberShow'])
             ->name('reports.show');
     });
 });

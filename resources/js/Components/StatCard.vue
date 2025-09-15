@@ -10,7 +10,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="bg-gray-100 dark:bg-gray-700 shadow rounded-lg p-4">
+  <div class="bg-gray-100 dark:bg-gray-700 shadow-sm rounded-lg p-4">
     <div class="flex items-center justify-between">
       <h2 class="text-lg font-thin dark:text-gray-300 text-gray-800">{{ title }}</h2>
       <div v-if="trend" class="flex items-center space-x-2">

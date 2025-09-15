@@ -39,7 +39,7 @@
       <!-- Expiration Warning -->
       <div v-if="invitation.days_until_expiry <= 3" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md p-3 mb-6">
         <div class="flex">
-          <div class="flex-shrink-0">
+          <div class="shrink-0">
             <AlertTriangle class="h-5 w-5 text-yellow-400" />
           </div>
           <div class="ml-3">
@@ -118,7 +118,7 @@
       <!-- Error Display -->
       <div v-if="form.errors.error" class="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-3">
         <div class="flex">
-          <div class="flex-shrink-0">
+          <div class="shrink-0">
             <X class="h-5 w-5 text-red-400" />
           </div>
           <div class="ml-3">

@@ -167,7 +167,7 @@ const navigateToStep = (route: string) => {
               'border-primary': currentStep?.id === step.id
             }"
           >
-            <div class="flex-shrink-0">
+            <div class="shrink-0">
               <component
                 :is="step.completed ? CheckCircle2 : UserCog"
                 class="h-5 w-5"
@@ -175,7 +175,7 @@ const navigateToStep = (route: string) => {
               />
             </div>
 
-            <div class="flex-grow space-y-1">
+            <div class="grow space-y-1">
               <h4 class="text-sm font-medium">{{ step.title }}</h4>
               <p class="text-sm text-muted-foreground">
                 {{ step.description }}

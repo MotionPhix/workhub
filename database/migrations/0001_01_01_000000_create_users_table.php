@@ -4,66 +4,73 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-  public function up(): void
-  {
-    Schema::create('users', function (Blueprint $table) {
-      $table->id();
-      $table->uuid('uuid')->unique()->index();
-      $table->string('name');
-      $table->string('email')->unique();
-      $table->timestamp('email_verified_at')->nullable();
-      $table->string('password');
-      $table->rememberToken();
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
 
-      // Enhanced user metadata
-      $table->foreignUuid('department_uuid')
-        ->nullable()
-        ->references('uuid')
-        ->on('departments')
-        ->nullOnDelete();
+            $table->rememberToken();
 
-      $table->string('manager_email')->nullable();
+            // Enhanced user metadata
+            $table->foreignUuid('department_uuid')
+                ->nullable()
+                ->references('uuid')
+                ->on('departments')
+                ->nullOnDelete();
 
-      // Account status and security
-      $table->boolean('is_active')->default(true);
+            $table->string('manager_email')->nullable();
 
-      $table->timestamp('last_login_at')->nullable();
-      $table->string('last_login_ip')->nullable();
+            // Additional user fields
+            $table->date('joined_at')->nullable();
+            $table->json('settings')->nullable();
+            $table->enum('gender', ['male', 'female', 'unknown'])->default('unknown');
 
-      // Soft delete for account management
-      $table->softDeletes();
-      $table->timestamps();
-    });
+            // Account status and security
+            $table->boolean('is_active')->default(true);
 
-    // Keep existing password_reset_tokens and sessions tables
-    Schema::create('password_reset_tokens', function (Blueprint $table) {
-      $table->string('email')->primary();
-      $table->string('token');
-      $table->timestamp('created_at')->nullable();
-      $table->timestamp('expires_at')->nullable();
+            $table->timestamp('last_login_at')->nullable();
+            $table->string('last_login_ip')->nullable();
 
-      $table->foreignId('user_id')
-        ->constrained('users')
-        ->cascadeOnDelete();
+            // Soft delete for account management
+            $table->softDeletes();
+            $table->timestamps();
+        });
 
-      $table->index(['user_id', 'token']);
-    });
+        // Keep existing password_reset_tokens and sessions tables
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('expires_at')->nullable();
 
-    Schema::create('sessions', function (Blueprint $table) {
-      $table->string('id')->primary();
-      $table->foreignId('user_id')->nullable()->index();
-      $table->string('ip_address', 45)->nullable();
-      $table->text('user_agent')->nullable();
-      $table->longText('payload');
-      $table->integer('last_activity')->index();
-    });
-  }
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
-  public function down(): void
-  {
-    Schema::dropIfExists('users');
-    Schema::dropIfExists('password_reset_tokens');
-    Schema::dropIfExists('sessions');
-  }
+            $table->index(['user_id', 'token']);
+        });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('sessions');
+    }
 };

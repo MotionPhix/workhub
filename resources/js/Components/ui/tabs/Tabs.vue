@@ -1,5 +1,7 @@
 <script setup>
-import { TabsRoot, useForwardPropsEmits } from 'radix-vue';
+import { reactiveOmit } from "@vueuse/core";
+import { TabsRoot, useForwardPropsEmits } from "reka-ui";
+import { cn } from "@/lib/utils";
 
 const props = defineProps({
   defaultValue: { type: null, required: false },
@@ -7,18 +9,23 @@ const props = defineProps({
   dir: { type: String, required: false },
   activationMode: { type: String, required: false },
   modelValue: { type: null, required: false },
+  unmountOnHide: { type: Boolean, required: false },
   asChild: { type: Boolean, required: false },
-  as: { type: null, required: false },
+  as: { type: [String, Object, Function], required: false },
+  class: { type: null, required: false },
 });
-const emits = defineEmits(['update:modelValue']);
+const emits = defineEmits(["update:modelValue"]);
 
-const forwarded = useForwardPropsEmits(props, emits);
+const delegatedProps = reactiveOmit(props, "class");
+const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
 <template>
-  <TabsRoot v-bind="forwarded">
+  <TabsRoot
+    data-slot="tabs"
+    v-bind="forwarded"
+    :class="cn('flex flex-col gap-2', props.class)"
+  >
     <slot />
   </TabsRoot>
 </template>
-
-

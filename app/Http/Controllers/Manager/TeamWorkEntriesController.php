@@ -57,11 +57,11 @@ class TeamWorkEntriesController extends Controller
         }
 
         if ($validated['start_date'] ?? null) {
-            $query->where('date', '>=', $validated['start_date']);
+            $query->where('work_date', '>=', $validated['start_date']);
         }
 
         if ($validated['end_date'] ?? null) {
-            $query->where('date', '<=', $validated['end_date']);
+            $query->where('work_date', '<=', $validated['end_date']);
         }
 
         if ($validated['min_hours'] ?? null) {
@@ -269,7 +269,7 @@ class TeamWorkEntriesController extends Controller
         $dateRange = $this->getDateRangeForPeriod($period);
 
         $query = WorkEntry::whereIn('user_id', $teamMemberIds)
-            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+            ->whereBetween('work_date', [$dateRange['start'], $dateRange['end']])
             ->with(['user:id,name', 'project:id,name']);
 
         if ($validated['project_id'] ?? null) {

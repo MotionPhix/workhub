@@ -227,7 +227,7 @@ watch(() => props.data, () => {
             v-for="column in visibleColumns"
             :key="column.accessorKey"
             @click="handleSort(column)"
-            class="cursor-pointer hover:bg-gray-100 dark:hover:bg-accent min-w-[8rem]">
+            class="cursor-pointer hover:bg-gray-100 dark:hover:bg-accent min-w-32">
             {{ column.header }}
             <ArrowUpDownIcon v-if="column.sortable" class="ml-2 h-4 w-4 inline" />
           </TableHead>

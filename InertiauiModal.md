@@ -48,6 +48,65 @@ import { Modal } from '@inertiaui/modal-vue'
 
 That's it! There is no need to change anything about your routes or controllers!
 
+## Installation
+
+There are two ways to install Inertia Modal. First, you can install the package with Composer. This package contains the Laravel package as well as the frontend packages. The advantage of installing it with Composer is that the frontend package is always in sync with the backend package. Alternatively, you can use npm to install the frontend package separately, but this requires you to manage the versions of the frontend and backend packages yourself.
+
+## Composer Installation
+
+```terminal
+composer require inertiaui/modal
+```
+
+After installing the package, you can link the React or Vue package into your project. This will create a symlink in your node_modules directory to the package in the vendor directory.
+
+```terminal
+npm install vendor/inertiaui/modal/vue
+```
+
+## NPM Installation
+
+You may also install the frontend packages separately.
+
+```terminal
+npm install @inertiaui/modal-vue
+```
+
+## Inertia.js Configuration
+Inertia Modal requires a root-component to be mounted in your app. You can do this in the main app.js file where you initialize your Inertia app using the createInertiaApp function. You only need to change the render function to include the renderApp method and pass the App component and props object to it.
+
+```javascript
+import { renderApp } from '@inertiaui/modal-vue'
+
+createInertiaApp({
+    setup({ el, App, props, plugin }) {
+        return
+          - createApp({ render: () => h(App, props) }) // Remove this line
+          +  createApp({ render: renderApp(App, props) }) // Add this line instead
+            .use(plugin)
+            .mount(el)
+    }
+})
+```
+
+## Tailwind Configuration
+
+Inertia Modal uses Tailwind CSS for styling. You need to include the package path in the content array of your tailwind.config.js file:
+
+```javascript
+export default {
+    content: [
+        './node_modules/@inertiaui/modal-vue/src/**/*.{js,vue}',
+        // other paths...
+    ]
+}
+```
+
+For Tailwind CSS v4, add the following in your app.css file:
+```css
+@source '../../node_modules/@inertiaui/modal-vue/src/**/*.{js,vue}';
+```
+
 # Basic Usage
 
 As described in the introduction, Inertia Modal is fairly simple to use. There are two main components: Modal and ModalLink. In the sections below, we will cover how to use these components.

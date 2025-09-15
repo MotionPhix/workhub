@@ -1,7 +1,7 @@
 <template>
   <Head title="Onboarding" />
   <div class="min-h-screen flex flex-col bg-background text-foreground">
-    <header class="h-16 border-b bg-card/50 backdrop-blur flex items-center">
+    <header class="h-16 border-b bg-card/50 backdrop-blur-sm flex items-center">
       <div class="max-w-6xl mx-auto w-full px-4 flex items-center justify-between gap-6">
         <div class="flex items-center gap-2 font-semibold text-lg">
           <User class="h-5 w-5 text-primary" />

@@ -4,7 +4,7 @@
     <AdminLayout>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xs sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <!-- Header -->
                         <div class="flex justify-between items-center mb-6">
@@ -118,7 +118,7 @@
 
                         <!-- Pagination -->
                         <div class="mt-6" v-if="users.links.length > 3">
-                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <nav class="relative z-0 inline-flex rounded-md shadow-xs -space-x-px" aria-label="Pagination">
                                 <Link
                                     v-for="link in users.links"
                                     :key="link.label"

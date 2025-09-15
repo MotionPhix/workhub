@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\InsightsController;
-use App\Http\Controllers\Report\ReportsController;
+use App\Http\Controllers\ReportsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -87,6 +87,7 @@ Route::middleware(['auth', 'can:access-admin-panel', 'role.access'])->prefix('ad
     Route::middleware(['can:edit-departments'])->group(function () {
         Route::get('departments/{department:uuid}/edit', [DepartmentController::class, 'edit'])->name('departments.edit');
         Route::put('departments/{department:uuid}', [DepartmentController::class, 'update'])->name('departments.update');
+        Route::patch('departments/{department:uuid}/targets', [DepartmentController::class, 'updateTargets'])->name('departments.updateTargets');
     });
 
     Route::middleware(['can:delete-departments'])->group(function () {

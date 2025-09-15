@@ -2,6 +2,10 @@
 import {type Component, computed, ref} from 'vue'
 import {v4 as uuidv4} from 'uuid'
 import InputError from "@/components/InputError.vue";
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import {Textarea} from "@/components/ui/textarea";
 import {
   Select,
@@ -85,7 +89,7 @@ const currency = page.props?.currency ?? 'MWK'
 
 // Computed classes
 const inputClasses = computed(() => {
-  const baseClasses = '!min-h-10 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-opacity-50'
+  const baseClasses = 'min-h-10! block w-full rounded-md shadow-xs focus:ring-2 focus:ring-opacity-50'
 
   const variantClasses = {
     default: 'border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500',
@@ -276,7 +280,7 @@ function onToggle() {
             <Popover>
               <PopoverTrigger as-child>
                 <Button
-                  :variant="'outline'"
+                  :variant="'outline-solid'"
                   :class="cn(
                     'justify-start text-left font-normal',
                     !model && 'text-muted-foreground',

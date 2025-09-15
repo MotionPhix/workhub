@@ -93,7 +93,7 @@ const goToPage = (url) => {
         <button
           @click="goToPage(data.prev_page_url)"
           :disabled="!data.prev_page_url"
-          class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring focus:ring-blue-300 disabled:opacity-50">
+          class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-3 focus:ring-blue-300 disabled:opacity-50">
           Previous
         </button>
 
@@ -104,7 +104,7 @@ const goToPage = (url) => {
         <button
           @click="goToPage(data.next_page_url)"
           :disabled="!data.next_page_url"
-          class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring focus:ring-blue-300 disabled:opacity-50">
+          class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-3 focus:ring-blue-300 disabled:opacity-50">
           Next
         </button>
       </div>

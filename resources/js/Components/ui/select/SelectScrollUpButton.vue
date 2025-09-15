@@ -1,35 +1,30 @@
 <script setup>
-import { cn } from '@/lib/utils';
-import { ChevronUpIcon } from '@radix-icons/vue';
-import { SelectScrollUpButton, useForwardProps } from 'radix-vue';
-import { computed } from 'vue';
+import { reactiveOmit } from "@vueuse/core";
+import { ChevronUp } from "lucide-vue-next";
+import { SelectScrollUpButton, useForwardProps } from "reka-ui";
+import { cn } from "@/lib/utils";
 
 const props = defineProps({
   asChild: { type: Boolean, required: false },
-  as: { type: null, required: false },
+  as: { type: [String, Object, Function], required: false },
   class: { type: null, required: false },
 });
 
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props;
-
-  return delegated;
-});
+const delegatedProps = reactiveOmit(props, "class");
 
 const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
   <SelectScrollUpButton
+    data-slot="select-scroll-up-button"
     v-bind="forwardedProps"
     :class="
       cn('flex cursor-default items-center justify-center py-1', props.class)
     "
   >
     <slot>
-      <ChevronUpIcon />
+      <ChevronUp class="size-4" />
     </slot>
   </SelectScrollUpButton>
 </template>
-
-

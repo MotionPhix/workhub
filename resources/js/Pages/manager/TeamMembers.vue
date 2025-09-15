@@ -86,7 +86,7 @@
                                                 member.status === 'active' ? 'default' :
                                                 member.status === 'inactive' ? 'destructive' :
                                                 member.status === 'on_leave' ? 'secondary' :
-                                                'outline'
+                                                'outline-solid'
                                             "
                                         >
                                             {{ member.status ? member.status.replace('_', ' ') : 'active' }}
@@ -172,7 +172,7 @@
                                 <template v-for="link in teamMembers.links" :key="link.label">
                                     <Button
                                         v-if="link.url"
-                                        :variant="link.active ? 'default' : 'outline'"
+                                        :variant="link.active ? 'default' : 'outline-solid'"
                                         size="sm"
                                         asChild
                                     >

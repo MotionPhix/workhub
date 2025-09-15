@@ -55,7 +55,7 @@ class TeamInsightsController extends Controller
         foreach ($teamMemberIds as $userId) {
             $user = User::find($userId);
             $workEntries = WorkEntry::where('user_id', $userId)
-                ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+                ->whereBetween('work_date', [$dateRange['start'], $dateRange['end']])
                 ->get();
 
             $reports = Report::where('user_id', $userId)

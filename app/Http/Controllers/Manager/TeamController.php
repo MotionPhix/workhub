@@ -248,7 +248,7 @@ class TeamController extends Controller
         $dateRange = $this->getDateRangeForPeriod($period);
 
         $workEntries = WorkEntry::where('user_id', $user->id)
-            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+            ->whereBetween('work_date', [$dateRange['start'], $dateRange['end']])
             ->get();
 
         $reports = Report::where('user_id', $user->id)

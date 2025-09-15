@@ -1,26 +1,26 @@
 <script setup>
-import { SelectRoot, useForwardPropsEmits } from 'radix-vue';
+import { SelectRoot, useForwardPropsEmits } from "reka-ui";
 
 const props = defineProps({
   open: { type: Boolean, required: false },
   defaultOpen: { type: Boolean, required: false },
-  defaultValue: { type: String, required: false },
-  modelValue: { type: String, required: false },
+  defaultValue: { type: null, required: false },
+  modelValue: { type: null, required: false },
+  by: { type: [String, Function], required: false },
   dir: { type: String, required: false },
-  name: { type: String, required: false },
+  multiple: { type: Boolean, required: false },
   autocomplete: { type: String, required: false },
   disabled: { type: Boolean, required: false },
+  name: { type: String, required: false },
   required: { type: Boolean, required: false },
 });
-const emits = defineEmits(['update:modelValue', 'update:open']);
+const emits = defineEmits(["update:modelValue", "update:open"]);
 
 const forwarded = useForwardPropsEmits(props, emits);
 </script>
 
 <template>
-  <SelectRoot v-bind="forwarded">
+  <SelectRoot data-slot="select" v-bind="forwarded">
     <slot />
   </SelectRoot>
 </template>
-
-

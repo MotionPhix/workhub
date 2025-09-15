@@ -2,7 +2,7 @@
 import {ref, onMounted} from "vue";
 import {format} from "date-fns";
 import AppLayout from "@/layouts/AppLayout.vue";
-import ProductivityRadarChart from "@/components/Visualizations/ProductivityRadarChart.vue";
+import ProductivityRadarChart from "@/components/visualization/ProductivityRadarChart.vue";
 import ProfileTable from "@/pages/profile/partials/ProfileTable.vue";
 import StatCard from "@/components/StatCard.vue";
 import {visitModal} from "@inertiaui/modal-vue";

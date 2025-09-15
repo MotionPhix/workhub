@@ -19,7 +19,7 @@
                     <!-- Key Performance Indicators -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <!-- Total Users with Growth -->
-                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
+                        <div class="bg-linear-to-r from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-sm font-medium opacity-90">Total Users</h3>
@@ -35,7 +35,7 @@
                         </div>
 
                         <!-- Active Users -->
-                        <div class="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-xl text-white shadow-lg">
+                        <div class="bg-linear-to-r from-green-500 to-green-600 p-6 rounded-xl text-white shadow-lg">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-sm font-medium opacity-90">Active Users (7d)</h3>
@@ -49,7 +49,7 @@
                         </div>
 
                         <!-- Work Hours This Month -->
-                        <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-6 rounded-xl text-white shadow-lg">
+                        <div class="bg-linear-to-r from-purple-500 to-purple-600 p-6 rounded-xl text-white shadow-lg">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-sm font-medium opacity-90">Hours This Month</h3>
@@ -65,7 +65,7 @@
                         </div>
 
                         <!-- Productivity Score -->
-                        <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-xl text-white shadow-lg">
+                        <div class="bg-linear-to-r from-orange-500 to-orange-600 p-6 rounded-xl text-white shadow-lg">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-sm font-medium opacity-90">Productivity Score</h3>
@@ -228,19 +228,19 @@
 
                     <!-- KPIs Row -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div class="text-center p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg">
+                        <div class="text-center p-4 bg-linear-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg">
                             <p class="text-sm text-emerald-700 dark:text-emerald-300">User Satisfaction</p>
                             <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ insights?.kpi_summary?.user_satisfaction }}%</p>
                         </div>
-                        <div class="text-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
+                        <div class="text-center p-4 bg-linear-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
                             <p class="text-sm text-blue-700 dark:text-blue-300">System Uptime</p>
                             <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ insights?.kpi_summary?.system_uptime }}%</p>
                         </div>
-                        <div class="text-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
+                        <div class="text-center p-4 bg-linear-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
                             <p class="text-sm text-purple-700 dark:text-purple-300">Data Accuracy</p>
                             <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ insights?.kpi_summary?.data_accuracy }}%</p>
                         </div>
-                        <div class="text-center p-4 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg">
+                        <div class="text-center p-4 bg-linear-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg">
                             <p class="text-sm text-orange-700 dark:text-orange-300">Response Time</p>
                             <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ insights?.kpi_summary?.response_time }}</p>
                         </div>
@@ -251,7 +251,7 @@
                         <h4 class="font-medium text-gray-900 dark:text-white">Recommendations:</h4>
                         <div v-for="(recommendation, index) in insights.recommendations" :key="index"
                              class="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <Lightbulb class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                            <Lightbulb class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                             <p class="text-sm text-blue-900 dark:text-blue-100">{{ recommendation }}</p>
                         </div>
                     </div>
@@ -260,7 +260,7 @@
                 <!-- Quick Actions -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Link :href="route('admin.invitations.create')"
-                          class="flex items-center justify-center p-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+                          class="flex items-center justify-center p-6 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
                         <UserPlus class="w-8 h-8 mr-3" />
                         <div>
                             <h3 class="text-lg font-semibold">Send Invitations</h3>
@@ -269,7 +269,7 @@
                     </Link>
 
                     <Link :href="route('admin.users.index')"
-                          class="flex items-center justify-center p-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+                          class="flex items-center justify-center p-6 bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
                         <Users class="w-8 h-8 mr-3" />
                         <div>
                             <h3 class="text-lg font-semibold">Manage Users</h3>
@@ -278,7 +278,7 @@
                     </Link>
 
                     <Link :href="route('admin.reports.index')"
-                          class="flex items-center justify-center p-6 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+                          class="flex items-center justify-center p-6 bg-linear-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
                         <BarChart3 class="w-8 h-8 mr-3" />
                         <div>
                             <h3 class="text-lg font-semibold">View Reports</h3>

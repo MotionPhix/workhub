@@ -98,7 +98,7 @@ const submitPasswordResetRequest = () => {
         <div v-if="showSuccessMessage"
           class="mt-4 bg-green-50 border-l-4 border-green-400 p-4">
           <div class="flex">
-            <div class="flex-shrink-0">
+            <div class="shrink-0">
               <CheckCircle
                 class="h-5 w-5 text-green-400"
                 aria-hidden="true"

@@ -4,7 +4,7 @@
     <ManagerLayout>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xs sm:rounded-lg">
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-6">
                             <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Team Reports</h1>
@@ -70,7 +70,7 @@
                         </div>
 
                         <!-- Reports Table -->
-                        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                        <div class="bg-white dark:bg-gray-800 shadow-xs rounded-lg overflow-hidden">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
@@ -187,9 +187,9 @@
                                             ? 'bg-blue-600 text-white'
                                             : link.url
                                                 ? 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
-                                                : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
+                                                : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500',
+                                        { 'cursor-not-allowed': !link.url }
                                     ]"
-                                    :class="{ 'cursor-not-allowed': !link.url }"
                                 />
                             </div>
                         </div>

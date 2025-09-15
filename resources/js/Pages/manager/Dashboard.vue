@@ -31,7 +31,7 @@
                 <!-- Key Metrics Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <!-- Team Size -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center">
@@ -52,7 +52,7 @@
                     </div>
 
                     <!-- Current Month Reports -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center">
@@ -82,7 +82,7 @@
                     </div>
 
                     <!-- Pending Reports -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center">
@@ -103,7 +103,7 @@
                     </div>
 
                     <!-- Team Performance -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center">
@@ -130,7 +130,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Reports Awaiting Review - Takes 2/3 width -->
                     <div class="lg:col-span-2">
-                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700">
                             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center justify-between">
                                     <div>
@@ -158,7 +158,7 @@
                                     >
                                         <div class="flex-1">
                                             <div class="flex items-center">
-                                                <div class="flex-shrink-0">
+                                                <div class="shrink-0">
                                                     <div
                                                         :class="[
                                                             report.status === 'pending' ? 'bg-amber-500' :
@@ -214,7 +214,7 @@
                     <!-- Right Sidebar -->
                     <div class="space-y-6">
                         <!-- Team Performance Snapshot -->
-                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700">
                             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Team Performance</h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Current metrics overview</p>
@@ -260,7 +260,7 @@
                         </div>
 
                         <!-- Quick Actions -->
-                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700">
                             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Actions</h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Common management tasks</p>
@@ -270,7 +270,7 @@
                                     :href="route('manager.team.index')"
                                     class="flex items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors group"
                                 >
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/70 transition-colors">
                                             <Users class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                         </div>
@@ -288,7 +288,7 @@
                                     :href="route('manager.insights.index')"
                                     class="flex items-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors group"
                                 >
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <div class="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg group-hover:bg-purple-200 dark:group-hover:bg-purple-900/70 transition-colors">
                                             <BarChart3 class="w-5 h-5 text-purple-600 dark:text-purple-400" />
                                         </div>
@@ -306,7 +306,7 @@
                                     @click="generateReport"
                                     class="flex items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group"
                                 >
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg group-hover:bg-green-200 dark:group-hover:bg-green-900/70 transition-colors">
                                             <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -322,7 +322,7 @@
                         </div>
 
                         <!-- Top Performers -->
-                        <div v-if="dashboardData?.performance_analytics?.top_performers?.length" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div v-if="dashboardData?.performance_analytics?.top_performers?.length" class="bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700">
                             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Top Performers</h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">This month's standout team members</p>
@@ -334,7 +334,7 @@
                                     class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
                                 >
                                     <div class="flex items-center">
-                                        <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                        <div class="shrink-0 w-8 h-8 bg-linear-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                                             {{ index + 1 }}
                                         </div>
                                         <div class="ml-3">

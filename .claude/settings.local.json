@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "mcp__laravel-boost__last-error",
+      "mcp__laravel-boost__database-schema",
+      "Bash(php artisan make:migration:*)",
+      "mcp__laravel-boost__tinker",
+      "mcp__laravel-boost__read-log-entries",
+      "mcp__laravel-boost__browser-logs",
+      "Bash(composer:*)",
+      "Bash(php:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "laravel-boost",
+    "herd"
+  ]
+}

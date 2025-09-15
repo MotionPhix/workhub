@@ -33,13 +33,13 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useDeviceDetection } from '@/composables/useDeviceDetection'
 import AppLayout from "@/layouts/AppLayout.vue"
-import ReportTable from "@/pages/reports/partials/ReportTable.vue"
+import ReportTable from "@/pages/admin/reports/partials/ReportTable.vue"
 import {useDark} from "@vueuse/core";
 import {format, format as simpleFormat} from "date-fns";
-import ReportProductivityChart from "@/pages/reports/partials/ReportProductivityChart.vue";
-import BurnoutRiskCard from "@/pages/reports/partials/BurnoutRiskCard.vue";
-import FocusAnalyticsCard from "@/pages/reports/partials/FocusAnalyticsCard.vue";
-import ExportReports from "@/pages/reports/partials/ExportReports.vue";
+import ReportProductivityChart from "@/pages/admin/reports/partials/ReportProductivityChart.vue";
+import BurnoutRiskCard from "@/pages/admin/reports/partials/BurnoutRiskCard.vue";
+import FocusAnalyticsCard from "@/pages/admin/reports/partials/FocusAnalyticsCard.vue";
+import ExportReports from "@/pages/admin/reports/partials/ExportReports.vue";
 
 // Interfaces remain the same...
 interface Report {
@@ -135,8 +135,8 @@ const statsCards = computed(() => {
   return [
     {
       title: 'Total Work Hours',
-      value: typeof props.stats.total_hours === 'float'
-        ? parseInt(props.stats.total_hours).toFixed(1)
+      value: typeof props.stats.total_hours === 'number'
+        ? parseFloat(props.stats.total_hours).toFixed(1)
         : props.stats.total_hours,
       icon: ClockIcon,
       trend: { value: '—', isPositive: true }

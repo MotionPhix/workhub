@@ -8,9 +8,13 @@ import {ZiggyVue} from '../../vendor/tightenco/ziggy';
 import VueApexCharts from "vue3-apexcharts";
 import {ModalLink, renderApp} from '@inertiaui/modal-vue'
 import {createPinia} from 'pinia'
+import { initializeTheme } from '@/composables/useTheme'
 
 const appName = import.meta.env.VITE_APP_NAME || 'WorkHub';
 const pinia = createPinia()
+
+// Initialize theme immediately
+initializeTheme()
 
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,

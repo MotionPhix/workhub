@@ -5,8 +5,8 @@ import {
   ChartBarIcon,
   UserIcon
 } from 'lucide-vue-next'
-import NavigationItem from "@/components/Navigation/NavigationItem.vue";
-import ThemeSwitcher from "@/layouts/ThemeSwitcher.vue";
+import NavigationItem from "@/components/navigation/NavigationItem.vue";
+import ThemeSwitcher from "@/components/ThemeSwitcher.vue";
 
 const mobileNavItems = [
   {

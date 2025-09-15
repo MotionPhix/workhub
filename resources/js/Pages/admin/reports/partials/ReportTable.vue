@@ -214,8 +214,8 @@ const renderCell = (row: any, column: Column) => {
             preserve-scroll
             preserve-state>
             <Button
-              :variant="link.active ? 'default' : 'outline'"
-              class="h-8 min-w-[2rem] px-3">
+              :variant="link.active ? 'default' : 'outline-solid'"
+              class="h-8 min-w-8 px-3">
               {{ link.label }}
             </Button>
           </Link>

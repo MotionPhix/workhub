@@ -1,7 +1,7 @@
 <template>
   <Head title="Invitation Details" />
 
-  <AuthenticatedLayout>
+  <AdminLayout>
     <template #header>
       <div class="flex items-center justify-between">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -15,9 +15,9 @@
 
     <div class="py-12">
       <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xs sm:rounded-lg">
           <div class="p-6">
-            
+
             <!-- Status Badge -->
             <div class="flex items-center justify-between mb-6">
               <div class="flex items-center space-x-3">
@@ -61,7 +61,7 @@
 
             <!-- Invitation Details Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              
+
               <!-- Basic Information -->
               <div class="space-y-6">
                 <div>
@@ -178,7 +178,7 @@
                 />
                 <button
                   @click="copyInviteUrl"
-                  class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 >
                   Copy
                 </button>
@@ -196,13 +196,13 @@
         </div>
       </div>
     </div>
-  </AuthenticatedLayout>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 import { ChevronDown, MoreVertical } from 'lucide-vue-next'
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
+import AdminLayout from '@/layouts/AdminLayout.vue'
 import {
   DropdownMenu,
   DropdownMenuContent,
