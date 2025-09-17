@@ -42,7 +42,6 @@ class InvitationAcceptanceController extends Controller
                 'token' => $token,
                 'email' => $invitation->email,
                 'name' => $invitation->name,
-                'job_title' => $invitation->job_title,
                 'department_name' => $invitation->department?->name,
                 'manager_name' => $invitation->manager?->name,
                 'inviter_name' => $invitation->inviter->name,

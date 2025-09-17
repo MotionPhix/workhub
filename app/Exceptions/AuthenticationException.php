@@ -6,16 +6,16 @@ use Exception;
 
 class AuthenticationException extends Exception
 {
-  protected $errors;
+    protected $errors;
 
-  public function __construct(string $message, array $errors = [])
-  {
-    parent::__construct($message);
-    $this->errors = $errors;
-  }
+    public function __construct(string $message, array $errors = [])
+    {
+        parent::__construct($message);
+        $this->errors = $errors;
+    }
 
-  public function getErrors(): array
-  {
-    return $this->errors;
-  }
+    public function getErrors(): array
+    {
+        return $this->errors;
+    }
 }

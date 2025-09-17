@@ -15,60 +15,60 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
-  /**
-   * Display the user's profile form.
-   */
-  public function index(User $user): Response
-  {
-    return Inertia::render('Profile/Index', [
-      'mustVerifyEmail' => $user instanceof MustVerifyEmail,
-      'user' => $user->load('roles')
-    ]);
-  }
-
-  public function edit(Request $request, User $user)
-  {
-    return Inertia::modal('Profile/Partials/ProfileForm', [
-      'departments' => fn() => Department::all('uuid', 'name', 'description'),
-    ])->baseRoute('profile.index', ['user' => $user->uuid]);
-  }
-
-  /**
-   * Update the user's profile information.
-   */
-  public function update(ProfileUpdateRequest $request): RedirectResponse
-  {
-    $request->user()->fill($request->validated());
-
-    if ($request->user()->isDirty('email')) {
-      $request->user()->email_verified_at = null;
+    /**
+     * Display the user's profile form.
+     */
+    public function index(User $user): Response
+    {
+        return Inertia::render('Profile/Index', [
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+            'user' => $user->load('roles'),
+        ]);
     }
 
-    $request->user()->save();
+    public function edit(Request $request, User $user)
+    {
+        return Inertia::modal('Profile/Partials/ProfileForm', [
+            'departments' => fn () => Department::all('uuid', 'name', 'description'),
+        ])->baseRoute('profile.index', ['user' => $user->uuid]);
+    }
 
-    return Redirect::route('profile.index', $request->user()->uuid);
-  }
+    /**
+     * Update the user's profile information.
+     */
+    public function update(ProfileUpdateRequest $request): RedirectResponse
+    {
+        $request->user()->fill($request->validated());
 
-  /**
-   * Delete the user's account.
-   */
-  public function destroy(Request $request): RedirectResponse
-  {
-    $request->validate([
-      'password' => ['required', 'current_password'],
-    ]);
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
+        }
 
-    $user = $request->user();
+        $request->user()->save();
 
-    Auth::logout();
+        return Redirect::route('profile.index', $request->user()->uuid);
+    }
 
-    $user->delete();
+    /**
+     * Delete the user's account.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
 
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+        $user = $request->user();
 
-    Inertia::clearHistory();
+        Auth::logout();
 
-    return Redirect::to('/');
-  }
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        Inertia::clearHistory();
+
+        return Redirect::to('/');
+    }
 }

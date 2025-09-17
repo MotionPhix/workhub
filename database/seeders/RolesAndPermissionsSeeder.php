@@ -198,6 +198,24 @@ class RolesAndPermissionsSeeder extends Seeder
             'configure-audit-settings',
         ];
 
+        // ================================
+        // PROJECT MANAGEMENT PERMISSIONS
+        // ================================
+        $projectPermissions = [
+            'view-projects',
+            'view-any-project',
+            'create-projects',
+            'edit-projects',
+            'edit-any-project',
+            'delete-projects',
+            'delete-any-project',
+            'archive-projects',
+            'manage-project-teams',
+            'assign-project-managers',
+            'view-project-reports',
+            'export-project-data',
+        ];
+
         // Create all permissions
         $allPermissions = array_merge(
             $adminPermissions,
@@ -210,7 +228,8 @@ class RolesAndPermissionsSeeder extends Seeder
             $insightPermissions,
             $profilePermissions,
             $notificationPermissions,
-            $auditPermissions
+            $auditPermissions,
+            $projectPermissions
         );
 
         foreach ($allPermissions as $permission) {
@@ -277,6 +296,13 @@ class RolesAndPermissionsSeeder extends Seeder
 
             // User management (limited)
             'view-users',
+
+            // Project management (team level)
+            'view-projects',
+            'create-projects',
+            'edit-projects',
+            'archive-projects',
+            'manage-project-teams',
 
             // Notifications
             'create-notifications',

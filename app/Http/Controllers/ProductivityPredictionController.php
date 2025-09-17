@@ -3,20 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Services\AdvancedProductivityInsightService;
-use Illuminate\Http\Request;
 
 class ProductivityPredictionController extends Controller
 {
-  protected $insightService;
+    protected $insightService;
 
-  public function __construct(AdvancedProductivityInsightService $insightService)
-  {
-    $this->insightService = $insightService;
-  }
+    public function __construct(AdvancedProductivityInsightService $insightService)
+    {
+        $this->insightService = $insightService;
+    }
 
-  public function getPredictions($userId)
-  {
-    $predictions = $this->insightService->generateComprehensiveInsights($userId)['predictive_productivity'];
-    return response()->json($predictions);
-  }
+    public function getPredictions($userId)
+    {
+        $predictions = $this->insightService->generateComprehensiveInsights($userId)['predictive_productivity'];
+
+        return response()->json($predictions);
+    }
 }

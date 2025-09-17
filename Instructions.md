@@ -175,3 +175,6 @@ const chartSeries = [
 - Use kebab-case for route names and URLs.
 
 - Keep components small and focused; extract logic into composables when needed.
+
+- Make sure the UI is modern and clean, using Tailwind CSS for styling, shadcn vue ui components, and following best practices for responsive design, supporting dark mode, and ensuring accessibility.
+- Refer to InertiauiModal.md for modal usage details in the root folder of the project.

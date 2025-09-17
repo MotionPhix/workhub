@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 import ApplicationLogo from '@/components/ApplicationLogo.vue';
 import {
@@ -46,6 +46,18 @@ const { isDark } = useTheme();
                                     :active="route().current('dashboard')"
                                 >
                                     Dashboard
+                                </NavLink>
+                                <NavLink
+                                    :href="route('projects.index')"
+                                    :active="route().current('projects.*')"
+                                >
+                                    Projects
+                                </NavLink>
+                                <NavLink
+                                    :href="route('work-entries.index')"
+                                    :active="route().current('work-entries.*')"
+                                >
+                                    Tasks
                                 </NavLink>
                             </div>
                         </div>
@@ -154,6 +166,18 @@ const { isDark } = useTheme();
                             :active="route().current('dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('projects.index')"
+                            :active="route().current('projects.*')"
+                        >
+                            Projects
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('work-entries.index')"
+                            :active="route().current('work-entries.*')"
+                        >
+                            Tasks
                         </ResponsiveNavLink>
                     </div>
 

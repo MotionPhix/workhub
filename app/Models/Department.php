@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Traits\BootableUuid;
+use App\Traits\BootUuid;
 use Carbon\Carbon;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,12 +14,11 @@ use Illuminate\Support\Collection;
 
 class Department extends Model
 {
-    use BootableUuid, HasFactory;
+    use BootUuid, HasFactory;
 
     protected $fillable = [
         'name',
         'description',
-        'is_active',
         'settings',
         'allocated_hours',
         'actual_hours',
@@ -239,7 +238,8 @@ class Department extends Model
             $query->whereBetween('work_date', [$startDate, $endDate]);
         }
 
-        return $query->sum('hours_worked');
+        return $query->selectRaw('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))')
+            ->value('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))') ?? 0;
     }
 
     public function getActiveProjectsCount(): int

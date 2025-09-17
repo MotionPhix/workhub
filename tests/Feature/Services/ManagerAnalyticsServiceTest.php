@@ -5,10 +5,10 @@ use App\Models\User;
 use App\Services\Analytics\ManagerAnalyticsService;
 
 describe('ManagerAnalyticsService', function () {
-    let('analyticsService', fn () => new ManagerAnalyticsService);
-    let('manager', fn () => User::factory()->create(['email' => 'manager@company.com']));
-
     beforeEach(function () {
+        $this->analyticsService = new ManagerAnalyticsService;
+        $this->manager = User::factory()->create(['email' => 'manager@company.com']);
+
         // Create team members
         User::factory()->count(3)->create([
             'manager_email' => $this->manager->email,

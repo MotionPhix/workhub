@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   HomeIcon,
+  FolderIcon,
   ClipboardListIcon,
   ChartBarIcon,
   UserIcon
@@ -16,7 +17,13 @@ const mobileNavItems = [
     icon: HomeIcon
   },
   {
-    label: 'Work Logs',
+    label: 'Projects',
+    route: 'projects.index',
+    current: 'projects.*',
+    icon: FolderIcon
+  },
+  {
+    label: 'Tasks',
     route: 'work-entries.index',
     current: 'work-entries.*',
     icon: ClipboardListIcon
@@ -42,7 +49,7 @@ const mobileNavItems = [
       <NavigationItem
         v-for="item in mobileNavItems"
         :key="item.route"
-        :href="item.route === 'profile.index' ? route(item.route, $page.props.auth.user.uuid) : route(item.route)"
+        :href="item.route === 'profile.index' ? route(item.route, $page.props.auth.user.id) : route(item.route)"
         :active="route().current(item.current)">
         <component :is="item.icon" class="w-5 h-5" />
         <span class="text-xs">{{ item.label }}</span>

@@ -5,10 +5,16 @@ use App\Models\User;
 use App\Services\Security\ReportSecurityService;
 
 describe('ReportSecurityService', function () {
-    let('securityService', fn () => new ReportSecurityService);
-    let('user', fn () => User::factory()->create());
-    let('admin', fn () => User::factory()->create()->assignRole('admin'));
-    let('manager', fn () => User::factory()->create()->assignRole('manager'));
+    beforeEach(function () {
+        // Create roles first
+        \Spatie\Permission\Models\Role::create(['name' => 'admin']);
+        \Spatie\Permission\Models\Role::create(['name' => 'manager']);
+
+        $this->securityService = new ReportSecurityService;
+        $this->user = User::factory()->create();
+        $this->admin = User::factory()->create()->assignRole('admin');
+        $this->manager = User::factory()->create()->assignRole('manager');
+    });
 
     describe('encryptSensitiveData', function () {
         it('encrypts sensitive fields', function () {

@@ -45,6 +45,19 @@ Route::middleware(['auth', 'role.access'])->group(function () {
         Route::delete('/d/{entry:uuid}', [WorkEntryController::class, 'destroy'])->name('destroy');
     });
 
+    // Projects Management
+    Route::prefix('projects')->name('projects.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProjectController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\ProjectController::class, 'create'])->name('create');
+        Route::get('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('show');
+        Route::get('/{project:uuid}/edit', [\App\Http\Controllers\ProjectController::class, 'edit'])->name('edit');
+        Route::post('/', [\App\Http\Controllers\ProjectController::class, 'store'])->name('store');
+        Route::put('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'update'])->name('update');
+        Route::delete('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'destroy'])->name('destroy');
+        Route::patch('/{project:uuid}/archive', [\App\Http\Controllers\ProjectController::class, 'archive'])->name('archive');
+        Route::post('/{project:uuid}/update-progress', [\App\Http\Controllers\ProjectController::class, 'updateProgress'])->name('update-progress');
+    });
+
     // Member Profile Management
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/{user:uuid}', [UserController::class, 'profile'])->name('index');

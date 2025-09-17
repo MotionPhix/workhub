@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useDeviceDetection } from '@/composables/useDeviceDetection'
-import AppLayout from "@/layouts/AppLayout.vue"
+import AdminLayout from "@/layouts/AdminLayout.vue"
 import ReportTable from "@/pages/admin/reports/partials/ReportTable.vue"
 import {useDark} from "@vueuse/core";
 import {format, format as simpleFormat} from "date-fns";
@@ -74,7 +74,7 @@ interface Props {
     total: number
     links: Array<{ active: boolean; url?: string; label: string }>
   }
-  stats: {
+  stats?: {
     total_hours: number
     average_hours_per_day: number
     departments: Array<{ name: string; count: number }>
@@ -85,8 +85,9 @@ interface Props {
         team_focus_percentage: number
       }
     }
+    burnout_risks?: Array<{ risk_level: string; score: number; employees: number }>
   }
-  filters: {
+  filters?: {
     start_date?: string
     end_date?: string
     department?: string
@@ -108,20 +109,49 @@ const end = start.add({ days: 7 })
 
 // Initialize dateRange with CalendarDate objects
 const dateRange = ref<DateRangeValue>({
-  start: props.filters.start_date
+  start: props.filters?.start_date
     ? parseDate(props.filters.start_date)
     : null,
-  end: props.filters.end_date
+  end: props.filters?.end_date
     ? parseDate(props.filters.end_date)
     : null
 });
 
 const { isMobile, isTablet, isDesktop } = useDeviceDetection()
-const selectedDepartment = ref(props.filters.department || '')
+const selectedDepartment = ref(props.filters?.department || '')
 const showFilters = ref(false)
 
 // Stats cards data
 const statsCards = computed(() => {
+  if (!props.stats) {
+    return [
+      {
+        title: 'Total Work Hours',
+        value: '0.0',
+        icon: ClockIcon,
+        trend: { value: '—', isPositive: true }
+      },
+      {
+        title: 'Avg. Daily Hours',
+        value: '0.0',
+        icon: BarChart3Icon,
+        trend: { value: '—', isPositive: true }
+      },
+      {
+        title: 'Productivity Score',
+        value: '0%',
+        icon: TrendingUpIcon,
+        trend: { value: '—', isPositive: true }
+      },
+      {
+        title: 'Focus Time',
+        value: '0hrs',
+        icon: BrainIcon,
+        trend: { value: '—', isPositive: true }
+      }
+    ]
+  }
+
   // Helper function to calculate trend
   const calculateTrend = (current: number, previous: number) => {
     if (!previous) return { value: '0.0%', isPositive: true };
@@ -136,28 +166,28 @@ const statsCards = computed(() => {
     {
       title: 'Total Work Hours',
       value: typeof props.stats.total_hours === 'number'
-        ? parseFloat(props.stats.total_hours).toFixed(1)
-        : props.stats.total_hours,
+        ? parseFloat(props.stats.total_hours.toString()).toFixed(1)
+        : props.stats.total_hours?.toString() || '0.0',
       icon: ClockIcon,
       trend: { value: '—', isPositive: true }
     },
     {
       title: 'Avg. Daily Hours',
-      value: typeof parseInt(props.stats.average_hours_per_day as string) === 'number'
-        ? parseFloat(props.stats.average_hours_per_day as string).toFixed(1)
-        : props.stats.average_hours_per_day,
+      value: typeof props.stats.average_hours_per_day === 'number'
+        ? parseFloat(props.stats.average_hours_per_day.toString()).toFixed(1)
+        : props.stats.average_hours_per_day?.toString() || '0.0',
       icon: BarChart3Icon,
       trend: { value: '—', isPositive: true }
     },
     {
       title: 'Productivity Score',
-      value: `${props.stats.productivity_trends[props.stats.productivity_trends.length - 1]?.score || 0}%`,
+      value: `${props.stats.productivity_trends?.[props.stats.productivity_trends.length - 1]?.score || 0}%`,
       icon: TrendingUpIcon,
       trend: { value: '—', isPositive: true }
     },
     {
       title: 'Focus Time',
-      value: `${props.stats.focus_time_analytics.summary.average_focus_hours}hrs`,
+      value: `${props.stats.focus_time_analytics?.summary?.average_focus_hours || 0}hrs`,
       icon: BrainIcon,
       trend: { value: '—', isPositive: true }
     }
@@ -200,17 +230,17 @@ const columns = [
 
 // Actions remain the same...
 const viewReport = (report: Report) => {
-  router.visit(route('reports.show', report.id))
+  router.visit(route('admin.reports.show', report.id))
 }
 
 const downloadReport = (report: Report) => {
-  window.open(route('reports.download', report.id), '_blank')
+  window.open(route('admin.reports.export', report.id), '_blank')
 }
 
 const applyFilters = () => {
-  router.get(route('reports.index'), {
-    start_date: simpleFormat(dateRange.value.start, 'yyyy-MM-dd') || '',
-    end_date: simpleFormat(dateRange.value.end, 'yyyy-MM-dd') || '',
+  router.get(route('admin.reports.index'), {
+    start_date: dateRange.value.start ? simpleFormat(dateRange.value.start.toDate(getLocalTimeZone()), 'yyyy-MM-dd') : '',
+    end_date: dateRange.value.end ? simpleFormat(dateRange.value.end.toDate(getLocalTimeZone()), 'yyyy-MM-dd') : '',
     department: selectedDepartment.value
   }, {
     replace: true,
@@ -229,7 +259,7 @@ const resetFilters = () => {
     end: null
   };
   selectedDepartment.value = '';
-  router.get(route('reports.index'));
+  router.get(route('admin.reports.index'));
   showFilters.value = false;
 };
 const getStatusVariant = (status: string) => {
@@ -242,13 +272,13 @@ const getStatusVariant = (status: string) => {
 </script>
 
 <template>
-  <AppLayout>
+  <AdminLayout>
     <div class="container mx-auto p-6 my-12 space-y-8">
       <!-- Header with filters -->
       <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold">Reports Dashboard</h1>
         <div class="flex items-center space-x-4">
-          <ExportReports :filters="filters" />
+          <ExportReports :filters="filters || {}" />
 
           <Dialog v-model:open="showFilters">
             <DialogTrigger asChild>
@@ -272,8 +302,8 @@ const getStatusVariant = (status: string) => {
                     class="rounded-md border"
                     :numberOfMonths="isMobile ? 1 : 2"
                     :defaultValue="{
-                      start: props.filters.start_date ? new Date(props.filters.start_date) : undefined,
-                      end: props.filters.end_date ? new Date(props.filters.end_date) : undefined
+                      start: props.filters?.start_date ? new Date(props.filters.start_date) : undefined,
+                      end: props.filters?.end_date ? new Date(props.filters.end_date) : undefined
                     }"
                   />
                 </div>
@@ -285,7 +315,7 @@ const getStatusVariant = (status: string) => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem
-                        v-for="dept in props.stats.departments"
+                        v-for="dept in (props.stats?.departments || [])"
                         :key="dept.name"
                         :value="dept.name">
                         {{ dept.name }} ({{ dept.count }})
@@ -335,14 +365,14 @@ const getStatusVariant = (status: string) => {
         </CardHeader>
 
         <ReportProductivityChart
-          :data="props.stats.productivity_trends"
+          :data="props.stats?.productivity_trends || []"
           :isDark="isDark"
         />
       </Card>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <BurnoutRiskCard :risks="props.stats.burnout_risks" />
-        <FocusAnalyticsCard :analytics="props.stats.focus_time_analytics" />
+        <BurnoutRiskCard :risks="props.stats?.burnout_risks || []" />
+        <FocusAnalyticsCard :analytics="props.stats?.focus_time_analytics" />
       </div>
 
       <!-- Reports Table -->
@@ -379,7 +409,7 @@ const getStatusVariant = (status: string) => {
         </CardContent>
       </Card>
     </div>
-  </AppLayout>
+  </AdminLayout>
 </template>
 
 

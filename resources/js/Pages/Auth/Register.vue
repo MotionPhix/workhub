@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useForm, Link } from '@inertiajs/vue3'
 import {Label} from "@/components/ui/label"

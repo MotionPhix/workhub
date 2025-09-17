@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import GuestLayout from '@/layouts/GuestLayout.vue';
 import { Label } from '@/components/ui/label';
 import { Head, Link, useForm } from '@inertiajs/vue3';

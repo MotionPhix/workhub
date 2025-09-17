@@ -8,9 +8,11 @@ use App\Services\Report\ReportValidationService;
 use Illuminate\Validation\ValidationException;
 
 describe('ReportValidationService', function () {
-    let('validationService', fn () => new ReportValidationService);
-    let('user', fn () => User::factory()->create());
-    let('department', fn () => Department::factory()->create());
+    beforeEach(function () {
+        $this->validationService = new ReportValidationService;
+        $this->user = User::factory()->create();
+        $this->department = Department::factory()->create();
+    });
 
     describe('validateReportData', function () {
         it('validates sales report data successfully', function () {

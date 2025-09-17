@@ -13,7 +13,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { Button } from '@/components/ui/button'
 import { DropdownMenuLabel } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
-import { Power, UserIcon } from 'lucide-vue-next'
+import { Power, UserIcon, FolderKanban, ChevronDown, Plus, Users, Mail, BarChart3, TrendingUp, FileText } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 
 const showingNavigationDropdown = ref(false)
@@ -41,7 +41,8 @@ const { isDark } = useTheme()
         </div>
 
         <!-- Center Section - Admin Navigation -->
-        <div class="hidden md:flex space-x-8">
+        <div class="hidden md:flex items-center space-x-4">
+          <!-- Dashboard Link -->
           <Link :href="route('admin.dashboard')"
                 :class="[
                   'px-3 py-2 rounded-md text-sm font-medium transition-colors',
@@ -52,45 +53,101 @@ const { isDark } = useTheme()
           Dashboard
           </Link>
 
-          <Link :href="route('admin.invitations.index')"
+          <!-- Project Management Dropdown -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button
                 :class="[
-                  'px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                  route().current('admin.invitations.*')
+                  'px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-1',
+                  route().current('admin.projects.*')
                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200'
                     : 'text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400'
-                ]">
-          Invitations
-          </Link>
+                ]"
+              >
+                <FolderKanban class="w-4 h-4" />
+                <span>Projects</span>
+                <ChevronDown class="w-3 h-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" class="w-48">
+              <DropdownMenuItem disabled class="opacity-50">
+                <div class="flex items-center space-x-2">
+                  <FolderKanban class="w-4 h-4" />
+                  <span>All Projects (Coming Soon)</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled class="opacity-50">
+                <div class="flex items-center space-x-2">
+                  <Plus class="w-4 h-4" />
+                  <span>New Project (Coming Soon)</span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <Link :href="route('admin.users.index')"
+          <!-- User Management Dropdown -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button
                 :class="[
-                  'px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                  route().current('admin.users.*')
+                  'px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-1',
+                  route().current('admin.users.*') || route().current('admin.invitations.*')
                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200'
                     : 'text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400'
-                ]">
-          Users
-          </Link>
+                ]"
+              >
+                <Users class="w-4 h-4" />
+                <span>Users</span>
+                <ChevronDown class="w-3 h-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" class="w-48">
+              <DropdownMenuItem as-child>
+                <Link :href="route('admin.users.index')" class="flex items-center space-x-2">
+                  <Users class="w-4 h-4" />
+                  <span>All Users</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem as-child>
+                <Link :href="route('admin.invitations.index')" class="flex items-center space-x-2">
+                  <Mail class="w-4 h-4" />
+                  <span>Invitations</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <Link :href="route('admin.reports.index')"
+          <!-- Analytics & Reports Dropdown -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button
                 :class="[
-                  'px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                  route().current('admin.reports.*')
+                  'px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-1',
+                  route().current('admin.reports.*') || route().current('admin.insights.*')
                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200'
                     : 'text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400'
-                ]">
-          Reports
-          </Link>
-
-          <Link :href="route('admin.insights.index')"
-                :class="[
-                  'px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                  route().current('admin.insights.*')
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200'
-                    : 'text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400'
-                ]">
-          Insights
-          </Link>
+                ]"
+              >
+                <BarChart3 class="w-4 h-4" />
+                <span>Analytics</span>
+                <ChevronDown class="w-3 h-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" class="w-48">
+              <DropdownMenuItem as-child>
+                <Link :href="route('admin.insights.index')" class="flex items-center space-x-2">
+                  <TrendingUp class="w-4 h-4" />
+                  <span>Organization Insights</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem as-child>
+                <Link :href="route('admin.reports.index')" class="flex items-center space-x-2">
+                  <FileText class="w-4 h-4" />
+                  <span>Reports</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <!-- Right Section - User Menu -->
@@ -145,6 +202,19 @@ const { isDark } = useTheme()
             </DropdownMenu>
           </div>
         </div>
+
+        <!-- Mobile menu button -->
+        <div class="md:hidden">
+          <button
+            @click="showingNavigationDropdown = !showingNavigationDropdown"
+            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-hidden focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out"
+          >
+            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+              <path :class="{'hidden': showingNavigationDropdown, 'inline-flex': ! showingNavigationDropdown }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              <path :class="{'hidden': ! showingNavigationDropdown, 'inline-flex': showingNavigationDropdown }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <!-- Mobile Navigation Menu -->
@@ -155,13 +225,13 @@ const { isDark } = useTheme()
                              :active="route().current('admin.dashboard')">
             Dashboard
           </ResponsiveNavLink>
-          <ResponsiveNavLink :href="route('admin.invitations.index')"
-                             :active="route().current('admin.invitations.*')">
-            Invitations
-          </ResponsiveNavLink>
           <ResponsiveNavLink :href="route('admin.users.index')"
                              :active="route().current('admin.users.*')">
             Users
+          </ResponsiveNavLink>
+          <ResponsiveNavLink :href="route('admin.invitations.index')"
+                             :active="route().current('admin.invitations.*')">
+            Invitations
           </ResponsiveNavLink>
           <ResponsiveNavLink :href="route('admin.reports.index')"
                              :active="route().current('admin.reports.*')">

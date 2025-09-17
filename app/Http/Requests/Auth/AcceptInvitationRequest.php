@@ -18,13 +18,7 @@ class AcceptInvitationRequest extends FormRequest
             'password' => [
                 'required',
                 'confirmed',
-                Password::defaults()
-                    ->min(12)
-                    ->letters()
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols()
-                    ->uncompromised(),
+                'min:8',
             ],
             'terms_accepted' => ['required', 'accepted'],
         ];

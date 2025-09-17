@@ -9,14 +9,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class Index extends Controller
 {
-  /**
-   * Handle the incoming request.
-   */
-  public function __invoke(Request $request): JsonResponse
-  {
-    $insights = (new ProductivityInsightService())
-      ->generateInsights($request->user()->id);
+    /**
+     * Handle the incoming request.
+     */
+    public function __invoke(Request $request): JsonResponse
+    {
+        $insights = (new ProductivityInsightService)
+            ->generateInsights($request->user()->id);
 
-    return response()->json($insights);
-  }
+        return response()->json($insights);
+    }
 }

@@ -18,7 +18,6 @@ class UserInvite extends Model
         'name',
         'department_uuid',
         'manager_email',
-        'job_title',
         'role_name',
         'token',
         'invited_at',

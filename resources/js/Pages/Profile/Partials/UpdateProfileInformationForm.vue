@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';

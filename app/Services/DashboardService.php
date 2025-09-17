@@ -113,7 +113,7 @@ class DashboardService
                 'completion_rate' => $this->calculateCompletionRate($userId),
 
                 'daily_average' => $this->calculateDailyAverage($userId),
-        ],
+            ],
         ];
     }
 
@@ -167,7 +167,9 @@ class DashboardService
                 }])
                 ->count();
 
-            $totalHours = $department->workEntries()->sum('hours_worked');
+            $totalHours = $department->workEntries()
+                ->selectRaw('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))')
+                ->value('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))') ?? 0;
 
             if ($totalTasks === 0 || $totalHours === 0) {
                 return 0;
@@ -205,7 +207,9 @@ class DashboardService
                     })
                     ->count();
 
-                $totalHours = $department->workEntries()->sum('hours_worked');
+                $totalHours = $department->workEntries()
+                    ->selectRaw('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))')
+                    ->value('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))') ?? 0;
                 $expectedHours = $department->projects()->sum('estimated_hours');
 
                 $efficiency = $this->calculateDepartmentEfficiency(
@@ -1588,7 +1592,9 @@ class DashboardService
         $currentProjects = Project::whereMonth('created_at', $now->month)->get();
         $currentActive = $currentProjects->where('status', 'active')->count();
         $currentCompleted = $currentProjects->where('status', 'completed')->count();
-        $currentHours = WorkEntry::whereMonth('work_date', $now->month)->sum('hours_worked');
+        $currentHours = WorkEntry::whereMonth('work_date', $now->month)
+            ->selectRaw('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))')
+            ->value('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))') ?? 0;
 
         // Previous period metrics for trend calculation
         $previousProjects = Project::whereMonth('created_at', $previousPeriod->month)->count();
@@ -1596,7 +1602,8 @@ class DashboardService
             ->where('status', 'active')
             ->count();
         $previousHours = WorkEntry::whereMonth('work_date', $previousPeriod->month)
-            ->sum('hours_worked');
+            ->selectRaw('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))')
+            ->value('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time))') ?? 0;
 
         // Calculate trends
         $projectTrend = $this->calculateTrend($currentProjects->count(), $previousProjects);
@@ -1812,7 +1819,7 @@ class DashboardService
 
     private function getTopPerformers(array $teamIds): array
     {
-        return WorkEntry::selectRaw('user_id, SUM(hours_worked) as total_hours')
+        return WorkEntry::selectRaw('user_id, SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time)) as total_hours')
             ->whereIn('user_id', $teamIds)
             ->whereMonth('work_date', Carbon::now()->month)
             ->groupBy('user_id')
@@ -1853,7 +1860,7 @@ class DashboardService
         return WorkEntry::select(
             DB::raw('DATE(work_date) as date'),
             DB::raw('COUNT(*) as total_entries'),
-            DB::raw('SUM(hours_worked) as total_hours')
+            DB::raw('SUM(TIMESTAMPDIFF(HOUR, start_date_time, end_date_time)) as total_hours')
         )
             ->where('work_date', '>=', $thirtyDaysAgo)
             ->groupBy('date')

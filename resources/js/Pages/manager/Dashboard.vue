@@ -356,7 +356,7 @@
     </ManagerLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
 import ManagerLayout from '@/layouts/ManagerLayout.vue'
 import { format } from 'date-fns'

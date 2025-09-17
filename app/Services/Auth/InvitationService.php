@@ -43,7 +43,6 @@ class InvitationService
                 'name' => trim($inviteData['name']),
                 'department_uuid' => $inviteData['department_uuid'] ?? null,
                 'manager_email' => $inviteData['manager_email'] ?? null,
-                'job_title' => $inviteData['job_title'] ?? null,
                 'role_name' => $inviteData['role_name'] ?? 'employee',
                 'token' => $hashedToken,
                 'invited_at' => now(),
@@ -76,58 +75,31 @@ class InvitationService
         });
     }
 
-    public function acceptInvitation(string $token, array $userData): User
+    public function acceptInvitation(string $token, array $data): User
     {
-        $invite = UserInvite::findByToken($token);
+        $invitation = UserInvite::findByToken($token);
 
-        if (! $invite) {
-            throw new \InvalidArgumentException('Invalid or expired invitation token.');
+        if (! $invitation) {
+            throw new \Exception('Invalid or expired invitation token.');
         }
 
-        if (! $invite->canBeAccepted()) {
-            throw new \InvalidArgumentException('This invitation cannot be accepted. It may have expired or the user already exists.');
+        if (! $invitation->canBeAccepted()) {
+            throw new \Exception('This invitation cannot be accepted.');
         }
 
-        $this->validateUserData($userData);
-
-        return DB::transaction(function () use ($invite, $userData) {
-            // Create the user account
-            $user = User::create([
-                'name' => $invite->name,
-                'email' => $invite->email,
-                'password' => bcrypt($userData['password']),
-                'department_uuid' => $invite->department_uuid,
-                'manager_email' => $invite->manager_email,
-                'job_title' => $invite->job_title,
-                'gender' => $userData['gender'] ?? 'unknown',
-                'is_active' => true,
-                'joined_at' => now(),
-                'settings' => array_merge([
-                    'notifications' => [
-                        'email' => true,
-                        'sms' => false,
-                    ],
-                    'timezone' => $userData['timezone'] ?? 'UTC',
-                ], $invite->invite_data['initial_schedule_settings'] ?? []),
-            ]);
-
-            // Assign role
-            if ($invite->role_name) {
-                $user->assignRole($invite->role_name);
-            }
+        return DB::transaction(function () use ($invitation, $data) {
+            // Create user
+            $user = $this->createUserFromInvitation($invitation, $data);
 
             // Mark invitation as accepted
-            $invite->accept();
+            $invitation->accept();
 
-            // Send welcome notification to inviter
-            // $invite->inviter->notify(new UserInvitedNotification($user, $invite, 'accepted'));
-
-            // Log successful registration
+            // Log the successful registration
             Log::info('User registered via invitation', [
                 'user_id' => $user->id,
-                'invite_id' => $invite->id,
+                'invite_id' => $invitation->id,
                 'email' => $user->email,
-                'role' => $invite->role_name,
+                'role' => $invitation->role_name,
             ]);
 
             return $user;
@@ -281,7 +253,6 @@ class InvitationService
             'name' => 'required|string|max:255',
             'department_uuid' => 'nullable|exists:departments,uuid',
             'manager_email' => 'nullable|email|exists:users,email',
-            'job_title' => 'nullable|string|max:255',
             'role_name' => 'nullable|string|exists:roles,name',
             'expires_in_days' => 'nullable|integer|min:1|max:30',
             'welcome_message' => 'nullable|string|max:500',
@@ -294,17 +265,4 @@ class InvitationService
         }
     }
 
-    private function validateUserData(array $data): void
-    {
-        $validator = Validator::make($data, [
-            'password' => 'required|string|min:8|confirmed',
-            'password_confirmation' => 'required',
-            'gender' => 'nullable|in:male,female,unknown',
-            'timezone' => 'nullable|string|max:50',
-        ]);
-
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
-    }
 }

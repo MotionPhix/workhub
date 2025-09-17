@@ -245,7 +245,10 @@ class ReportSecurityService
             'created_at' => $report->created_at->toISOString(),
         ];
 
-        return hash('sha256', json_encode($dataToHash, JSON_SORT_KEYS));
+        // Sort array keys for consistent hashing
+        ksort($dataToHash);
+
+        return hash('sha256', json_encode($dataToHash));
     }
 
     public function verifyDataIntegrity(Report $report, string $expectedHash): bool

@@ -3,9 +3,10 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\DepartmentController;
+use App\Http\Controllers\Admin\InsightsController;
 use App\Http\Controllers\Admin\InvitationController;
-use App\Http\Controllers\InsightsController;
-use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
+use App\Http\Controllers\Admin\ReportsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,16 +42,36 @@ Route::middleware(['auth', 'can:access-admin-panel', 'role.access'])->prefix('ad
 
     // Reports & Analytics (Admin oversight)
     Route::middleware(['can:view-system-reports'])->group(function () {
-        Route::get('reports', [ReportsController::class, 'adminIndex'])->name('reports.index');
-        Route::get('reports/{report:uuid}', [ReportsController::class, 'adminShow'])->name('reports.show');
-        Route::post('reports/{report:uuid}/export', [ReportsController::class, 'export'])->name('reports.export');
+        Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
+        Route::get('reports/{workEntry:uuid}', [ReportsController::class, 'show'])->name('reports.show');
+        Route::post('reports/{workEntry:uuid}/export', [ReportsController::class, 'export'])->name('reports.export');
     });
 
     // System Insights (Admin analytics)
     Route::middleware(['can:view-system-insights'])->group(function () {
-        Route::get('insights', [InsightsController::class, 'adminIndex'])->name('insights.index');
+        Route::get('insights', [InsightsController::class, 'index'])->name('insights.index');
         Route::get('insights/productivity', [InsightsController::class, 'productivity'])->name('insights.productivity');
         Route::get('insights/departments', [InsightsController::class, 'departments'])->name('insights.departments');
+    });
+
+    // Projects (Admin management distinct from employee module)
+    Route::prefix('projects')->name('projects.')->group(function () {
+        Route::middleware(['can:view-projects'])->group(function () {
+            Route::get('/', [AdminProjectController::class, 'index'])->name('index');
+            Route::get('/{project:uuid}', [AdminProjectController::class, 'show'])->name('show');
+        });
+        Route::middleware(['can:create-projects'])->group(function () {
+            Route::get('/create', [AdminProjectController::class, 'create'])->name('create');
+            Route::post('/', [AdminProjectController::class, 'store'])->name('store');
+        });
+        Route::middleware(['can:edit-projects'])->group(function () {
+            Route::get('/{project:uuid}/edit', [AdminProjectController::class, 'edit'])->name('edit');
+            Route::put('/{project:uuid}', [AdminProjectController::class, 'update'])->name('update');
+            Route::post('/{project:uuid}/update-progress', [AdminProjectController::class, 'updateProgress'])->name('update-progress');
+        });
+        Route::middleware(['can:archive-projects'])->group(function () {
+            Route::patch('/{project:uuid}/archive', [AdminProjectController::class, 'archive'])->name('archive');
+        });
     });
 
     // User Management

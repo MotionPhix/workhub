@@ -14,9 +14,29 @@ beforeEach(function () {
     Role::create(['name' => 'admin']);
     Role::create(['name' => 'employee']);
 
+    // Create necessary permissions
+    \Spatie\Permission\Models\Permission::create(['name' => 'view-invitations']);
+    \Spatie\Permission\Models\Permission::create(['name' => 'create-invitations']);
+    \Spatie\Permission\Models\Permission::create(['name' => 'edit-invitations']);
+    \Spatie\Permission\Models\Permission::create(['name' => 'delete-invitations']);
+    \Spatie\Permission\Models\Permission::create(['name' => 'access-admin-panel']);
+
     // Create test admin user
     $this->admin = User::factory()->create();
     $this->admin->assignRole('admin');
+
+    // Give admin role the necessary permissions
+    $adminRole = Role::where('name', 'admin')->first();
+    $adminRole->givePermissionTo(['view-invitations', 'create-invitations', 'edit-invitations', 'delete-invitations', 'access-admin-panel']);
+
+    // Also explicitly give permissions to the user to ensure they're loaded
+    $this->admin->givePermissionTo(['view-invitations', 'create-invitations', 'edit-invitations', 'delete-invitations', 'access-admin-panel']);
+
+    // Refresh the user to ensure permissions are loaded
+    $this->admin->refresh();
+
+    // Refresh the user to ensure permissions are loaded
+    $this->admin->refresh();
 
     // Create test department
     $this->department = Department::factory()->create();
@@ -29,7 +49,6 @@ it('allows admin to send invitation', function () {
     $invitationData = [
         'email' => 'newuser@example.com',
         'name' => 'New User',
-        'job_title' => 'Developer',
         'department_uuid' => $this->department->uuid,
         'role_name' => 'employee',
         'expires_in_days' => 7,
@@ -48,7 +67,6 @@ it('prevents duplicate invitations for same email', function () {
     $invitationData = [
         'email' => 'duplicate@example.com',
         'name' => 'Duplicate User',
-        'job_title' => 'Developer',
         'role_name' => 'employee',
         'expires_in_days' => 7,
     ];
@@ -130,7 +148,6 @@ it('allows admin to create new invitation via form', function () {
     $response = $this->post(route('admin.invitations.store'), [
         'email' => 'formuser@example.com',
         'name' => 'Form User',
-        'job_title' => 'Designer',
         'department_uuid' => $this->department->uuid,
         'role_name' => 'employee',
         'expires_in_days' => 14,
@@ -169,7 +186,7 @@ it('shows invitation acceptance page for valid token', function () {
 
     $response->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->component('auth/invitation/show')
+            ->component('auth/invitation/Show')
             ->has('invitation.email')
             ->has('invitation.name')
         );
@@ -183,24 +200,51 @@ it('redirects invalid invitation tokens to login', function () {
 });
 
 it('allows user to accept invitation through web form', function () {
-    $invitation = UserInvite::factory()->create([
+    // Create invitation directly instead of using factory
+    $invitation = UserInvite::create([
+        'invited_by' => $this->admin->id,
         'email' => 'webuser@example.com',
+        'name' => 'Web User',
+        'role_name' => 'employee',
         'status' => 'pending',
         'expires_at' => now()->addWeek(),
+        'token' => hash('sha256', 'test-token-123'),
+        'invited_at' => now(),
+        'invite_data' => [],
+        'reminder_count' => 0,
     ]);
 
-    $token = $invitation->generateToken();
+    $token = 'test-token-123'; // Use a simple token for testing
+
+    // Debug: check if invitation exists and has required fields
+    $foundInvitation = UserInvite::findByToken($token);
+    expect($foundInvitation)->not->toBeNull();
+    expect($foundInvitation->email)->toBe('webuser@example.com');
+    expect($foundInvitation->name)->toBe('Web User');
+    expect($foundInvitation->role_name)->toBe('employee');
+
+    // Debug: Check users before
+    $usersBefore = User::all();
+    expect($usersBefore)->toHaveCount(1); // Only admin should exist
 
     $response = $this->post(route('invitation.accept', ['token' => $token]), [
-        'password' => 'SecurePassword123!',
-        'password_confirmation' => 'SecurePassword123!',
+        'password' => 'password',
+        'password_confirmation' => 'password',
         'terms_accepted' => true,
     ]);
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('dashboard'));    // Debug: Check users after
+    $usersAfter = User::all();
+    expect($usersAfter)->toHaveCount(2); // Admin + new user
+
+    $newUser = $usersAfter->where('email', '!=', $this->admin->email)->first();
+    expect($newUser)->not->toBeNull();
+    expect($newUser->email)->toBe('webuser@example.com');
+    expect($newUser->name)->toBe('Web User');
 
     $this->assertDatabaseHas('users', [
         'email' => 'webuser@example.com',
+        'name' => 'Web User',
     ]);
 
     $this->assertDatabaseHas('user_invites', [
@@ -235,8 +279,8 @@ it('requires terms acceptance during invitation acceptance', function () {
     $token = $invitation->generateToken();
 
     $response = $this->post(route('invitation.accept', ['token' => $token]), [
-        'password' => 'SecurePassword123!',
-        'password_confirmation' => 'SecurePassword123!',
+        'password' => 'password',
+        'password_confirmation' => 'password',
         'terms_accepted' => false,
     ]);
 
@@ -244,16 +288,65 @@ it('requires terms acceptance during invitation acceptance', function () {
 });
 
 it('tracks invitation statistics correctly', function () {
-    // Create various invitations
-    UserInvite::factory()->create(['status' => 'pending', 'expires_at' => now()->addWeek()]);
-    UserInvite::factory()->create(['status' => 'accepted']);
-    UserInvite::factory()->create(['status' => 'declined']);
-    UserInvite::factory()->create(['status' => 'pending', 'expires_at' => now()->subDay()]); // expired
+    // Create various invitations by the admin user directly
+    UserInvite::create([
+        'invited_by' => $this->admin->id,
+        'email' => 'pending@example.com',
+        'name' => 'Pending User',
+        'role_name' => 'employee',
+        'status' => 'pending',
+        'expires_at' => now()->addWeek(),
+        'token' => hash('sha256', bin2hex(random_bytes(32))),
+        'invited_at' => now(),
+        'invite_data' => [],
+        'reminder_count' => 0,
+    ]);
 
-    $stats = $this->invitationService->getInvitationStats();
+    UserInvite::create([
+        'invited_by' => $this->admin->id,
+        'email' => 'accepted@example.com',
+        'name' => 'Accepted User',
+        'role_name' => 'employee',
+        'status' => 'accepted',
+        'accepted_at' => now(),
+        'expires_at' => now()->addWeek(),
+        'token' => hash('sha256', bin2hex(random_bytes(32))),
+        'invited_at' => now(),
+        'invite_data' => [],
+        'reminder_count' => 0,
+    ]);
+
+    UserInvite::create([
+        'invited_by' => $this->admin->id,
+        'email' => 'declined@example.com',
+        'name' => 'Declined User',
+        'role_name' => 'employee',
+        'status' => 'declined',
+        'declined_at' => now(),
+        'expires_at' => now()->addWeek(),
+        'token' => hash('sha256', bin2hex(random_bytes(32))),
+        'invited_at' => now(),
+        'invite_data' => [],
+        'reminder_count' => 0,
+    ]);
+
+    UserInvite::create([
+        'invited_by' => $this->admin->id,
+        'email' => 'expired@example.com',
+        'name' => 'Expired User',
+        'role_name' => 'employee',
+        'status' => 'pending',
+        'expires_at' => now()->subDay(), // expired
+        'token' => hash('sha256', bin2hex(random_bytes(32))),
+        'invited_at' => now(),
+        'invite_data' => [],
+        'reminder_count' => 0,
+    ]);
+
+    $stats = $this->invitationService->getInvitationStats($this->admin);
 
     expect($stats)
-        ->toHaveKey('total', 4)
+        ->toHaveKey('total_sent', 4)
         ->toHaveKey('pending', 1)
         ->toHaveKey('accepted', 1)
         ->toHaveKey('declined', 1)

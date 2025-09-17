@@ -26,7 +26,6 @@ class UserInviteFactory extends Factory
             'name' => fake()->name(),
             'department_uuid' => null,
             'manager_email' => null,
-            'job_title' => fake()->jobTitle(),
             'role_name' => 'employee',
             'token' => hash('sha256', bin2hex(random_bytes(32))),
             'invited_at' => now(),

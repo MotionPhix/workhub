@@ -11,7 +11,8 @@ const appName = import.meta.env.VITE_APP_NAME || 'WorkHub'
 
 const desktopNavItems = [
   {label: 'Dashboard', route: 'dashboard', pattern: 'dashboard'},
-  {label: 'Work Logs', route: 'work-entries.index', pattern: 'work-entries.*'},
+  {label: 'Projects', route: 'projects.index', pattern: 'projects.*'},
+  {label: 'Tasks', route: 'work-entries.index', pattern: 'work-entries.*'},
   {label: 'Reports', route: 'reports.index', pattern: 'reports.*'},
 ]
 

@@ -8,12 +8,12 @@ use App\Services\Report\ReportDeliveryService;
 use Illuminate\Support\Facades\Queue;
 
 describe('ReportDeliveryService', function () {
-    let('deliveryService', fn () => new ReportDeliveryService);
-    let('user', fn () => User::factory()->create());
-    let('report', fn () => Report::factory()->create(['user_id' => $this->user->id]));
-
     beforeEach(function () {
         Queue::fake();
+
+        $this->deliveryService = new ReportDeliveryService;
+        $this->user = User::factory()->create();
+        $this->report = Report::factory()->create(['user_id' => $this->user->id]);
     });
 
     describe('deliverReport', function () {

@@ -33,13 +33,11 @@ class WorkEntry extends Model
         'value_generated',
         'outcome',
         'attachments',
-        'mood',
-        'productivity_rating',
-        'tools_used',
+        'mood', // Simplified energy levels only
+        // Removed: productivity_rating, tools_used, weather_condition
         'collaborators',
         'requires_follow_up',
         'follow_up_date',
-        'weather_condition',
     ];
 
     protected $casts = [

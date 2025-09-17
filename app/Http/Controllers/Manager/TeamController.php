@@ -7,6 +7,7 @@ use App\Models\Report;
 use App\Models\User;
 use App\Models\WorkEntry;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -17,7 +18,7 @@ class TeamController extends Controller
     {
         Gate::authorize('view-team-members');
 
-        $query = User::where('manager_email', auth()->user()->email)
+        $query = User::where('manager_email', Auth::user()->email)
             ->with(['department', 'workEntries', 'reports']);
 
         // Search functionality
@@ -81,7 +82,7 @@ class TeamController extends Controller
         Gate::authorize('view-team-member-details', $user);
 
         // Ensure this user is part of the manager's team
-        if ($user->manager_email !== auth()->user()->email) {
+        if ($user->manager_email !== Auth::user()->email) {
             abort(403, 'You can only view details for your team members.');
         }
 
@@ -115,7 +116,7 @@ class TeamController extends Controller
         Gate::authorize('manage-team-members');
 
         // Ensure this user is part of the manager's team
-        if ($user->manager_email !== auth()->user()->email) {
+        if ($user->manager_email !== Auth::user()->email) {
             abort(403, 'You can only manage your team members.');
         }
 
@@ -153,7 +154,7 @@ class TeamController extends Controller
         Gate::authorize('assign-projects');
 
         // Ensure this user is part of the manager's team
-        if ($user->manager_email !== auth()->user()->email) {
+        if ($user->manager_email !== Auth::user()->email) {
             abort(403, 'You can only assign projects to your team members.');
         }
 
@@ -179,7 +180,7 @@ class TeamController extends Controller
             'role' => $validated['role'],
             'notes' => $validated['notes'],
             'assigned_at' => now(),
-            'assigned_by' => auth()->id(),
+            'assigned_by' => Auth::id(),
         ]);
 
         return redirect()->back()->with('success', 'Project assigned successfully.');
@@ -190,7 +191,7 @@ class TeamController extends Controller
         Gate::authorize('assign-projects');
 
         // Ensure this user is part of the manager's team
-        if ($user->manager_email !== auth()->user()->email) {
+        if ($user->manager_email !== Auth::user()->email) {
             abort(403, 'You can only manage assignments for your team members.');
         }
 
@@ -212,7 +213,7 @@ class TeamController extends Controller
 
         $period = $request->get('period', 'current_month');
 
-        $teamMembers = User::where('manager_email', auth()->user()->email)->get();
+        $teamMembers = User::where('manager_email', Auth::user()->email)->get();
 
         $performanceData = [];
         $totalHours = 0;

@@ -18,9 +18,12 @@ class ReportFactory extends Factory
         $startDate = $this->faker->dateTimeBetween('-1 month', 'now');
         $endDate = $this->faker->dateTimeBetween($startDate, '+1 week');
 
+        // Create department first to ensure UUID is generated
+        $department = Department::factory()->create();
+
         return [
             'user_id' => User::factory(),
-            'department_id' => Department::factory(),
+            'department_id' => $department->uuid,
             'report_type' => $reportType,
             'title' => $this->generateTitle($reportType),
             'period_start' => $startDate,
@@ -101,15 +104,15 @@ class ReportFactory extends Factory
     private function generateTitle(ReportType $reportType): string
     {
         $types = [
-            ReportType::SALES => 'Sales Performance Report',
-            ReportType::MARKETING => 'Marketing Campaign Report',
-            ReportType::DESIGN => 'Design Deliverables Report',
-            ReportType::BIDS_TENDERS => 'Bids & Tenders Report',
-            ReportType::DEVELOPMENT => 'Development Sprint Report',
-            ReportType::GENERAL => 'General Activity Report',
+            ReportType::SALES->value => 'Sales Performance Report',
+            ReportType::MARKETING->value => 'Marketing Campaign Report',
+            ReportType::DESIGN->value => 'Design Deliverables Report',
+            ReportType::BIDS_TENDERS->value => 'Bids & Tenders Report',
+            ReportType::DEVELOPMENT->value => 'Development Sprint Report',
+            ReportType::GENERAL->value => 'General Activity Report',
         ];
 
-        return $types[$reportType].' - '.$this->faker->dateTimeBetween('-1 month', 'now')->format('M Y');
+        return $types[$reportType->value].' - '.$this->faker->dateTimeBetween('-1 month', 'now')->format('M Y');
     }
 
     private function generateMetricsData(ReportType $reportType): array

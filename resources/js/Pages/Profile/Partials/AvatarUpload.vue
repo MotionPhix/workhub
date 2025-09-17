@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import {ref} from 'vue'
 import {useForm} from '@inertiajs/vue3'
 import {Avatar, AvatarImage} from "@/components/ui/avatar";
