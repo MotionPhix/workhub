@@ -61,12 +61,15 @@ class InvitationController extends Controller
 
     public function create()
     {
-        return Inertia::render('admin/invitations/Create', [
-            'departments' => Department::select('uuid', 'name')->get(),
+        return Inertia::render('shared/InviteUser', [
+            'departments' => Department::select('uuid as id', 'name')->get(),
+            'roles' => \Spatie\Permission\Models\Role::select('name as id', 'name')->get(),
             'managers' => User::role(['manager', 'admin'])
                 ->select('id', 'name', 'email')
                 ->get(),
-            'roles' => \Spatie\Permission\Models\Role::select('id', 'name')->get(),
+            'currentUser' => auth()->user()->only(['id', 'name', 'email']),
+            'isManager' => false,
+            'isAdmin' => true,
         ]);
     }
 
@@ -170,6 +173,11 @@ class InvitationController extends Controller
                 ->withErrors(['message' => 'Bulk invitation failed: '.$e->getMessage()])
                 ->withInput();
         }
+    }
+
+    public function bulkInvite(BulkInvitationRequest $request)
+    {
+        return $this->bulkStore($request);
     }
 
     public function export(Request $request)

@@ -80,7 +80,7 @@ class TeamReportsController extends Controller
         // Get report statistics
         $stats = $this->getTeamReportsStats($teamMemberIds);
 
-        return Inertia::render('manager/TeamReports', [
+        return Inertia::render('manager/team/Reports', [
             'reports' => $reports,
             'teamMembers' => $teamMembers,
             'filters' => $validated,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manager;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\User;
+use App\Models\UserInvite;
 use App\Models\WorkEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -65,7 +66,10 @@ class TeamController extends Controller
             return $member;
         });
 
-        return Inertia::render('manager/TeamMembers', [
+        // Get team stats for the dashboard
+        $teamStats = $this->getTeamStats();
+
+        return Inertia::render('manager/team/Index', [
             'teamMembers' => $teamMembers,
             'filters' => $request->only(['search', 'department_id', 'status']),
             'departments' => \App\Models\Department::select('uuid', 'name')->get()->map(function ($dept) {
@@ -74,6 +78,7 @@ class TeamController extends Controller
                     'name' => $dept->name,
                 ];
             }),
+            'teamStats' => $teamStats,
         ]);
     }
 
@@ -237,11 +242,268 @@ class TeamController extends Controller
             'average_hours_per_member' => $teamMembers->count() > 0 ? round($totalHours / $teamMembers->count(), 2) : 0,
         ];
 
-        return Inertia::render('manager/TeamPerformance', [
+        return Inertia::render('manager/team/Performance', [
             'performanceData' => $performanceData,
             'teamOverview' => $teamOverview,
             'period' => $period,
         ]);
+    }
+
+    public function createInvite()
+    {
+        Gate::authorize('create-invitations');
+
+        // Get roles that managers can invite
+        $allowedRoles = ['employee']; // Managers can only invite employees
+        if (auth()->user()->hasRole('admin')) {
+            $allowedRoles = ['employee', 'manager']; // Admins can invite employees and managers
+        }
+
+        return Inertia::render('shared/InviteUser', [
+            'departments' => \App\Models\Department::select('uuid as id', 'name')->get(),
+            'roles' => \Spatie\Permission\Models\Role::whereIn('name', $allowedRoles)
+                ->select('name as id', 'name')
+                ->get(),
+            'managers' => \App\Models\User::role(['manager', 'admin'])
+                ->select('id', 'name', 'email')
+                ->get(),
+            'currentUser' => auth()->user()->only(['id', 'name', 'email']),
+            'isManager' => auth()->user()->hasRole('manager'),
+            'isAdmin' => auth()->user()->hasRole('admin'),
+        ]);
+    }
+
+    public function invite(Request $request)
+    {
+        Gate::authorize('create-invitations');
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+                'unique:user_invites,email,NULL,id,status,pending',
+            ],
+            'department_uuid' => 'nullable|exists:departments,uuid',
+            'role_name' => 'required|string|exists:roles,name',
+            'manager_email' => [
+                'nullable',
+                'email',
+                'exists:users,email',
+                'different:email',
+            ],
+            'expires_in_days' => 'nullable|integer|min:1|max:30',
+            'welcome_message' => 'nullable|string|max:500',
+        ]);
+
+        // Ensure managers can only invite employees and assign themselves as manager
+        if (Auth::user()->hasRole('manager')) {
+            if ($validated['role_name'] !== 'employee') {
+                return redirect()->back()
+                    ->withErrors(['role_name' => 'Managers can only invite employees.'])
+                    ->withInput();
+            }
+            $validated['manager_email'] = Auth::user()->email;
+        }
+
+        try {
+            $invitationData = [
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'department_uuid' => $validated['department_uuid'] ?? null,
+                'manager_email' => $validated['manager_email'] ?? null,
+                'role_name' => $validated['role_name'],
+                'expires_in_days' => $validated['expires_in_days'] ?? 7,
+                'welcome_message' => $validated['welcome_message'] ?? null,
+            ];
+
+            $invitationService = app(\App\Services\Auth\InvitationService::class);
+            $invitation = $invitationService->sendInvitation($invitationData, Auth::user());
+
+            return redirect()->back()->with('success', "Invitation sent successfully to {$invitation->email}");
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['email' => $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    public function resendInvitation(UserInvite $invitation)
+    {
+        Gate::authorize('resend-invitations');
+
+        // Ensure this invitation is for a team member of this manager
+        if ($invitation->manager_email !== Auth::user()->email) {
+            abort(403, 'You can only manage invitations for your team members.');
+        }
+
+        try {
+            $invitationService = app(\App\Services\Auth\InvitationService::class);
+
+            if (!$invitationService->sendReminder($invitation)) {
+                return redirect()->back()
+                    ->withErrors(['message' => 'Cannot resend this invitation.']);
+            }
+
+            return redirect()->back()->with('success', 'Invitation resent successfully.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['message' => $e->getMessage()]);
+        }
+    }
+
+    public function cancelInvitation(UserInvite $invitation)
+    {
+        Gate::authorize('cancel-invitations');
+
+        // Ensure this invitation is for a team member of this manager
+        if ($invitation->manager_email !== Auth::user()->email) {
+            abort(403, 'You can only manage invitations for your team members.');
+        }
+
+        try {
+            $invitationService = app(\App\Services\Auth\InvitationService::class);
+
+            if (!$invitationService->cancelInvitation($invitation, Auth::user())) {
+                return redirect()->back()
+                    ->withErrors(['message' => 'Cannot cancel this invitation.']);
+            }
+
+            return redirect()->back()->with('success', 'Invitation cancelled successfully.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['message' => $e->getMessage()]);
+        }
+    }
+
+    public function update(Request $request, User $user)
+    {
+        return $this->updateTeamMember($request, $user);
+    }
+
+    public function export(Request $request)
+    {
+        Gate::authorize('export-team-data');
+
+        $validated = $request->validate([
+            'format' => 'required|in:csv,xlsx,json',
+            'status' => 'nullable|in:active,inactive,on_leave,terminated',
+            'department_id' => 'nullable|exists:departments,uuid',
+        ]);
+
+        $query = User::where('manager_email', Auth::user()->email)
+            ->with(['department']);
+
+        // Apply filters
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
+        if ($request->filled('department_id')) {
+            $query->where('department_uuid', $request->department_id);
+        }
+
+        $teamMembers = $query->get();
+
+        $filename = 'team-members-'.now()->format('Y-m-d');
+
+        switch ($validated['format']) {
+            case 'csv':
+                return $this->exportToCsv($teamMembers, $filename);
+            case 'xlsx':
+                return $this->exportToExcel($teamMembers, $filename);
+            case 'json':
+                return response()->json($teamMembers);
+            default:
+                return redirect()->back()->withErrors(['format' => 'Invalid export format.']);
+        }
+    }
+
+    private function exportToCsv($teamMembers, string $filename)
+    {
+        return response()->streamDownload(function () use ($teamMembers) {
+            $output = fopen('php://output', 'w');
+
+            // Write headers
+            fputcsv($output, [
+                'ID',
+                'Name',
+                'Email',
+                'Employee ID',
+                'Department',
+                'Status',
+                'Last Activity',
+                'Total Hours (This Month)',
+                'Reports Submitted (This Month)',
+            ]);
+
+            // Write data rows
+            foreach ($teamMembers as $member) {
+                $stats = $this->getTeamMemberStats($member);
+
+                fputcsv($output, [
+                    $member->uuid,
+                    $member->name,
+                    $member->email,
+                    $member->employee_id ?? '',
+                    $member->department->name ?? '',
+                    $member->is_active ? 'Active' : 'Inactive',
+                    $stats['last_activity'] ? \Carbon\Carbon::parse($stats['last_activity'])->format('Y-m-d H:i:s') : '',
+                    $stats['total_hours'] ?? 0,
+                    $stats['reports_submitted'] ?? 0,
+                ]);
+            }
+
+            fclose($output);
+        }, "{$filename}.csv");
+    }
+
+    private function exportToExcel($teamMembers, string $filename)
+    {
+        // This would require maatwebsite/excel package
+        return response()->json(['message' => 'Excel export requires additional package installation'], 501);
+    }
+
+    private function getTeamStats(): array
+    {
+        $teamMembers = User::where('manager_email', Auth::user()->email)->get();
+
+        $activeMembers = $teamMembers->where('is_active', true)->count();
+        $totalMembers = $teamMembers->count();
+        $inactiveMembers = $teamMembers->where('is_active', false)->count();
+
+        // Calculate total work entries and hours
+        $workEntries = WorkEntry::whereIn('user_id', $teamMembers->pluck('id'))
+            ->whereBetween('start_date_time', [now()->startOfMonth(), now()->endOfMonth()])
+            ->get();
+
+        $totalWorkEntries = $workEntries->count();
+        $totalHours = $workEntries->sum('hours_worked');
+        $avgHoursPerMember = $totalMembers > 0 ? round($totalHours / $totalMembers, 1) : 0;
+
+        // Get pending reports
+        $pendingReports = Report::whereIn('user_id', $teamMembers->pluck('id'))
+            ->where('status', 'pending')
+            ->count();
+
+        return [
+            'total_members' => $totalMembers,
+            'active_members' => $activeMembers,
+            'on_leave' => 0, // This would need a proper status field
+            'inactive_members' => $inactiveMembers,
+            'avg_hours_per_member' => $avgHoursPerMember,
+            'total_work_entries' => $totalWorkEntries,
+            'pending_reports' => $pendingReports,
+        ];
     }
 
     private function getTeamMemberStats(User $user, string $period = 'current_month'): array
@@ -249,7 +511,7 @@ class TeamController extends Controller
         $dateRange = $this->getDateRangeForPeriod($period);
 
         $workEntries = WorkEntry::where('user_id', $user->id)
-            ->whereBetween('work_date', [$dateRange['start'], $dateRange['end']])
+            ->whereBetween('start_date_time', [$dateRange['start'], $dateRange['end']])
             ->get();
 
         $reports = Report::where('user_id', $user->id)
@@ -257,14 +519,15 @@ class TeamController extends Controller
             ->get();
 
         return [
-            'total_hours' => $workEntries->sum('hours'),
+            'total_hours' => $workEntries->sum('hours_worked'),
             'total_entries' => $workEntries->count(),
             'reports_submitted' => $reports->count(),
             'reports_approved' => $reports->where('status', 'approved')->count(),
             'reports_pending' => $reports->where('status', 'pending')->count(),
             'reports_rejected' => $reports->where('status', 'rejected')->count(),
-            'average_hours_per_day' => $workEntries->count() > 0 ? round($workEntries->sum('hours') / $workEntries->count(), 2) : 0,
-            'last_activity' => $workEntries->max('date') ?? $reports->max('created_at'),
+            'average_hours_per_day' => $workEntries->count() > 0 ? round($workEntries->sum('hours_worked') / $workEntries->count(), 2) : 0,
+            'last_activity' => $workEntries->max('start_date_time') ?? $reports->max('created_at'),
+            'efficiency_score' => $this->calculateEfficiencyScore($workEntries),
         ];
     }
 
@@ -274,13 +537,13 @@ class TeamController extends Controller
 
         // Additional detailed statistics
         $workEntries = WorkEntry::where('user_id', $user->id)
-            ->where('date', '>=', now()->subDays(90))
+            ->where('start_date_time', '>=', now()->subDays(90))
             ->get();
 
-        $projectStats = $workEntries->groupBy('project_id')
+        $projectStats = $workEntries->groupBy('project_uuid')
             ->map(function ($entries) {
                 return [
-                    'total_hours' => $entries->sum('hours'),
+                    'total_hours' => $entries->sum('hours_worked'),
                     'entries_count' => $entries->count(),
                 ];
             });
@@ -292,12 +555,12 @@ class TeamController extends Controller
             $weekEnd = now()->subWeeks($i)->endOfWeek();
 
             $weekEntries = $workEntries->filter(function ($entry) use ($weekStart, $weekEnd) {
-                return $entry->date >= $weekStart && $entry->date <= $weekEnd;
+                return $entry->start_date_time >= $weekStart && $entry->start_date_time <= $weekEnd;
             });
 
             $weeklyStats[] = [
                 'week' => $weekStart->format('M d'),
-                'hours' => $weekEntries->sum('hours'),
+                'hours' => $weekEntries->sum('hours_worked'),
                 'entries' => $weekEntries->count(),
             ];
         }
@@ -313,15 +576,17 @@ class TeamController extends Controller
     {
         // Simple productivity score based on consistency and output
         $recentEntries = WorkEntry::where('user_id', $user->id)
-            ->where('date', '>=', now()->subDays(30))
+            ->where('start_date_time', '>=', now()->subDays(30))
             ->get();
 
         if ($recentEntries->isEmpty()) {
             return 0;
         }
 
-        $totalHours = $recentEntries->sum('hours');
-        $workingDays = $recentEntries->pluck('date')->unique()->count();
+        $totalHours = $recentEntries->sum('hours_worked');
+        $workingDays = $recentEntries->pluck('start_date_time')->map(function($date) {
+            return \Carbon\Carbon::parse($date)->format('Y-m-d');
+        })->unique()->count();
         $averageHoursPerDay = $workingDays > 0 ? $totalHours / $workingDays : 0;
 
         // Score based on consistency (working days) and productivity (hours)
@@ -329,6 +594,19 @@ class TeamController extends Controller
         $productivityScore = min($averageHoursPerDay / 8, 1) * 50; // Max 50 points for productivity
 
         return round($consistencyScore + $productivityScore, 1);
+    }
+
+    private function calculateEfficiencyScore($workEntries): float
+    {
+        if ($workEntries->isEmpty()) {
+            return 0;
+        }
+
+        // Calculate efficiency based on completed vs total entries
+        $completedEntries = $workEntries->where('status', 'completed')->count();
+        $totalEntries = $workEntries->count();
+
+        return $totalEntries > 0 ? round(($completedEntries / $totalEntries) * 100, 1) : 0;
     }
 
     private function getDateRangeForPeriod(string $period): array

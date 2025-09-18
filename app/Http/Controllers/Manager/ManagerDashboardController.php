@@ -24,8 +24,12 @@ class ManagerDashboardController extends Controller
 
         $dashboardData = $this->analyticsService->getManagerDashboardData(auth()->user());
 
+        // Get real chart data for the last 7 days
+        $chartData = $this->getChartData();
+
         return Inertia::render('manager/Dashboard', [
             'dashboardData' => $dashboardData,
+            'chartData' => $chartData,
             'currentUser' => auth()->user(),
         ]);
     }
@@ -199,6 +203,57 @@ class ManagerDashboardController extends Controller
                 fputcsv($output, [$fullKey, $value]);
             }
         }
+    }
+
+    private function getChartData(): array
+    {
+        $teamMemberIds = \App\Models\User::where('manager_email', auth()->user()->email)->pluck('id');
+
+        // Get the last 7 days of data
+        $days = [];
+        $performanceTrends = [];
+        $activityData = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $days[] = $date->format('M j');
+
+            // Calculate productivity for this day
+            $dayWorkEntries = \App\Models\WorkEntry::whereIn('user_id', $teamMemberIds)
+                ->whereDate('start_date_time', $date)
+                ->get();
+
+            $totalHours = $dayWorkEntries->sum('hours_worked');
+            $targetHours = $teamMemberIds->count() * 8; // Assuming 8 hours per person target
+            $productivity = $targetHours > 0 ? min(100, ($totalHours / $targetHours) * 100) : 0;
+
+            // Calculate efficiency (completed vs total tasks)
+            $completedEntries = $dayWorkEntries->where('status', 'completed')->count();
+            $totalEntries = $dayWorkEntries->count();
+            $efficiency = $totalEntries > 0 ? ($completedEntries / $totalEntries) * 100 : 0;
+
+            $performanceTrends[] = [
+                'productivity' => round($productivity, 1),
+                'efficiency' => round($efficiency, 1)
+            ];
+
+            // Activity data for bar chart
+            $loggedHours = round($totalHours, 1);
+            $overtimeHours = max(0, $totalHours - ($teamMemberIds->count() * 8));
+            $missedHours = max(0, ($teamMemberIds->count() * 8) - $totalHours);
+
+            $activityData[] = [
+                'logged' => $loggedHours,
+                'overtime' => round($overtimeHours, 1),
+                'missed' => round($missedHours, 1)
+            ];
+        }
+
+        return [
+            'days' => $days,
+            'performance_trends' => $performanceTrends,
+            'activity_data' => $activityData
+        ];
     }
 
     public function bulkApproveReports(Request $request)

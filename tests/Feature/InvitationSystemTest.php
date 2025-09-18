@@ -186,7 +186,7 @@ it('shows invitation acceptance page for valid token', function () {
 
     $response->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->component('auth/invitation/Show')
+            ->component('Auth/invitation/Show')
             ->has('invitation.email')
             ->has('invitation.name')
         );

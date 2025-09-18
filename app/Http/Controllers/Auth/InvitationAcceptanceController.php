@@ -37,7 +37,7 @@ class InvitationAcceptanceController extends Controller
             return redirect()->route('login')->withErrors(['token' => $message]);
         }
 
-        return Inertia::render('auth/invitation/Show', [
+        return Inertia::render('Auth/invitation/Show', [
             'invitation' => [
                 'token' => $token,
                 'email' => $invitation->email,

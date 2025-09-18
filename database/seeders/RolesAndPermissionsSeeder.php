@@ -297,6 +297,12 @@ class RolesAndPermissionsSeeder extends Seeder
             // User management (limited)
             'view-users',
 
+            // Invitation management (team level)
+            'create-invitations',
+            'view-invitations',
+            'resend-invitations',
+            'cancel-invitations',
+
             // Project management (team level)
             'view-projects',
             'create-projects',

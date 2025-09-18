@@ -22,12 +22,41 @@ Route::middleware(['auth', 'role.access'])->prefix('manager')->name('manager.')-
 
     // Manager Dashboard
     Route::get('/', [ManagerDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/team-reports', [ManagerDashboardController::class, 'teamReports'])->name('team-reports');
+    Route::get('/team-performance', [ManagerDashboardController::class, 'teamPerformance'])->name('team-performance');
+    Route::get('/team-schedules', [ManagerDashboardController::class, 'teamSchedules'])->name('team-schedules');
+
+    // Report approval actions
+    Route::middleware(['can:approve-reports'])->group(function () {
+        Route::post('/reports/{report}/approve', [ManagerDashboardController::class, 'approveReport'])->name('reports.approve');
+        Route::post('/reports/{report}/reject', [ManagerDashboardController::class, 'rejectReport'])->name('reports.reject');
+        Route::post('/reports/bulk-approve', [ManagerDashboardController::class, 'bulkApproveReports'])->name('reports.bulk-approve');
+    });
+
+    // Analytics export
+    Route::middleware(['can:export-analytics'])->group(function () {
+        Route::get('/analytics/export', [ManagerDashboardController::class, 'exportAnalytics'])->name('analytics.export');
+    });
 
     // Team Management
     Route::middleware(['can:view-team-work-entries'])->group(function () {
         Route::get('/team', [TeamController::class, 'index'])->name('team.index');
         Route::get('/team/{user:uuid}', [TeamController::class, 'show'])->name('team.show');
         Route::get('/team/{user:uuid}/profile', [TeamController::class, 'profile'])->name('team.profile');
+
+        // Team member management
+        Route::middleware(['can:manage-team-members'])->group(function () {
+            Route::put('/team/{user:uuid}', [TeamController::class, 'update'])->name('team.update');
+            Route::get('/team/export', [TeamController::class, 'export'])->name('team.export');
+        });
+
+        // Team member invitations
+        Route::middleware(['can:create-invitations'])->group(function () {
+            Route::get('/team/invite', [TeamController::class, 'createInvite'])->name('team.invite.create');
+            Route::post('/team/invite', [TeamController::class, 'invite'])->name('team.invite');
+            Route::post('/team/invitations/{invitation}/resend', [TeamController::class, 'resendInvitation'])->name('team.invitations.resend');
+            Route::delete('/team/invitations/{invitation}/cancel', [TeamController::class, 'cancelInvitation'])->name('team.invitations.cancel');
+        });
     });
 
     // Team Work Entries Management

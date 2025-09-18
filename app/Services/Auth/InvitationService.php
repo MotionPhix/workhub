@@ -75,35 +75,84 @@ class InvitationService
         });
     }
 
-    public function acceptInvitation(string $token, array $data): User
+    public function acceptInvitation(string $token, array $userData): User
     {
-        $invitation = UserInvite::findByToken($token);
+        $invite = UserInvite::findByToken($token);
 
-        if (! $invitation) {
-            throw new \Exception('Invalid or expired invitation token.');
+        if (! $invite) {
+            throw new \InvalidArgumentException('Invalid or expired invitation token.');
         }
 
-        if (! $invitation->canBeAccepted()) {
-            throw new \Exception('This invitation cannot be accepted.');
+        if (! $invite->canBeAccepted()) {
+            throw new \InvalidArgumentException('This invitation cannot be accepted. It may have expired or the user already exists.');
         }
 
-        return DB::transaction(function () use ($invitation, $data) {
-            // Create user
-            $user = $this->createUserFromInvitation($invitation, $data);
+        try {
+            // Create the user account
+            $user = User::create([
+                'name' => $invite->name,
+                'email' => $invite->email,
+                'password' => bcrypt($userData['password']),
+                'department_uuid' => $invite->department_uuid,
+                'manager_email' => $invite->manager_email,
+                'gender' => $userData['gender'] ?? 'unknown',
+                'is_active' => true,
+                'joined_at' => now(),
+                'settings' => array_merge([
+                    'notifications' => [
+                        'email' => true,
+                        'sms' => false,
+                    ],
+                    'timezone' => $userData['timezone'] ?? 'UTC',
+                ], $invite->invite_data['initial_schedule_settings'] ?? []),
+            ]);
+
+            Log::info('User created successfully', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'name' => $user->name,
+            ]);
+
+            // Assign role
+            if ($invite->role_name) {
+                try {
+                    $user->assignRole($invite->role_name);
+                } catch (\Exception $e) {
+                    // Log the error but don't fail the user creation
+                    Log::warning('Failed to assign role during invitation acceptance', [
+                        'user_id' => $user->id,
+                        'role_name' => $invite->role_name,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
 
             // Mark invitation as accepted
-            $invitation->accept();
+            $invite->accept();
 
-            // Log the successful registration
+            // Send welcome notification to inviter
+            // $invite->inviter->notify(new UserInvitedNotification($user, $invite, 'accepted'));
+
+            // Log successful registration
             Log::info('User registered via invitation', [
                 'user_id' => $user->id,
-                'invite_id' => $invitation->id,
+                'invite_id' => $invite->id,
                 'email' => $user->email,
-                'role' => $invitation->role_name,
+                'role' => $invite->role_name,
             ]);
 
             return $user;
-        });
+
+        } catch (\Exception $e) {
+            Log::error('Failed to create user during invitation acceptance', [
+                'invite_id' => $invite->id,
+                'email' => $invite->email,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
+        }
     }
 
     public function declineInvitation(string $token, ?string $reason = null): UserInvite
@@ -224,7 +273,7 @@ class InvitationService
         }
 
         $total = $query->count();
-        $pending = $query->clone()->where('status', 'pending')->count();
+        $pending = $query->clone()->pending()->count(); // Use pending scope instead of just status
         $accepted = $query->clone()->where('status', 'accepted')->count();
         $declined = $query->clone()->where('status', 'declined')->count();
         $expired = $query->clone()->expired()->count();
