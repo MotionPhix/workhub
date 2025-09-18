@@ -41,21 +41,25 @@ Route::middleware(['auth', 'role.access'])->prefix('manager')->name('manager.')-
     // Team Management
     Route::middleware(['can:view-team-work-entries'])->group(function () {
         Route::get('/team', [TeamController::class, 'index'])->name('team.index');
-        Route::get('/team/{user:uuid}', [TeamController::class, 'show'])->name('team.show');
-        Route::get('/team/{user:uuid}/profile', [TeamController::class, 'profile'])->name('team.profile');
 
-        // Team member management
-        Route::middleware(['can:manage-team-members'])->group(function () {
-            Route::put('/team/{user:uuid}', [TeamController::class, 'update'])->name('team.update');
-            Route::get('/team/export', [TeamController::class, 'export'])->name('team.export');
-        });
-
-        // Team member invitations
+        // Team member invitations (must come before parameterized routes)
         Route::middleware(['can:create-invitations'])->group(function () {
             Route::get('/team/invite', [TeamController::class, 'createInvite'])->name('team.invite.create');
             Route::post('/team/invite', [TeamController::class, 'invite'])->name('team.invite');
             Route::post('/team/invitations/{invitation}/resend', [TeamController::class, 'resendInvitation'])->name('team.invitations.resend');
             Route::delete('/team/invitations/{invitation}/cancel', [TeamController::class, 'cancelInvitation'])->name('team.invitations.cancel');
+        });
+
+        // Team member management
+        Route::middleware(['can:manage-team-members'])->group(function () {
+            Route::get('/team/export', [TeamController::class, 'export'])->name('team.export');
+        });
+
+        // Parameterized routes (must come after specific routes)
+        Route::get('/team/{user:uuid}', [TeamController::class, 'show'])->name('team.show');
+        Route::get('/team/{user:uuid}/profile', [TeamController::class, 'profile'])->name('team.profile');
+        Route::middleware(['can:manage-team-members'])->group(function () {
+            Route::put('/team/{user:uuid}', [TeamController::class, 'update'])->name('team.update');
         });
     });
 

@@ -13,7 +13,8 @@
       "WebFetch(domain:inertiajs.com)",
       "mcp__laravel-boost__list-routes",
       "mcp__laravel-boost__get-absolute-url",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "mcp__laravel-boost__list-artisan-commands"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -310,22 +310,21 @@ onMounted(() => {
 
         <!-- Quick Actions -->
         <div class="grid grid-cols-2 gap-3">
-          <ModalLink
-            :href="route('manager.team.invite.create')"
-          >
-            <Button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2">
-              <UserPlus class="w-5 h-5" />
-              Add Member
-            </Button>
-          </ModalLink>
-          <ModalLink
+          <Button
+            :as="ModalLink"
+            :href="route('manager.team.invite.create')">
+            <UserPlus class="w-5 h-5" />
+            Add Member
+          </Button>
+
+          <Button
+            :as="ModalLink"
             href="#export-modal"
-          >
-            <Button variant="outline" class="px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2">
-              <Download class="w-5 h-5" />
-              Export
-            </Button>
-          </ModalLink>
+            variant="outline" class="px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2">
+            <Download class="w-5 h-5" />
+            Export
+          </Button>
+
           <Button
             variant="outline"
             class="px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2"
@@ -550,20 +549,21 @@ onMounted(() => {
       <div class="text-gray-400 mb-4">
         <Users class="w-16 h-16 mx-auto" />
       </div>
+
       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No team members found</h3>
+
       <p class="text-gray-500 dark:text-gray-400 mb-4">
         {{ filters.search || filters.department_id !== 'all' || filters.status !== 'all'
            ? 'Try adjusting your filters'
            : 'Start by adding your first team member' }}
       </p>
-      <ModalLink
-        :href="route('manager.team.invite.create')"
-      >
-        <Button class="inline-flex items-center gap-2">
-          <UserPlus class="w-4 h-4" />
-          Add Team Member
-        </Button>
-      </ModalLink>
+
+      <Button
+        :as="ModalLink"
+        :href="route('manager.team.invite.create')">
+        <UserPlus class="w-4 h-4" />
+        Add Team Member
+      </Button>
     </div>
 
     <!-- Pagination -->

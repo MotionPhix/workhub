@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, computed } from 'vue'
+import {reactive, computed, ref} from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import { UserPlus, X, Loader2 } from 'lucide-vue-next'
 import { Modal } from '@inertiaui/modal-vue'
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import CustomCard from '@/components/CustomCard.vue'
+import InputError from "@/components/InputError.vue";
 
 interface Department {
   id: string
@@ -41,6 +42,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const generalInviteModal = ref(null)
 
 // Form state
 const processing = reactive({ value: false })
@@ -65,18 +67,18 @@ const submitText = computed(() => {
 })
 
 // Methods
-function submitInvitation(close: () => void) {
+function submitInvitation() {
   processing.value = true
 
   const submitData = {
     ...form,
-    department_uuid: form.department_id || null,
-    manager_email: form.manager_email || (props.isManager ? props.currentUser.email : null)
+    department_uuid: form.department_id === 'none' ? null : form.department_id || null,
+    manager_email: form.manager_email === 'none' ? null : (form.manager_email || (props.isManager ? props.currentUser.email : null))
   }
 
-  // Remove empty values
+  // Remove empty values and 'none' values
   Object.keys(submitData).forEach(key => {
-    if (submitData[key] === '') {
+    if (submitData[key] === '' || submitData[key] === 'none') {
       delete submitData[key]
     }
   })
@@ -85,8 +87,9 @@ function submitInvitation(close: () => void) {
 
   router.post(route(submitRoute), submitData, {
     onSuccess: () => {
-      close()
+      generalInviteModal.value.close()
     },
+
     onFinish: () => {
       processing.value = false
     }
@@ -103,29 +106,26 @@ if (props.isManager) {
   <Head :title="pageTitle" />
 
   <Modal
+    ref="generalInviteModal"
     max-width="2xl"
     :close-button="false"
     padding-classes="p-0"
     panel-classes="bg-transparent"
-    #default="{ close }"
-  >
+    v-slot="{ close }">
     <CustomCard
       :icon="UserPlus"
       :title="pageTitle"
       description="Fill out the details below to send an invitation"
-      padding="p-8"
-    >
+      padding="p-8">
       <template #header>
         <Button
           variant="ghost"
           size="sm"
-          @click="close"
-          class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-        >
+          @click="close">
           <X class="h-4 w-4" />
         </Button>
       </template>
-        <form @submit.prevent="submitInvitation" class="space-y-6">
+        <form class="space-y-6">
           <!-- Basic Information -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
@@ -136,7 +136,10 @@ if (props.isManager) {
                 placeholder="Enter full name"
                 required
               />
+
+              <InputError :message="form.name ? '' : 'Name is required.'" class="mt-1" />
             </div>
+
             <div class="space-y-2">
               <Label for="email">Email Address *</Label>
               <Input
@@ -146,6 +149,8 @@ if (props.isManager) {
                 placeholder="user@example.com"
                 required
               />
+
+              <InputError :message="form.email ? '' : 'Valid email is required.'" class="mt-1" />
             </div>
           </div>
 
@@ -154,57 +159,61 @@ if (props.isManager) {
             <div class="space-y-2">
               <Label for="role">Role *</Label>
               <Select v-model="form.role_name">
-                <SelectTrigger>
+                <SelectTrigger class="w-full">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
+
                 <SelectContent>
                   <SelectItem
                     v-for="role in roles"
                     :key="role.id"
-                    :value="role.id"
-                  >
+                    :value="role.id">
                     {{ role.name.charAt(0).toUpperCase() + role.name.slice(1) }}
                   </SelectItem>
                 </SelectContent>
               </Select>
+
+              <InputError :message="form.role_name ? '' : 'Role is required.'" class="mt-1" />
             </div>
+
             <div class="space-y-2">
               <Label for="department">Department</Label>
               <Select v-model="form.department_id">
-                <SelectTrigger>
+                <SelectTrigger class="w-full">
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
+
                 <SelectContent>
-                  <SelectItem value="">No Department</SelectItem>
+                  <SelectItem value="none">No Department</SelectItem>
                   <SelectItem
                     v-for="dept in departments"
                     :key="dept.id"
-                    :value="dept.id"
-                  >
+                    :value="dept.id">
                     {{ dept.name }}
                   </SelectItem>
                 </SelectContent>
               </Select>
+
+              <InputError :message="form.department_id ? '' : 'Department is required.'" class="mt-1" />
             </div>
           </div>
 
           <!-- Manager Assignment (only for admins or when inviting managers) -->
           <div
             v-if="isAdmin && form.role_name !== 'admin'"
-            class="space-y-2"
-          >
+            class="space-y-2">
             <Label for="manager">Manager</Label>
             <Select v-model="form.manager_email">
               <SelectTrigger>
                 <SelectValue placeholder="Select manager" />
               </SelectTrigger>
+
               <SelectContent>
-                <SelectItem value="">No Manager</SelectItem>
+                <SelectItem value="none">No Manager</SelectItem>
                 <SelectItem
                   v-for="manager in managers"
                   :key="manager.id"
-                  :value="manager.email"
-                >
+                  :value="manager.email">
                   {{ manager.name }} ({{ manager.email }})
                 </SelectItem>
               </SelectContent>
@@ -216,9 +225,10 @@ if (props.isManager) {
             <div class="space-y-2">
               <Label for="expires">Invitation Expires (days)</Label>
               <Select v-model="form.expires_in_days">
-                <SelectTrigger>
+                <SelectTrigger class="w-full">
                   <SelectValue />
                 </SelectTrigger>
+
                 <SelectContent>
                   <SelectItem :value="3">3 days</SelectItem>
                   <SelectItem :value="7">7 days</SelectItem>
@@ -226,6 +236,8 @@ if (props.isManager) {
                   <SelectItem :value="30">30 days</SelectItem>
                 </SelectContent>
               </Select>
+
+              <InputError :message="form.expires_in_days ? '' : 'Expiration is required.'" class="mt-1" />
             </div>
           </div>
 
@@ -238,26 +250,27 @@ if (props.isManager) {
               rows="3"
               placeholder="Add a personal welcome message..."
             />
+
+            <InputError :message="form.welcome_message ? '' : ''" class="mt-1" />
           </div>
         </form>
 
         <template #footer>
-          <div class="flex gap-3">
+          <div class="flex gap-3 items-end justify-end">
             <Button
-              type="submit"
-              :disabled="processing.value"
-              class="flex-1"
-              @click="submitInvitation(close)"
-            >
-              <Loader2 v-if="processing.value" class="h-4 w-4 mr-2 animate-spin" />
+              @click="submitInvitation"
+              class="relative z-40 cursor-pointer"
+              :disabled="processing.value">
+              <Loader2
+                v-if="processing.value"
+                class="h-4 w-4 mr-2 animate-spin"
+              />
               {{ submitText }}
             </Button>
+
             <Button
-              type="button"
               variant="outline"
-              @click="close"
-              class="flex-1"
-            >
+              @click="close; form.clearErrors">
               Cancel
             </Button>
           </div>
