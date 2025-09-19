@@ -7,13 +7,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {Users, BarChart3, ChevronDown, FileText, Clock, TrendingUp} from 'lucide-vue-next'
+import {Users, BarChart3, ChevronDown, FileText, Clock, TrendingUp, Mail} from 'lucide-vue-next'
 import ResponsiveNavLink from '@/components/ResponsiveNavLink.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import {Button} from '@/components/ui/button'
 import {DropdownMenuLabel} from '@/components/ui/dropdown-menu'
 import {Separator} from '@/components/ui/separator'
+import {Toaster} from "vue-sonner";
 
 const showingNavigationDropdown = ref(false)
 
@@ -21,6 +22,8 @@ const appName = computed(() => window?.AppConfig?.name || 'WorkHub')
 </script>
 
 <template>
+  <Toaster rich-colors :close-button="true" :expand="true"/>
+
   <!-- Manager Navigation -->
   <nav class="fixed inset-x-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 shadow-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,6 +79,13 @@ const appName = computed(() => window?.AppConfig?.name || 'WorkHub')
                 <Link :href="route('manager.work-entries.index')" class="flex items-center space-x-2">
                   <Clock class="w-4 h-4"/>
                   <span>Work Entries</span>
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem as-child>
+                <Link :href="route('manager.invitations.index')" class="flex items-center space-x-2">
+                  <Mail class="w-4 h-4"/>
+                  <span>Invitations</span>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -203,6 +213,10 @@ const appName = computed(() => window?.AppConfig?.name || 'WorkHub')
           <ResponsiveNavLink :href="route('manager.work-entries.index')"
                              :active="route().current('manager.work-entries.*')">
             Work Entries
+          </ResponsiveNavLink>
+          <ResponsiveNavLink :href="route('manager.invitations.index')"
+                             :active="route().current('manager.invitations.*')">
+            Invitations
           </ResponsiveNavLink>
           <ResponsiveNavLink :href="route('manager.insights.index')" :active="route().current('manager.insights.*')">
             Team Insights

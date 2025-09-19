@@ -22,7 +22,7 @@ class SendInvitationRequest extends FormRequest
                 'unique:user_invites,email,NULL,id,status,pending',
             ],
             'name' => 'required|string|max:255',
-            'department_uuid' => 'nullable|exists:departments,uuid',
+            'department_uuid' => 'required|exists:departments,uuid',
             'manager_email' => [
                 'nullable',
                 'email',
@@ -30,7 +30,7 @@ class SendInvitationRequest extends FormRequest
                 'different:email', // Can't be their own manager
             ],
             'job_title' => 'nullable|string|max:255',
-            'role_name' => 'nullable|string|exists:roles,name',
+            'role_name' => 'required|string|exists:roles,name',
             'expires_in_days' => 'nullable|integer|min:1|max:30',
             'welcome_message' => 'nullable|string|max:500',
             'additional_permissions' => 'nullable|array',

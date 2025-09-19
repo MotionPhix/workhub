@@ -44,6 +44,7 @@ Route::middleware(['auth', 'role.access'])->prefix('manager')->name('manager.')-
 
         // Team member invitations (must come before parameterized routes)
         Route::middleware(['can:create-invitations'])->group(function () {
+            Route::get('/invitations', [TeamController::class, 'invitations'])->name('invitations.index');
             Route::get('/team/invite', [TeamController::class, 'createInvite'])->name('team.invite.create');
             Route::post('/team/invite', [TeamController::class, 'invite'])->name('team.invite');
             Route::post('/team/invitations/{invitation}/resend', [TeamController::class, 'resendInvitation'])->name('team.invitations.resend');

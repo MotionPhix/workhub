@@ -83,6 +83,10 @@ interface Props {
     avg_hours_per_member: number
     total_work_entries: number
     pending_reports: number
+    member_change: string
+    avg_hours_change: string
+    work_entries_change: string
+    pending_status: string
   }
 }
 
@@ -127,7 +131,7 @@ const teamMetrics = computed(() => [
     title: 'Total Members',
     value: props.teamStats?.total_members || 0,
     subtitle: `${props.teamStats?.active_members || 0} active`,
-    change: '+2 this month',
+    change: props.teamStats?.member_change || 'No change',
     color: 'from-blue-500 to-blue-600',
     bgColor: 'bg-blue-50 dark:bg-blue-900/20',
     iconColor: 'text-blue-600 dark:text-blue-400'
@@ -138,7 +142,7 @@ const teamMetrics = computed(() => [
     value: Math.round(props.teamStats?.avg_hours_per_member || 0),
     suffix: 'h',
     subtitle: 'This month',
-    change: '+8%',
+    change: props.teamStats?.avg_hours_change || 'No change',
     color: 'from-purple-500 to-purple-600',
     bgColor: 'bg-purple-50 dark:bg-purple-900/20',
     iconColor: 'text-purple-600 dark:text-purple-400'
@@ -148,7 +152,7 @@ const teamMetrics = computed(() => [
     title: 'Work Entries',
     value: props.teamStats?.total_work_entries || 0,
     subtitle: 'Total submitted',
-    change: '+12%',
+    change: props.teamStats?.work_entries_change || 'No change',
     color: 'from-green-500 to-green-600',
     bgColor: 'bg-green-50 dark:bg-green-900/20',
     iconColor: 'text-green-600 dark:text-green-400'
@@ -158,7 +162,7 @@ const teamMetrics = computed(() => [
     title: 'Pending Reports',
     value: props.teamStats?.pending_reports || 0,
     subtitle: 'Need review',
-    change: 'Urgent',
+    change: props.teamStats?.pending_status || 'None',
     color: 'from-orange-500 to-orange-600',
     bgColor: 'bg-orange-50 dark:bg-orange-900/20',
     iconColor: 'text-orange-600 dark:text-orange-400'
@@ -413,8 +417,7 @@ onMounted(() => {
       <div
         v-for="member in teamMembers.data"
         :key="member.id"
-        class="team-card group relative"
-      >
+        class="team-card group relative">
         <CustomCard hover>
           <div class="space-y-4">
             <!-- Member Header -->
@@ -479,8 +482,7 @@ onMounted(() => {
                   <span class="text-sm text-gray-600 dark:text-gray-400">Performance</span>
                   <span
                     class="text-sm font-medium"
-                    :class="getPerformanceColor(member.performance_stats.efficiency_score)"
-                  >
+                    :class="getPerformanceColor(member.performance_stats.efficiency_score)">
                     {{ Math.round(member.performance_stats.efficiency_score) }}%
                   </span>
                 </div>
@@ -522,22 +524,20 @@ onMounted(() => {
 
             <!-- Action Buttons -->
             <div class="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <Button asChild class="flex-1" size="sm">
-                <Link :href="route('manager.team.show', member.id)">
-                  <Eye class="h-4 w-4 mr-1" />
-                  View Details
-                </Link>
-              </Button>
+              <Link
+                :as="Button" class="flex-1" size="sm"
+                :href="route('manager.team.show', member.uuid)">
+                <Eye class="h-4 w-4 mr-1" />
+                View Details
+              </Link>
 
-              <ModalLink
-                href="#edit-member-modal"
-                @click="prepareEditModal(member)">
-                <Button
-                  variant="outline"
-                  size="sm">
-                  <Edit class="h-4 w-4" />
-                </Button>
-              </ModalLink>
+              <Button
+                :as="ModalLink"
+                href="link-to-edit-member-route"
+                variant="outline"
+                size="sm">
+                <Edit class="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </CustomCard>
@@ -588,171 +588,5 @@ onMounted(() => {
         </template>
       </div>
     </div>
-
-    <!-- Edit Member Modal -->
-    <Modal name="edit-member-modal" max-width="md" #default="{ close }">
-      <div class="p-6">
-        <div class="flex items-center gap-2 mb-4">
-          <UserCog class="h-5 w-5" />
-          <h2 class="text-lg font-semibold">Edit Team Member</h2>
-        </div>
-
-        <form @submit.prevent="updateMember(close)" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <Label for="edit-name">Name</Label>
-              <Input
-                id="edit-name"
-                v-model="editForm.name"
-                placeholder="Member name"
-                required
-              />
-            </div>
-            <div class="space-y-2">
-              <Label for="edit-email">Email</Label>
-              <Input
-                id="edit-email"
-                v-model="editForm.email"
-                type="email"
-                placeholder="member@example.com"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <Label for="edit-department">Department</Label>
-              <Select v-model="editForm.department_id">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No Department</SelectItem>
-                  <SelectItem
-                    v-for="dept in departments"
-                    :key="dept.id"
-                    :value="dept.id.toString()"
-                  >
-                    {{ dept.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div class="space-y-2">
-              <Label for="edit-status">Status</Label>
-              <Select v-model="editForm.status">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="on_leave">On Leave</SelectItem>
-                  <SelectItem value="terminated">Terminated</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            <Label for="edit-notes">Manager Notes</Label>
-            <Textarea
-              id="edit-notes"
-              v-model="editForm.notes"
-              rows="3"
-              placeholder="Add any manager notes..."
-            />
-          </div>
-
-          <div class="flex gap-3 pt-4">
-            <Button
-              type="submit"
-              :disabled="processing"
-              class="flex-1"
-            >
-              <Loader2 v-if="processing" class="h-4 w-4 mr-2 animate-spin" />
-              {{ processing ? 'Updating...' : 'Update Member' }}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              @click="close"
-              class="flex-1"
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
-      </div>
-    </Modal>
-
-    <!-- Export Modal -->
-    <Modal
-      name="export-modal"
-      max-width="sm"
-      :close-button="false"
-      padding-classes="p-0"
-      panel-classes="bg-transparent"
-      #default="{ close }"
-    >
-      <CustomCard
-        title="Export Team Data"
-        description="Export your team members data in the format of your choice. Current filters will be applied."
-        :icon="Download"
-        padding="p-6"
-      >
-        <template #header>
-          <Button
-            variant="ghost"
-            size="sm"
-            @click="close"
-            class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-          >
-            <X class="h-4 w-4" />
-          </Button>
-        </template>
-
-        <div class="grid grid-cols-1 gap-3">
-          <Button
-            @click="exportTeam('csv', close)"
-            variant="outline"
-            class="justify-start"
-          >
-            <Download class="w-4 h-4 mr-2" />
-            Export as CSV
-          </Button>
-          <Button
-            @click="exportTeam('xlsx', close)"
-            variant="outline"
-            class="justify-start"
-            disabled
-          >
-            <Download class="w-4 h-4 mr-2" />
-            Export as Excel (Coming Soon)
-          </Button>
-          <Button
-            @click="exportTeam('json', close)"
-            variant="outline"
-            class="justify-start"
-          >
-            <Download class="w-4 h-4 mr-2" />
-            Export as JSON
-          </Button>
-        </div>
-
-        <template #footer>
-          <div class="flex justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              @click="close"
-            >
-              Cancel
-            </Button>
-          </div>
-        </template>
-      </CustomCard>
-    </Modal>
   </ManagerLayout>
 </template>

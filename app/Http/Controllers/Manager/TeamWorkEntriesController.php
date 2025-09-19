@@ -105,7 +105,7 @@ class TeamWorkEntriesController extends Controller
         })->select('id', 'name')->orderBy('name')->get();
 
         // Get summary statistics
-        $stats = $this->getWorkEntriesStats($teamMemberIds, $validated);
+        $stats = $this->getWorkEntriesStats($teamMemberIds->toArray(), $validated);
 
         return Inertia::render('manager/TeamWorkEntries', [
             'workEntries' => $workEntries,
@@ -286,7 +286,7 @@ class TeamWorkEntriesController extends Controller
             'daily_breakdown' => $this->getDailyBreakdown($workEntries, $period),
             'user_breakdown' => $this->getUserBreakdown($workEntries),
             'project_breakdown' => $this->getProjectBreakdown($workEntries),
-            'productivity_trends' => $this->getProductivityTrends($teamMemberIds, $period),
+            'productivity_trends' => $this->getProductivityTrends($teamMemberIds->toArray(), $period),
         ];
 
         $teamMembers = User::whereIn('id', $teamMemberIds)

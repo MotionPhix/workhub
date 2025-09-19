@@ -10,6 +10,7 @@ interface Props {
   hover?: boolean
   gradient?: string
   padding?: string
+  inlineIcon?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -50,7 +51,27 @@ const headerClasses = computed(() => [
       <!-- Header Section -->
       <div v-if="title || icon || $slots.header" :class="headerClasses">
         <div class="flex-1 min-w-0">
-          <div v-if="title || icon" class="flex items-center gap-3">
+          <!-- Inline Icon Layout -->
+          <div v-if="inlineIcon && (title || icon)" class="flex items-start gap-3">
+            <component
+              v-if="icon"
+              :is="icon"
+              class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"
+            />
+            <div v-if="title" class="flex-1 min-w-0">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{ title }}
+              </h2>
+              <p
+                v-if="description"
+                class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {{ description }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Default Layout (Icon above title) -->
+          <div v-else-if="title || icon" class="flex items-center gap-3">
             <div
               v-if="icon"
               class="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 self-start">

@@ -249,6 +249,44 @@ class TeamController extends Controller
         ]);
     }
 
+    public function invitations(Request $request)
+    {
+        Gate::authorize('create-invitations');
+
+        $filters = $request->validate([
+            'status' => 'nullable|in:pending,accepted,declined,expired',
+            'search' => 'nullable|string|max:255',
+        ]);
+
+        // Get invitations sent by the current manager
+        $query = \App\Models\UserInvite::where('invited_by', auth()->id())
+            ->with(['inviter', 'department'])
+            ->orderByDesc('invited_at');
+
+        // Apply filters
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'expired') {
+                $query->expired();
+            } else {
+                $query->where('status', $filters['status']);
+            }
+        }
+
+        if (!empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('email', 'like', "%{$filters['search']}%")
+                    ->orWhere('name', 'like', "%{$filters['search']}%");
+            });
+        }
+
+        $invitations = $query->paginate(15);
+
+        return Inertia::render('manager/invitations/Index', [
+            'invitations' => $invitations,
+            'filters' => $filters,
+        ]);
+    }
+
     public function createInvite()
     {
         Gate::authorize('create-invitations');
@@ -262,8 +300,14 @@ class TeamController extends Controller
         return Inertia::render('shared/InviteUser', [
             'departments' => \App\Models\Department::select('uuid as id', 'name')->get(),
             'roles' => \Spatie\Permission\Models\Role::whereIn('name', $allowedRoles)
-                ->select('name as id', 'name')
-                ->get(),
+                ->select('name as id', 'name as name')
+                ->get()
+                ->map(function ($role) {
+                    return [
+                        'id' => $role->name, // Ensure id is the role name string
+                        'name' => $role->name
+                    ];
+                }),
             'managers' => \App\Models\User::role(['manager', 'admin'])
                 ->select('id', 'name', 'email')
                 ->get(),
@@ -286,7 +330,7 @@ class TeamController extends Controller
                 'unique:users,email',
                 'unique:user_invites,email,NULL,id,status,pending',
             ],
-            'department_uuid' => 'nullable|exists:departments,uuid',
+            'department_uuid' => 'required|exists:departments,uuid',
             'role_name' => 'required|string|exists:roles,name',
             'manager_email' => [
                 'nullable',
@@ -322,10 +366,10 @@ class TeamController extends Controller
             $invitationService = app(\App\Services\Auth\InvitationService::class);
             $invitation = $invitationService->sendInvitation($invitationData, Auth::user());
 
-            return redirect()->back()->with('success', "Invitation sent successfully to {$invitation->email}");
+            return back()->with('success', "Invitation sent successfully to {$invitation->email}");
 
         } catch (\Exception $e) {
-            return redirect()->back()
+            return back()
                 ->withErrors(['email' => $e->getMessage()])
                 ->withInput();
         }
@@ -481,29 +525,86 @@ class TeamController extends Controller
         $totalMembers = $teamMembers->count();
         $inactiveMembers = $teamMembers->where('is_active', false)->count();
 
-        // Calculate total work entries and hours
-        $workEntries = WorkEntry::whereIn('user_id', $teamMembers->pluck('id'))
-            ->whereBetween('start_date_time', [now()->startOfMonth(), now()->endOfMonth()])
+        // Current month data
+        $currentMonthStart = now()->startOfMonth();
+        $currentMonthEnd = now()->endOfMonth();
+
+        $currentWorkEntries = WorkEntry::whereIn('user_id', $teamMembers->pluck('id'))
+            ->whereBetween('start_date_time', [$currentMonthStart, $currentMonthEnd])
             ->get();
 
-        $totalWorkEntries = $workEntries->count();
-        $totalHours = $workEntries->sum('hours_worked');
-        $avgHoursPerMember = $totalMembers > 0 ? round($totalHours / $totalMembers, 1) : 0;
+        $currentTotalWorkEntries = $currentWorkEntries->count();
+        $currentTotalHours = $currentWorkEntries->sum('hours_worked');
+        $currentAvgHoursPerMember = $totalMembers > 0 ? round($currentTotalHours / $totalMembers, 1) : 0;
+
+        // Previous month data for comparison
+        $previousMonthStart = now()->subMonth()->startOfMonth();
+        $previousMonthEnd = now()->subMonth()->endOfMonth();
+
+        $previousWorkEntries = WorkEntry::whereIn('user_id', $teamMembers->pluck('id'))
+            ->whereBetween('start_date_time', [$previousMonthStart, $previousMonthEnd])
+            ->get();
+
+        $previousTotalWorkEntries = $previousWorkEntries->count();
+        $previousTotalHours = $previousWorkEntries->sum('hours_worked');
+        $previousAvgHoursPerMember = $totalMembers > 0 ? round($previousTotalHours / $totalMembers, 1) : 0;
+
+        // Get team member count from last month for comparison
+        $previousTotalMembers = User::where('manager_email', Auth::user()->email)
+            ->where('created_at', '<=', $previousMonthEnd)
+            ->count();
 
         // Get pending reports
         $pendingReports = Report::whereIn('user_id', $teamMembers->pluck('id'))
             ->where('status', 'pending')
             ->count();
 
+        // Calculate changes
+        $memberChange = $this->calculateChange($totalMembers, $previousTotalMembers);
+        $avgHoursChange = $this->calculatePercentageChange($currentAvgHoursPerMember, $previousAvgHoursPerMember);
+        $workEntriesChange = $this->calculatePercentageChange($currentTotalWorkEntries, $previousTotalWorkEntries);
+
         return [
             'total_members' => $totalMembers,
             'active_members' => $activeMembers,
             'on_leave' => 0, // This would need a proper status field
             'inactive_members' => $inactiveMembers,
-            'avg_hours_per_member' => $avgHoursPerMember,
-            'total_work_entries' => $totalWorkEntries,
+            'avg_hours_per_member' => $currentAvgHoursPerMember,
+            'total_work_entries' => $currentTotalWorkEntries,
             'pending_reports' => $pendingReports,
+            // Add change calculations
+            'member_change' => $memberChange,
+            'avg_hours_change' => $avgHoursChange,
+            'work_entries_change' => $workEntriesChange,
+            'pending_status' => $pendingReports > 0 ? 'Urgent' : 'None',
         ];
+    }
+
+    private function calculateChange(int $current, int $previous): string
+    {
+        $diff = $current - $previous;
+        if ($diff > 0) {
+            return "+{$diff} this month";
+        } elseif ($diff < 0) {
+            return "{$diff} this month";
+        }
+        return "No change";
+    }
+
+    private function calculatePercentageChange(float $current, float $previous): string
+    {
+        if ($previous == 0) {
+            return $current > 0 ? "+100%" : "No data";
+        }
+
+        $percentChange = round((($current - $previous) / $previous) * 100, 1);
+
+        if ($percentChange > 0) {
+            return "+{$percentChange}%";
+        } elseif ($percentChange < 0) {
+            return "{$percentChange}%";
+        }
+        return "No change";
     }
 
     private function getTeamMemberStats(User $user, string $period = 'current_month'): array

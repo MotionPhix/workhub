@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {reactive, computed, ref} from 'vue'
-import { Head, router } from '@inertiajs/vue3'
+import {computed, ref} from 'vue'
+import {Head, router, useForm} from '@inertiajs/vue3'
 import { UserPlus, X, Loader2 } from 'lucide-vue-next'
 import { Modal } from '@inertiaui/modal-vue'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import CustomCard from '@/components/CustomCard.vue'
 import InputError from "@/components/InputError.vue";
+import {toast} from "vue-sonner";
 
 interface Department {
   id: string
@@ -38,18 +39,16 @@ interface Props {
   }
   isManager: boolean
   isAdmin: boolean
-  returnUrl: string
 }
 
 const props = defineProps<Props>()
 const generalInviteModal = ref(null)
 
 // Form state
-const processing = reactive({ value: false })
-const form = reactive({
+const form = useForm({
   name: '',
   email: '',
-  department_id: '',
+  department_uuid: null,
   role_name: 'employee',
   manager_email: '',
   expires_in_days: 7,
@@ -63,35 +62,33 @@ const pageTitle = computed(() => {
 })
 
 const submitText = computed(() => {
-  return processing.value ? 'Sending Invitation...' : 'Send Invitation'
+  return form.processing ? 'Sending Invitation...' : 'Send Invitation'
 })
 
 // Methods
 function submitInvitation() {
-  processing.value = true
-
-  const submitData = {
-    ...form,
-    department_uuid: form.department_id === 'none' ? null : form.department_id || null,
-    manager_email: form.manager_email === 'none' ? null : (form.manager_email || (props.isManager ? props.currentUser.email : null))
-  }
-
-  // Remove empty values and 'none' values
-  Object.keys(submitData).forEach(key => {
-    if (submitData[key] === '' || submitData[key] === 'none') {
-      delete submitData[key]
-    }
-  })
+  // Prepare the data for submission
+  form.transform((data) => ({
+    name: data.name,
+    email: data.email,
+    department_uuid: data.department_uuid,
+    role_name: data.role_name,
+    manager_email: data.manager_email === 'none' ? null : (data.manager_email || (props.isManager ? props.currentUser.email : null)),
+    expires_in_days: data.expires_in_days,
+    welcome_message: data.welcome_message,
+    send_immediately: data.send_immediately
+  }))
 
   const submitRoute = props.isManager ? 'manager.team.invite' : 'admin.invitations.store'
 
-  router.post(route(submitRoute), submitData, {
+  form.post(route(submitRoute), {
     onSuccess: () => {
-      generalInviteModal.value.close()
+      generalInviteModal.value?.close()
+      toast.success('Invitation sent successfully!')
+      form.resetAndClearErrors()
     },
-
-    onFinish: () => {
-      processing.value = false
+    onError: () => {
+      toast.error('Please fix the errors and try again.')
     }
   })
 }
@@ -110,6 +107,7 @@ if (props.isManager) {
     max-width="2xl"
     :close-button="false"
     padding-classes="p-0"
+    :close-explicitly="true"
     panel-classes="bg-transparent"
     v-slot="{ close }">
     <CustomCard
@@ -120,12 +118,12 @@ if (props.isManager) {
       <template #header>
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           @click="close">
           <X class="h-4 w-4" />
         </Button>
       </template>
-        <form class="space-y-6">
+        <form class="space-y-6" @submit.prevent="submitInvitation">
           <!-- Basic Information -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
@@ -137,7 +135,7 @@ if (props.isManager) {
                 required
               />
 
-              <InputError :message="form.name ? '' : 'Name is required.'" class="mt-1" />
+              <InputError :message="form.errors.name" class="mt-1" />
             </div>
 
             <div class="space-y-2">
@@ -150,7 +148,7 @@ if (props.isManager) {
                 required
               />
 
-              <InputError :message="form.email ? '' : 'Valid email is required.'" class="mt-1" />
+              <InputError :message="form.errors.email" class="mt-1" />
             </div>
           </div>
 
@@ -173,18 +171,17 @@ if (props.isManager) {
                 </SelectContent>
               </Select>
 
-              <InputError :message="form.role_name ? '' : 'Role is required.'" class="mt-1" />
+              <InputError :message="form.errors.role_name" class="mt-1" />
             </div>
 
             <div class="space-y-2">
-              <Label for="department">Department</Label>
-              <Select v-model="form.department_id">
+              <Label for="department">Department *</Label>
+              <Select v-model="form.department_uuid" required>
                 <SelectTrigger class="w-full">
-                  <SelectValue placeholder="Select department" />
+                  <SelectValue placeholder="Select department *" />
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value="none">No Department</SelectItem>
                   <SelectItem
                     v-for="dept in departments"
                     :key="dept.id"
@@ -194,7 +191,7 @@ if (props.isManager) {
                 </SelectContent>
               </Select>
 
-              <InputError :message="form.department_id ? '' : 'Department is required.'" class="mt-1" />
+              <InputError :message="form.errors.department_uuid" class="mt-1" />
             </div>
           </div>
 
@@ -237,7 +234,7 @@ if (props.isManager) {
                 </SelectContent>
               </Select>
 
-              <InputError :message="form.expires_in_days ? '' : 'Expiration is required.'" class="mt-1" />
+              <InputError :message="form.errors.expires_in_days" class="mt-1" />
             </div>
           </div>
 
@@ -251,18 +248,19 @@ if (props.isManager) {
               placeholder="Add a personal welcome message..."
             />
 
-            <InputError :message="form.welcome_message ? '' : ''" class="mt-1" />
+            <InputError :message="form.errors.welcome_message" class="mt-1" />
           </div>
         </form>
 
         <template #footer>
           <div class="flex gap-3 items-end justify-end">
             <Button
-              @click="submitInvitation"
+              type="button"
               class="relative z-40 cursor-pointer"
-              :disabled="processing.value">
+              :disabled="form.processing"
+              @click="submitInvitation">
               <Loader2
-                v-if="processing.value"
+                v-if="form.processing"
                 class="h-4 w-4 mr-2 animate-spin"
               />
               {{ submitText }}
@@ -270,7 +268,7 @@ if (props.isManager) {
 
             <Button
               variant="outline"
-              @click="close; form.clearErrors">
+              @click="generalInviteModal.close(); form.resetAndClearErrors()">
               Cancel
             </Button>
           </div>

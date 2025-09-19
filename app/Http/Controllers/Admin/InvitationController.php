@@ -63,7 +63,14 @@ class InvitationController extends Controller
     {
         return Inertia::render('shared/InviteUser', [
             'departments' => Department::select('uuid as id', 'name')->get(),
-            'roles' => \Spatie\Permission\Models\Role::select('name as id', 'name')->get(),
+            'roles' => \Spatie\Permission\Models\Role::select('name as id', 'name as name')
+                ->get()
+                ->map(function ($role) {
+                    return [
+                        'id' => $role->name, // Ensure id is the role name string
+                        'name' => $role->name
+                    ];
+                }),
             'managers' => User::role(['manager', 'admin'])
                 ->select('id', 'name', 'email')
                 ->get(),
