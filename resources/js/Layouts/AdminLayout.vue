@@ -13,7 +13,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { Button } from '@/components/ui/button'
 import { DropdownMenuLabel } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
-import { Power, UserIcon, FolderKanban, ChevronDown, Plus, Users, Mail, BarChart3, TrendingUp, FileText } from 'lucide-vue-next'
+import { Power, UserIcon, FolderKanban, ChevronDown, Plus, Users, Mail, BarChart3, TrendingUp, FileText, Settings } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 
 const showingNavigationDropdown = ref(false)
@@ -183,11 +183,22 @@ const { isDark } = useTheme()
                 <DropdownMenuItem as-child>
                   <Link as="button"
                         class="cursor-pointer w-full"
-                        :href="route('admin.profile.index', $page.props.auth.user.uuid)">
+                        :href="route('admin.profile.index')">
                   <UserIcon />
                   Profile
                   </Link>
                 </DropdownMenuItem>
+
+                <DropdownMenuItem as-child>
+                  <Link as="button"
+                        class="cursor-pointer w-full"
+                        :href="route('admin.profile.settings')">
+                  <Settings />
+                  Settings
+                  </Link>
+                </DropdownMenuItem>
+
+                <Separator />
 
                 <DropdownMenuItem as-child>
                   <Link class="cursor-pointer w-full"

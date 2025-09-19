@@ -125,6 +125,11 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
         return $this->belongsTo(Department::class, 'department_uuid', 'uuid');
     }
 
+    public function notificationPreferences()
+    {
+        return $this->hasOne(NotificationPreference::class);
+    }
+
     public function activityLogs()
     {
         return $this->hasMany(ActivityLog::class);

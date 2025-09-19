@@ -123,7 +123,7 @@ const formatDate = (date) => {
   <Head title="Team Invitations"/>
 
   <ManagerLayout>
-    <div class="py-6">
+    <div>
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
         <div>

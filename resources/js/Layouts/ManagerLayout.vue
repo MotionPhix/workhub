@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {Users, BarChart3, ChevronDown, FileText, Clock, TrendingUp, Mail} from 'lucide-vue-next'
+import {Users, BarChart3, ChevronDown, FileText, Clock, TrendingUp, Mail, User, Settings, LogOut} from 'lucide-vue-next'
 import ResponsiveNavLink from '@/components/ResponsiveNavLink.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
@@ -67,23 +67,30 @@ const appName = computed(() => window?.AppConfig?.name || 'WorkHub')
               </button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="start" class="w-48">
+            <DropdownMenuContent align="start">
               <DropdownMenuItem as-child>
                 <Link :href="route('manager.team.index')" class="flex items-center space-x-2">
                   <Users class="w-4 h-4"/>
-                  <span>Team Overview</span>
+                  <span>Overview</span>
                 </Link>
               </DropdownMenuItem>
 
               <DropdownMenuItem as-child>
-                <Link :href="route('manager.work-entries.index')" class="flex items-center space-x-2">
+                <Link :href="route('manager.team.work-entries.index')" class="flex items-center space-x-2">
                   <Clock class="w-4 h-4"/>
                   <span>Work Entries</span>
                 </Link>
               </DropdownMenuItem>
 
               <DropdownMenuItem as-child>
-                <Link :href="route('manager.invitations.index')" class="flex items-center space-x-2">
+                <Link :href="route('manager.team.performance')" class="flex items-center space-x-2">
+                  <TrendingUp class="w-4 h-4"/>
+                  <span>Performance</span>
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem as-child>
+                <Link :href="route('manager.team.invitations')" class="flex items-center space-x-2">
                   <Mail class="w-4 h-4"/>
                   <span>Invitations</span>
                 </Link>
@@ -107,11 +114,11 @@ const appName = computed(() => window?.AppConfig?.name || 'WorkHub')
               </button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="start" class="w-48">
+            <DropdownMenuContent align="start">
               <DropdownMenuItem as-child>
                 <Link :href="route('manager.insights.index')" class="flex items-center space-x-2">
                   <TrendingUp class="w-4 h-4"/>
-                  <span>Team Insights</span>
+                  <span>Insights</span>
                 </Link>
               </DropdownMenuItem>
 
@@ -168,12 +175,24 @@ const appName = computed(() => window?.AppConfig?.name || 'WorkHub')
                 <Separator/>
 
                 <DropdownMenuItem as-child>
-                  <Link :href="route('manager.profile.index', $page.props.auth.user.uuid)">
+                  <Link :href="route('manager.profile.index')">
+                    <User class="w-4 h-4 mr-2" />
                     Profile
                   </Link>
                 </DropdownMenuItem>
+
                 <DropdownMenuItem as-child>
-                  <Link :href="route('logout')" method="post" as="button">
+                  <Link :href="route('manager.profile.settings')">
+                    <Settings class="w-4 h-4 mr-2" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+
+                <Separator/>
+
+                <DropdownMenuItem as-child>
+                  <Link :href="route('logout')" method="post" as="button" class="w-full text-left">
+                    <LogOut class="w-4 h-4 mr-2" />
                     Log Out
                   </Link>
                 </DropdownMenuItem>
@@ -210,12 +229,16 @@ const appName = computed(() => window?.AppConfig?.name || 'WorkHub')
           <ResponsiveNavLink :href="route('manager.reports.index')" :active="route().current('manager.reports.*')">
             Team Reports
           </ResponsiveNavLink>
-          <ResponsiveNavLink :href="route('manager.work-entries.index')"
-                             :active="route().current('manager.work-entries.*')">
+          <ResponsiveNavLink :href="route('manager.team.work-entries.index')"
+                             :active="route().current('manager.team.work-entries.*')">
             Work Entries
           </ResponsiveNavLink>
-          <ResponsiveNavLink :href="route('manager.invitations.index')"
-                             :active="route().current('manager.invitations.*')">
+          <ResponsiveNavLink :href="route('manager.team.performance')"
+                             :active="route().current('manager.team.performance')">
+            Team Performance
+          </ResponsiveNavLink>
+          <ResponsiveNavLink :href="route('manager.team.invitations')"
+                             :active="route().current('manager.team.invitations')">
             Invitations
           </ResponsiveNavLink>
           <ResponsiveNavLink :href="route('manager.insights.index')" :active="route().current('manager.insights.*')">
@@ -234,16 +257,21 @@ const appName = computed(() => window?.AppConfig?.name || 'WorkHub')
             <ResponsiveNavLink :href="route('profile.index', $page.props.auth.user.uuid)">
               Profile
             </ResponsiveNavLink>
+
             <ResponsiveNavLink :href="route('dashboard')">
               Employee View
             </ResponsiveNavLink>
+
             <ResponsiveNavLink
               v-if="$page.props.auth.user.roles && $page.props.auth.user.roles.some(role => role.name === 'Admin')"
-              :href="route('admin.dashboard')"
-            >
+              :href="route('admin.dashboard')">
               Admin View
             </ResponsiveNavLink>
-            <ResponsiveNavLink :href="route('logout')" method="post" as="button">
+
+            <ResponsiveNavLink
+              class="w-full"
+              :href="route('logout')"
+              method="post" as="button">
               Log Out
             </ResponsiveNavLink>
           </div>
@@ -254,7 +282,7 @@ const appName = computed(() => window?.AppConfig?.name || 'WorkHub')
 
   <div class="bg-gray-100 dark:bg-gray-900 fixed inset-0 top-16 overflow-y-auto">
     <!-- Page Content -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 my-12">
       <slot/>
     </main>
   </div>

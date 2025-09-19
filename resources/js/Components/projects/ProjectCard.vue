@@ -89,42 +89,36 @@
       </div>
     </div>
 
-    <!-- Project Meta -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <!-- Status Badge -->
-        <StatusBadge :status="project.status" />
-
-        <!-- Priority Badge -->
-        <PriorityBadge :priority="project.priority" />
-      </div>
-
-      <!-- Due Date -->
-      <div class="text-right">
-        <div class="text-xs text-gray-500 dark:text-gray-400">Due Date</div>
-        <div
-          class="text-sm font-medium"
-          :class="getDueDateColor(project.due_date)"
-        >
-          {{ formatDate(project.due_date) }}
-        </div>
+    <!-- Status and Priority Badges -->
+    <div class="flex items-center gap-2 mb-3">
+      <StatusBadge :status="project.status" />
+      <PriorityBadge :priority="project.priority" />
+      <div v-if="project.is_shared" class="text-xs text-blue-600 dark:text-blue-400 font-medium bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">
+        Shared
       </div>
     </div>
 
     <!-- Project Manager -->
-    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-      <div class="flex items-center gap-2">
-        <UserAvatar
-          :fallback="getInitials(project.manager?.name || 'Unknown')"
-          class="w-6 h-6 text-xs"
-        />
-        <span class="text-sm text-gray-600 dark:text-gray-400">
-          {{ project.manager?.name || 'No Manager' }}
-        </span>
-      </div>
+    <div class="flex items-center gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+      <UserAvatar
+        :fallback="getInitials(project.manager?.name || 'Unknown')"
+        class="w-6 h-6 text-xs"
+      />
+      <span class="text-sm text-gray-600 dark:text-gray-400">
+        {{ project.manager?.name || 'No Manager' }}
+      </span>
+    </div>
 
-      <div v-if="project.is_shared" class="text-xs text-blue-600 dark:text-blue-400 font-medium">
-        Shared
+    <!-- Due Date at Bottom -->
+    <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-600">
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-gray-500 dark:text-gray-400">Due Date</span>
+        <span
+          class="text-sm font-medium"
+          :class="getDueDateColor(project.due_date)"
+        >
+          {{ formatDate(project.due_date) }}
+        </span>
       </div>
     </div>
   </div>

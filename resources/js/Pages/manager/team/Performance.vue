@@ -27,16 +27,37 @@ interface Props {
     team_productivity: number
     efficiency_score: number
     avg_hours_per_member: number
+    total_hours: number
+    total_entries: number
+    hours_change_percent: string
   }
   complianceData: {
     compliance_rate: number
     on_time_submissions: number
     overdue_count: number
+    total_members: number
+    active_members: number
   }
   trendingData: {
-    performance_trend: Array<any>
-    top_performers: Array<any>
-    improvement_areas: Array<any>
+    top_performers: Array<{
+      id: number
+      name: string
+      department: string
+      hours: number
+      score: number
+      completion_rate: number
+    }>
+    improvement_areas: Array<{
+      name: string
+      score: number
+    }>
+  }
+  chartData: {
+    categories: Array<string>
+    series: Array<{
+      name: string
+      data: Array<number>
+    }>
   }
   period: string
 }
@@ -46,15 +67,49 @@ const props = defineProps<Props>()
 // Initialize theme
 const { isDark } = useTheme()
 
+// Calculate change percentages based on actual performance trends
+const calculateOverallScoreChange = computed(() => {
+  // If we have historical data from chartData, calculate real change
+  const currentScore = props.performanceData?.overall_score || 0;
+  if (props.chartData?.series && props.chartData.series.length > 0) {
+    const productivitySeries = props.chartData.series.find(s => s.name === 'Productivity');
+    if (productivitySeries && productivitySeries.data.length >= 2) {
+      const recent = productivitySeries.data[productivitySeries.data.length - 1];
+      const previous = productivitySeries.data[productivitySeries.data.length - 2];
+      const change = ((recent - previous) / previous * 100).toFixed(1);
+      return change >= 0 ? `+${change}%` : `${change}%`;
+    }
+  }
+  return '+0%';
+});
+
+const calculateProductivityChange = computed(() => {
+  return props.performanceData?.hours_change_percent || '+0%';
+});
+
+const calculateEfficiencyChange = computed(() => {
+  // Calculate efficiency change from chart data if available
+  if (props.chartData?.series && props.chartData.series.length > 0) {
+    const efficiencySeries = props.chartData.series.find(s => s.name === 'Efficiency');
+    if (efficiencySeries && efficiencySeries.data.length >= 2) {
+      const recent = efficiencySeries.data[efficiencySeries.data.length - 1];
+      const previous = efficiencySeries.data[efficiencySeries.data.length - 2];
+      const change = ((recent - previous) / previous * 100).toFixed(1);
+      return change >= 0 ? `+${change}%` : `${change}%`;
+    }
+  }
+  return '+0%';
+});
+
 // Computed
 const performanceMetrics = computed(() => [
   {
     icon: BarChart3,
     title: 'Overall Score',
-    value: Math.round(props.performanceData?.overall_score || 85),
+    value: Math.round(props.performanceData?.overall_score || 0),
     suffix: '%',
     subtitle: 'Team average',
-    change: '+5.2%',
+    change: calculateOverallScoreChange.value,
     color: 'from-blue-500 to-blue-600',
     bgColor: 'bg-blue-50 dark:bg-blue-900/20',
     iconColor: 'text-blue-600 dark:text-blue-400'
@@ -62,10 +117,10 @@ const performanceMetrics = computed(() => [
   {
     icon: TrendingUp,
     title: 'Productivity',
-    value: Math.round(props.performanceData?.team_productivity || 92),
+    value: Math.round(props.performanceData?.team_productivity || 0),
     suffix: '%',
     subtitle: 'This month',
-    change: '+8%',
+    change: calculateProductivityChange.value,
     color: 'from-green-500 to-green-600',
     bgColor: 'bg-green-50 dark:bg-green-900/20',
     iconColor: 'text-green-600 dark:text-green-400'
@@ -73,10 +128,10 @@ const performanceMetrics = computed(() => [
   {
     icon: Activity,
     title: 'Efficiency',
-    value: Math.round(props.performanceData?.efficiency_score || 88),
+    value: Math.round(props.performanceData?.efficiency_score || 0),
     suffix: '%',
     subtitle: 'Team efficiency',
-    change: '+3%',
+    change: calculateEfficiencyChange.value,
     color: 'from-purple-500 to-purple-600',
     bgColor: 'bg-purple-50 dark:bg-purple-900/20',
     iconColor: 'text-purple-600 dark:text-purple-400'
@@ -84,10 +139,10 @@ const performanceMetrics = computed(() => [
   {
     icon: Clock,
     title: 'Avg Hours',
-    value: Math.round(props.performanceData?.avg_hours_per_member || 38),
+    value: Math.round(props.performanceData?.avg_hours_per_member || 0),
     suffix: 'h',
     subtitle: 'Per member',
-    change: '+12%',
+    change: props.performanceData?.hours_change_percent || '0%',
     color: 'from-orange-500 to-orange-600',
     bgColor: 'bg-orange-50 dark:bg-orange-900/20',
     iconColor: 'text-orange-600 dark:text-orange-400'
@@ -115,7 +170,7 @@ onMounted(() => {
 
   <ManagerLayout>
     <!-- Header Section -->
-    <div class="mb-8">
+    <div>
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-6">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
@@ -189,7 +244,7 @@ onMounted(() => {
                 strokeDashArray: 3
               },
               xaxis: {
-                categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                categories: props.chartData?.categories || ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
                 axisBorder: { show: false },
                 axisTicks: { show: false }
               },
@@ -207,7 +262,7 @@ onMounted(() => {
                 theme: isDark ? 'dark' : 'light'
               }
             }"
-            :series="[
+            :series="props.chartData?.series || [
               {
                 name: 'Productivity',
                 data: [75, 82, 88, 92]
@@ -324,16 +379,16 @@ onMounted(() => {
       >
         <div class="space-y-3">
           <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <div class="text-lg font-bold text-blue-600 dark:text-blue-400">156</div>
-            <div class="text-sm text-blue-700 dark:text-blue-300">Tasks Completed</div>
+            <div class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ props.performanceData?.total_entries || 0 }}</div>
+            <div class="text-sm text-blue-700 dark:text-blue-300">Work Entries</div>
           </div>
           <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <div class="text-lg font-bold text-green-600 dark:text-green-400">42</div>
-            <div class="text-sm text-green-700 dark:text-green-300">Projects Active</div>
+            <div class="text-lg font-bold text-green-600 dark:text-green-400">{{ props.complianceData?.active_members || 0 }}</div>
+            <div class="text-sm text-green-700 dark:text-green-300">Active Members</div>
           </div>
           <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-            <div class="text-lg font-bold text-purple-600 dark:text-purple-400">98%</div>
-            <div class="text-sm text-purple-700 dark:text-purple-300">Goal Achievement</div>
+            <div class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ Math.round(props.performanceData?.team_productivity || 0) }}%</div>
+            <div class="text-sm text-purple-700 dark:text-purple-300">Team Productivity</div>
           </div>
         </div>
       </CustomCard>
@@ -347,11 +402,7 @@ onMounted(() => {
       >
         <div class="space-y-3">
           <div
-            v-for="area in (trendingData?.improvement_areas || [
-              { name: 'Time Management', score: 78 },
-              { name: 'Code Quality', score: 82 },
-              { name: 'Communication', score: 85 }
-            ]).slice(0, 4)"
+            v-for="area in (trendingData?.improvement_areas || []).slice(0, 4)"
             :key="area.name"
             class="space-y-2"
           >
@@ -372,7 +423,13 @@ onMounted(() => {
             </div>
           </div>
         </div>
+
+        <div v-if="!(trendingData?.improvement_areas || []).length" class="text-center py-8">
+          <TrendingUp class="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <p class="text-gray-600 dark:text-gray-400">No improvement areas data available</p>
+        </div>
       </CustomCard>
     </div>
+
   </ManagerLayout>
 </template>

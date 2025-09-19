@@ -20,7 +20,7 @@ class TeamWorkEntriesController extends Controller
         $validated = $request->validate([
             'search' => 'nullable|string|max:255',
             'user_id' => 'nullable|exists:users,id',
-            'project_id' => 'nullable|exists:projects,id',
+            'project_id' => 'nullable|exists:projects,uuid',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'min_hours' => 'nullable|numeric|min:0',
@@ -32,7 +32,7 @@ class TeamWorkEntriesController extends Controller
         $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id');
 
         $query = WorkEntry::whereIn('user_id', $teamMemberIds)
-            ->with(['user:id,name,email', 'project:id,name,description']);
+            ->with(['user:id,name,email', 'project:uuid,name,description']);
 
         // Apply filters
         if ($validated['search'] ?? null) {
@@ -53,23 +53,23 @@ class TeamWorkEntriesController extends Controller
         }
 
         if ($validated['project_id'] ?? null) {
-            $query->where('project_id', $validated['project_id']);
+            $query->where('project_uuid', $validated['project_id']);
         }
 
         if ($validated['start_date'] ?? null) {
-            $query->where('work_date', '>=', $validated['start_date']);
+            $query->whereDate('start_date_time', '>=', $validated['start_date']);
         }
 
         if ($validated['end_date'] ?? null) {
-            $query->where('work_date', '<=', $validated['end_date']);
+            $query->whereDate('start_date_time', '<=', $validated['end_date']);
         }
 
         if ($validated['min_hours'] ?? null) {
-            $query->where('hours', '>=', $validated['min_hours']);
+            $query->whereRaw('TIMESTAMPDIFF(MINUTE, start_date_time, end_date_time) / 60.0 >= ?', [$validated['min_hours']]);
         }
 
         if ($validated['max_hours'] ?? null) {
-            $query->where('hours', '<=', $validated['max_hours']);
+            $query->whereRaw('TIMESTAMPDIFF(MINUTE, start_date_time, end_date_time) / 60.0 <= ?', [$validated['max_hours']]);
         }
 
         // Apply sorting
@@ -107,7 +107,7 @@ class TeamWorkEntriesController extends Controller
         // Get summary statistics
         $stats = $this->getWorkEntriesStats($teamMemberIds->toArray(), $validated);
 
-        return Inertia::render('manager/TeamWorkEntries', [
+        return Inertia::render('manager/team/WorkEntries', [
             'workEntries' => $workEntries,
             'teamMembers' => $teamMembers,
             'projects' => $projects,
@@ -269,11 +269,11 @@ class TeamWorkEntriesController extends Controller
         $dateRange = $this->getDateRangeForPeriod($period);
 
         $query = WorkEntry::whereIn('user_id', $teamMemberIds)
-            ->whereBetween('work_date', [$dateRange['start'], $dateRange['end']])
+            ->whereBetween('start_date_time', [$dateRange['start'], $dateRange['end']])
             ->with(['user:id,name', 'project:id,name']);
 
         if ($validated['project_id'] ?? null) {
-            $query->where('project_id', $validated['project_id']);
+            $query->where('project_uuid', $validated['project_id']);
         }
 
         $workEntries = $query->get();
@@ -324,11 +324,11 @@ class TeamWorkEntriesController extends Controller
             ->with(['user:id,name,email', 'project:id,name']);
 
         if ($validated['start_date'] ?? null) {
-            $query->where('date', '>=', $validated['start_date']);
+            $query->whereDate('start_date_time', '>=', $validated['start_date']);
         }
 
         if ($validated['end_date'] ?? null) {
-            $query->where('date', '<=', $validated['end_date']);
+            $query->whereDate('start_date_time', '<=', $validated['end_date']);
         }
 
         if ($validated['user_id'] ?? null) {
@@ -336,10 +336,10 @@ class TeamWorkEntriesController extends Controller
         }
 
         if ($validated['project_id'] ?? null) {
-            $query->where('project_id', $validated['project_id']);
+            $query->where('project_uuid', $validated['project_id']);
         }
 
-        $workEntries = $query->orderByDesc('date')->get();
+        $workEntries = $query->orderByDesc('start_date_time')->get();
 
         $filename = 'team-work-entries-'.now()->format('Y-m-d');
 
@@ -357,11 +357,11 @@ class TeamWorkEntriesController extends Controller
 
         // Apply same filters as main query
         if ($filters['start_date'] ?? null) {
-            $query->where('date', '>=', $filters['start_date']);
+            $query->whereDate('start_date_time', '>=', $filters['start_date']);
         }
 
         if ($filters['end_date'] ?? null) {
-            $query->where('date', '<=', $filters['end_date']);
+            $query->whereDate('start_date_time', '<=', $filters['end_date']);
         }
 
         if ($filters['user_id'] ?? null) {
@@ -369,7 +369,7 @@ class TeamWorkEntriesController extends Controller
         }
 
         if ($filters['project_id'] ?? null) {
-            $query->where('project_id', $filters['project_id']);
+            $query->where('project_uuid', $filters['project_id']);
         }
 
         $workEntries = $query->get();
@@ -388,7 +388,7 @@ class TeamWorkEntriesController extends Controller
     private function getDailyBreakdown($workEntries, string $period): array
     {
         return $workEntries->groupBy(function ($entry) {
-            return Carbon::parse($entry->date)->format('Y-m-d');
+            return Carbon::parse($entry->start_date_time)->format('Y-m-d');
         })->map(function ($dayEntries) {
             return [
                 'hours' => $dayEntries->sum('hours'),
@@ -436,11 +436,11 @@ class TeamWorkEntriesController extends Controller
         $previousRange = $this->getDateRangeForPeriod($period, true);
 
         $currentData = WorkEntry::whereIn('user_id', $teamMemberIds)
-            ->whereBetween('date', [$currentRange['start'], $currentRange['end']])
+            ->whereBetween('start_date_time', [$currentRange['start'], $currentRange['end']])
             ->get();
 
         $previousData = WorkEntry::whereIn('user_id', $teamMemberIds)
-            ->whereBetween('date', [$previousRange['start'], $previousRange['end']])
+            ->whereBetween('start_date_time', [$previousRange['start'], $previousRange['end']])
             ->get();
 
         $currentHours = $currentData->sum('hours');
@@ -459,7 +459,7 @@ class TeamWorkEntriesController extends Controller
     private function getMostProductiveDay($workEntries): array
     {
         $dailyHours = $workEntries->groupBy(function ($entry) {
-            return Carbon::parse($entry->date)->format('Y-m-d');
+            return Carbon::parse($entry->start_date_time)->format('Y-m-d');
         })->map(function ($dayEntries) {
             return $dayEntries->sum('hours');
         });
@@ -531,7 +531,7 @@ class TeamWorkEntriesController extends Controller
             // Write data rows
             foreach ($workEntries as $entry) {
                 fputcsv($output, [
-                    $entry->date,
+                    $entry->work_date,
                     $entry->user->name,
                     $entry->project->name,
                     $entry->hours,

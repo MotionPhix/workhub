@@ -22,9 +22,6 @@ Route::middleware(['auth', 'role.access'])->prefix('manager')->name('manager.')-
 
     // Manager Dashboard
     Route::get('/', [ManagerDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/team-reports', [ManagerDashboardController::class, 'teamReports'])->name('team-reports');
-    Route::get('/team-performance', [ManagerDashboardController::class, 'teamPerformance'])->name('team-performance');
-    Route::get('/team-schedules', [ManagerDashboardController::class, 'teamSchedules'])->name('team-schedules');
 
     // Report approval actions
     Route::middleware(['can:approve-reports'])->group(function () {
@@ -39,48 +36,53 @@ Route::middleware(['auth', 'role.access'])->prefix('manager')->name('manager.')-
     });
 
     // Team Management
-    Route::middleware(['can:view-team-work-entries'])->group(function () {
-        Route::get('/team', [TeamController::class, 'index'])->name('team.index');
+    Route::middleware(['can:view-team-work-entries'])->prefix('team')->name('team.')->group(function () {
+        Route::get('/', [TeamController::class, 'index'])->name('index');
+
+        // Team Performance
+        Route::get('/performance', [ManagerDashboardController::class, 'teamPerformance'])->name('performance');
 
         // Team member invitations (must come before parameterized routes)
         Route::middleware(['can:create-invitations'])->group(function () {
-            Route::get('/invitations', [TeamController::class, 'invitations'])->name('invitations.index');
-            Route::get('/team/invite', [TeamController::class, 'createInvite'])->name('team.invite.create');
-            Route::post('/team/invite', [TeamController::class, 'invite'])->name('team.invite');
-            Route::post('/team/invitations/{invitation}/resend', [TeamController::class, 'resendInvitation'])->name('team.invitations.resend');
-            Route::delete('/team/invitations/{invitation}/cancel', [TeamController::class, 'cancelInvitation'])->name('team.invitations.cancel');
+            Route::get('/invitations', [TeamController::class, 'invitations'])->name('invitations');
+            Route::get('/invite', [TeamController::class, 'createInvite'])->name('invite.create');
+            Route::post('/invite', [TeamController::class, 'invite'])->name('invite');
+            Route::post('/invitations/{invitation}/resend', [TeamController::class, 'resendInvitation'])->name('invitations.resend');
+            Route::delete('/invitations/{invitation}/cancel', [TeamController::class, 'cancelInvitation'])->name('invitations.cancel');
+        });
+
+        // Team Work Entries Management (moved from separate prefix)
+        Route::middleware(['can:view-team-work-entries'])->prefix('work-entries')->name('work-entries.')->group(function () {
+            Route::get('/', [TeamWorkEntriesController::class, 'index'])->name('index');
+            Route::get('/team-summary', [TeamWorkEntriesController::class, 'teamSummary'])->name('team-summary');
+            Route::get('/{entry:uuid}', [TeamWorkEntriesController::class, 'show'])->name('show');
+
+            // Work entry approval/management
+            Route::middleware(['can:approve-team-work-entries'])->group(function () {
+                Route::post('/{entry:uuid}/approve', [TeamWorkEntriesController::class, 'approve'])->name('approve');
+                Route::post('/{entry:uuid}/reject', [TeamWorkEntriesController::class, 'reject'])->name('reject');
+                Route::post('/{entry:uuid}/request-changes', [TeamWorkEntriesController::class, 'requestChanges'])->name('request-changes');
+            });
         });
 
         // Team member management
         Route::middleware(['can:manage-team-members'])->group(function () {
-            Route::get('/team/export', [TeamController::class, 'export'])->name('team.export');
+            Route::get('/export', [TeamController::class, 'export'])->name('export');
         });
 
         // Parameterized routes (must come after specific routes)
-        Route::get('/team/{user:uuid}', [TeamController::class, 'show'])->name('team.show');
-        Route::get('/team/{user:uuid}/profile', [TeamController::class, 'profile'])->name('team.profile');
+        Route::get('/{user:uuid}', [TeamController::class, 'show'])->name('show');
+        Route::get('/{user:uuid}/profile', [TeamController::class, 'profile'])->name('profile');
         Route::middleware(['can:manage-team-members'])->group(function () {
-            Route::put('/team/{user:uuid}', [TeamController::class, 'update'])->name('team.update');
+            Route::put('/{user:uuid}', [TeamController::class, 'update'])->name('update');
         });
     });
 
-    // Team Work Entries Management
-    Route::middleware(['can:view-team-work-entries'])->prefix('work-entries')->name('work-entries.')->group(function () {
-        Route::get('/', [TeamWorkEntriesController::class, 'index'])->name('index');
-        Route::get('/team-summary', [TeamWorkEntriesController::class, 'teamSummary'])->name('team-summary');
-        Route::get('/{entry:uuid}', [TeamWorkEntriesController::class, 'show'])->name('show');
-
-        // Work entry approval/management
-        Route::middleware(['can:approve-team-work-entries'])->group(function () {
-            Route::post('/{entry:uuid}/approve', [TeamWorkEntriesController::class, 'approve'])->name('approve');
-            Route::post('/{entry:uuid}/reject', [TeamWorkEntriesController::class, 'reject'])->name('reject');
-            Route::post('/{entry:uuid}/request-changes', [TeamWorkEntriesController::class, 'requestChanges'])->name('request-changes');
-        });
-    });
 
     // Team Reports
     Route::middleware(['can:view-team-reports'])->prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [TeamReportsController::class, 'index'])->name('index');
+        Route::get('/{report:uuid}', [TeamReportsController::class, 'show'])->name('show');
         Route::get('/productivity', [TeamReportsController::class, 'productivity'])->name('productivity');
         Route::get('/attendance', [TeamReportsController::class, 'attendance'])->name('attendance');
         Route::get('/performance', [TeamReportsController::class, 'performance'])->name('performance');

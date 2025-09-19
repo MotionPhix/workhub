@@ -281,7 +281,7 @@ class TeamController extends Controller
 
         $invitations = $query->paginate(15);
 
-        return Inertia::render('manager/invitations/Index', [
+        return Inertia::render('manager/team/Invitations', [
             'invitations' => $invitations,
             'filters' => $filters,
         ]);

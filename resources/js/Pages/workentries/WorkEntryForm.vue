@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useForm, router } from '@inertiajs/vue3'
+import { useForm, router, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
-import Button from '@/components/ui/button/Button.vue'
+import { Button } from '@/components/ui/button'
 import FormField from '@/components/forms/FormField.vue'
 import RichTextEditor from '@/components/RichTextEditor.vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import CustomCard from '@/components/CustomCard.vue'
 import {
   Briefcase,
   FileText,
@@ -56,7 +56,7 @@ const form = useForm({
   // Basic Information
   project_id: props.workLog?.project_id || '',
   work_date: props.workLog?.work_date || new Date().toISOString().split('T')[0],
-  duration_hours: props.workLog?.duration_hours || '',
+  duration_hours: props.workLog?.duration_hours || 0,
   status: props.workLog?.status || 'in-progress',
   priority: props.workLog?.priority || 'medium',
   category: props.workLog?.category || '',
@@ -175,63 +175,54 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <AppLayout title="Work Entry">
+  <Head :title="workLog.uuid ? 'Edit Work Entry' : 'New Work Entry'" />
+  <AppLayout>
     <div class="py-8">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <Card class="shadow-lg">
-          <CardHeader class="border-b bg-white dark:bg-gray-800">
-            <div class="flex justify-between items-start">
-              <div>
-                <CardTitle class="flex items-center text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  <Briefcase class="mr-2" />
-                  {{ workLog.uuid ? 'Edit Work Entry' : 'New Work Entry' }}
-                </CardTitle>
-                <p class="text-gray-600 dark:text-gray-400 mt-2">
-                  {{ workLog.uuid ? 'Update your work entry details' : 'Log your work progress and deliverables' }}
-                </p>
-              </div>
-
-              <!-- Progress Indicator -->
-              <div class="hidden lg:flex items-center space-x-3">
+        <CustomCard
+          :title="workLog.uuid ? 'Edit Work Entry' : 'New Work Entry'"
+          :description="workLog.uuid ? 'Update your work entry details' : 'Log your work progress and deliverables'"
+          :icon="Briefcase"
+          class="shadow-lg"
+        >
+          <template #header>
+            <!-- Progress Indicator -->
+            <div class="hidden lg:flex items-center space-x-3">
+              <div
+                v-for="step in totalSteps"
+                :key="step"
+                class="flex items-center"
+              >
                 <div
-                  v-for="step in totalSteps"
-                  :key="step"
-                  class="flex items-center"
+                  :class="[
+                    'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2',
+                    step < currentStep
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : step === currentStep
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-gray-100 text-gray-400 border-gray-300 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600'
+                  ]"
                 >
-                  <div
-                    :class="[
-                      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2',
-                      step < currentStep
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : step === currentStep
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-gray-100 text-gray-400 border-gray-300 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600'
-                    ]"
-                  >
-                    <Check v-if="step < currentStep" class="w-4 h-4" />
-                    <span v-else>{{ step }}</span>
-                  </div>
-                  <div
-                    v-if="step < totalSteps"
-                    :class="[
-                      'w-12 h-0.5 ml-2',
-                      step < currentStep ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
-                    ]"
-                  />
+                  <Check v-if="step < currentStep" class="w-4 h-4" />
+                  <span v-else>{{ step }}</span>
                 </div>
+                <div
+                  v-if="step < totalSteps"
+                  :class="[
+                    'w-12 h-0.5 ml-2',
+                    step < currentStep ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                  ]"
+                />
               </div>
             </div>
-          </CardHeader>
-
-          <CardContent class="p-6 bg-gray-50 dark:bg-gray-900">
+          </template>
             <form @submit.prevent="submitForm" class="space-y-8">
               <!-- Step 1: Basic Information -->
               <div v-if="currentStep === 1" class="space-y-6">
-                <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                    <FileText class="mr-2 text-blue-600" />
-                    Basic Information
-                  </h3>
+                <CustomCard
+                  title="Basic Information"
+                  :icon="FileText"
+                >
 
                   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Left Column -->
@@ -278,9 +269,9 @@ onUnmounted(() => {
                           v-model="form.duration_hours"
                           label="Duration (hours)"
                           type="number"
-                          step="0.25"
-                          min="0"
-                          max="24"
+                          :step="0.25"
+                          :min="0"
+                          :max="24"
                           :error="form.errors.duration_hours"
                           hint="Time spent on this work (in hours)"
                           required
@@ -348,16 +339,15 @@ onUnmounted(() => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </CustomCard>
               </div>
 
               <!-- Step 2: Work Details -->
               <div v-if="currentStep === 2" class="space-y-6">
-                <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                    <Target class="mr-2 text-green-600" />
-                    Work Details
-                  </h3>
+                <CustomCard
+                  title="Work Details"
+                  :icon="Target"
+                >
 
                   <div class="space-y-6">
                     <!-- Title -->
@@ -428,16 +418,15 @@ onUnmounted(() => {
                       />
                     </div>
                   </div>
-                </div>
+                </CustomCard>
               </div>
 
               <!-- Step 3: Additional Information -->
               <div v-if="currentStep === 3" class="space-y-6">
-                <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                    <Info class="mr-2 text-purple-600" />
-                    Additional Information
-                  </h3>
+                <CustomCard
+                  title="Additional Information"
+                  :icon="Info"
+                >
 
                   <div class="space-y-6">
                     <!-- Challenges -->
@@ -505,57 +494,59 @@ onUnmounted(() => {
                       />
                     </div>
                   </div>
-                </div>
+                </CustomCard>
               </div>
 
-              <!-- Navigation and Action Buttons -->
-              <div class="flex justify-between items-center pt-6 border-t">
-                <div class="flex space-x-2">
-                  <Button
-                    v-if="currentStep > 1"
-                    @click="prevStep"
-                    variant="outline"
-                    type="button"
-                    class="flex items-center space-x-2"
-                  >
-                    <span>← Back</span>
-                  </Button>
-                </div>
-
-                <div class="flex space-x-2">
-                  <Button @click="onClose" variant="outline" type="button">
-                    Cancel
-                  </Button>
-
-                  <Button
-                    v-if="currentStep < totalSteps"
-                    @click="nextStep"
-                    type="button"
-                    class="flex items-center space-x-2"
-                  >
-                    <span>Next →</span>
-                  </Button>
-
-                  <Button
-                    v-if="currentStep === totalSteps"
-                    @click="submitForm"
-                    type="button"
-                    :disabled="form.processing"
-                    class="flex items-center space-x-2"
-                  >
-                    <span v-if="form.processing">
-                      <Loader2 class="animate-spin -ml-1 mr-2 h-4 w-4"/>
-                      {{ workLog.uuid ? 'Updating...' : 'Creating...' }}
-                    </span>
-                    <span v-else>
-                      {{ workLog.uuid ? 'Update Entry' : 'Create Entry' }}
-                    </span>
-                  </Button>
-                </div>
-              </div>
             </form>
-          </CardContent>
-        </Card>
+
+          <template #footer>
+            <!-- Navigation and Action Buttons -->
+            <div class="flex justify-between items-center">
+              <div class="flex space-x-2">
+                <Button
+                  v-if="currentStep > 1"
+                  @click="prevStep"
+                  variant="outline"
+                  type="button"
+                  class="flex items-center space-x-2"
+                >
+                  <span>← Back</span>
+                </Button>
+              </div>
+
+              <div class="flex space-x-2">
+                <Button @click="onClose" variant="outline" type="button">
+                  Cancel
+                </Button>
+
+                <Button
+                  v-if="currentStep < totalSteps"
+                  @click="nextStep"
+                  type="button"
+                  class="flex items-center space-x-2"
+                >
+                  <span>Next →</span>
+                </Button>
+
+                <Button
+                  v-if="currentStep === totalSteps"
+                  @click="submitForm"
+                  type="button"
+                  :disabled="form.processing"
+                  class="flex items-center space-x-2"
+                >
+                  <span v-if="form.processing">
+                    <Loader2 class="animate-spin -ml-1 mr-2 h-4 w-4"/>
+                    {{ workLog.uuid ? 'Updating...' : 'Creating...' }}
+                  </span>
+                  <span v-else>
+                    {{ workLog.uuid ? 'Update Entry' : 'Create Entry' }}
+                  </span>
+                </Button>
+              </div>
+            </div>
+          </template>
+        </CustomCard>
       </div>
     </div>
   </AppLayout>

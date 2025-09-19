@@ -15,7 +15,18 @@
       "mcp__laravel-boost__get-absolute-url",
       "Bash(npm install:*)",
       "mcp__laravel-boost__list-artisan-commands",
-      "mcp__laravel-boost__database-query"
+      "mcp__laravel-boost__database-query",
+      "mcp__laravel-boost__application-info",
+      "Bash(cat:*)",
+      "mcp__laravel-boost__search-docs",
+      "mcp__laravel-boost__list-available-env-vars",
+      "Bash(\"/c/Users/Amelia/.config/herd/bin/php.bat\" ./artisan verbs:event NotificationSent --no-interaction)",
+      "Bash(\"/c/Users/Amelia/.config/herd/bin/php.bat\" ./artisan verbs:event NotificationPreferencesUpdated --no-interaction)",
+      "Bash(\"/c/Users/Amelia/.config/herd/bin/php.bat\" ./artisan make:model NotificationPreference --no-interaction)",
+      "Bash(\"/c/Users/Amelia/.config/herd/bin/php.bat\" ./artisan make:controller NotificationController --no-interaction)",
+      "mcp__laravel-boost__get-config",
+      "Bash(\"/c/Users/Amelia/.config/herd/bin/php.bat\" \"/c/Users/Amelia/.config/herd/bin/composer.phar\" require pusher/pusher-php-server --no-interaction)",
+      "WebFetch(domain:www.shadcn-vue.com)"
     ]
   },
   "enableAllProjectMcpServers": true,

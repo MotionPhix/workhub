@@ -146,7 +146,7 @@ const teamMetrics = computed(() => [
     color: 'from-orange-500 to-orange-600',
     bgColor: 'bg-orange-50 dark:bg-orange-900/20',
     iconColor: 'text-orange-600 dark:text-orange-400',
-    route: 'manager.team-reports'
+    route: 'manager.reports.index'
   }
 ])
 
@@ -227,7 +227,7 @@ onMounted(() => {
           <Link
             :as="Button"
             size="sm"
-            :href="route('manager.team-reports')"
+            :href="route('manager.reports.index')"
             class="cursor-pointer">
             <FileText class="w-5 h-5"/>
             Review Reports
@@ -236,7 +236,7 @@ onMounted(() => {
           <Link
             :as="Button"
             size="sm"
-            :href="route('manager.team-performance')"
+            :href="route('manager.team.performance')"
             variant="outline" class="cursor-pointer">
             <BarChart3 class="w-5 h-5"/>
             Analytics
@@ -286,7 +286,7 @@ onMounted(() => {
         <template #header>
           <Link
             :as="Button"
-            :href="route('manager.team-performance')"
+            :href="route('manager.team.performance')"
             variant="outline" size="sm">
             View
             <ArrowRight class="w-4 h-4 ml-1"/>
@@ -634,7 +634,7 @@ onMounted(() => {
               Some team members have overdue reports that need immediate attention.
             </p>
             <Link
-              :href="route('manager.team-reports', { overdue: true })"
+              :href="route('manager.reports.index', { overdue: true })"
               class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium mt-2 inline-block"
             >
               Review Overdue Reports →

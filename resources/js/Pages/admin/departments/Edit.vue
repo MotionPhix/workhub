@@ -186,7 +186,7 @@ import AdminLayout from '@/layouts/AdminLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import FormField from '@/components/Forms/FormField.vue'
+import FormField from '@/components/forms/FormField.vue'
 import { Form } from '@inertiajs/vue3'
 import {
   ArrowLeft,

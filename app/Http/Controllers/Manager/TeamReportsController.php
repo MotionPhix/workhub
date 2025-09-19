@@ -26,7 +26,7 @@ class TeamReportsController extends Controller
             'sort_direction' => 'nullable|in:asc,desc',
         ]);
 
-        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id');
+        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id')->toArray();
 
         $query = Report::whereIn('user_id', $teamMemberIds)
             ->with(['user:id,name,email', 'department:id,name']);
@@ -80,7 +80,7 @@ class TeamReportsController extends Controller
         // Get report statistics
         $stats = $this->getTeamReportsStats($teamMemberIds);
 
-        return Inertia::render('manager/team/Reports', [
+        return Inertia::render('manager/analytics/Reports', [
             'reports' => $reports,
             'teamMembers' => $teamMembers,
             'filters' => $validated,
@@ -94,8 +94,8 @@ class TeamReportsController extends Controller
         Gate::authorize('view-team-report-details', $report);
 
         // Ensure this report belongs to a team member
-        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id');
-        if (! $teamMemberIds->contains($report->user_id)) {
+        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id')->toArray();
+        if (! in_array($report->user_id, $teamMemberIds)) {
             abort(403, 'You can only view reports from your team members.');
         }
 
@@ -109,7 +109,7 @@ class TeamReportsController extends Controller
             ->limit(5)
             ->get(['id', 'title', 'status', 'created_at']);
 
-        return Inertia::render('manager/TeamReportDetails', [
+        return Inertia::render('manager/analytics/ReportDetails', [
             'report' => $report,
             'relatedReports' => $relatedReports,
         ]);
@@ -120,8 +120,8 @@ class TeamReportsController extends Controller
         Gate::authorize('approve-report', $report);
 
         // Ensure this report belongs to a team member
-        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id');
-        if (! $teamMemberIds->contains($report->user_id)) {
+        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id')->toArray();
+        if (! in_array($report->user_id, $teamMemberIds)) {
             abort(403, 'You can only approve reports from your team members.');
         }
 
@@ -156,8 +156,8 @@ class TeamReportsController extends Controller
         Gate::authorize('approve-report', $report);
 
         // Ensure this report belongs to a team member
-        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id');
-        if (! $teamMemberIds->contains($report->user_id)) {
+        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id')->toArray();
+        if (! in_array($report->user_id, $teamMemberIds)) {
             abort(403, 'You can only reject reports from your team members.');
         }
 
@@ -199,7 +199,7 @@ class TeamReportsController extends Controller
             'reason' => 'required_if:action,reject|string|max:1000',
         ]);
 
-        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id');
+        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id')->toArray();
 
         $reports = Report::whereIn('id', $validated['report_ids'])
             ->whereIn('user_id', $teamMemberIds)
@@ -267,7 +267,7 @@ class TeamReportsController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id');
+        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id')->toArray();
 
         $query = Report::whereIn('user_id', $teamMemberIds)
             ->with(['user:id,name,email', 'department:id,name']);
@@ -342,7 +342,7 @@ class TeamReportsController extends Controller
 
     private function getAvailableReportTypes(): array
     {
-        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id');
+        $teamMemberIds = User::where('manager_email', auth()->user()->email)->pluck('id')->toArray();
 
         return Report::whereIn('user_id', $teamMemberIds)
             ->select('report_type')

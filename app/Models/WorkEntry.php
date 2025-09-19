@@ -55,7 +55,7 @@ class WorkEntry extends Model
         'requires_follow_up' => 'boolean',
     ];
 
-    protected $appends = ['hours_worked', 'tag_names'];
+    protected $appends = ['hours_worked', 'tag_names', 'hours', 'work_date'];
 
     // Relationships
     public function user(): BelongsTo
@@ -141,6 +141,16 @@ class WorkEntry extends Model
         }
 
         return round($end->diffInHours($start, true), 2);
+    }
+
+    public function getHoursAttribute(): float
+    {
+        return $this->hours_worked;
+    }
+
+    public function getWorkDateAttribute(): string
+    {
+        return $this->start_date_time ? $this->start_date_time->toDateString() : '';
     }
 
     public function getTagNamesAttribute(): array

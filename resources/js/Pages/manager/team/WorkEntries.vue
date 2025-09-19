@@ -8,6 +8,13 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  NumberField,
+  NumberFieldContent,
+  NumberFieldDecrement,
+  NumberFieldIncrement,
+  NumberFieldInput,
+} from '@/components/ui/number-field'
 import EmptyState from '@/components/EmptyState.vue'
 import DatePicker from '@/components/DatePicker.vue'
 import {
@@ -22,6 +29,7 @@ import {
   Minus,
   Eye,
   Edit,
+  XIcon,
   MoreHorizontal
 } from 'lucide-vue-next'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -100,8 +108,8 @@ const userFilter = ref(props.filters.user_id || 'all')
 const projectFilter = ref(props.filters.project_id || 'all')
 const startDate = ref(props.filters.start_date || '')
 const endDate = ref(props.filters.end_date || '')
-const minHours = ref(props.filters.min_hours || '')
-const maxHours = ref(props.filters.max_hours || '')
+const minHours = ref(props.filters.min_hours || null)
+const maxHours = ref(props.filters.max_hours || null)
 const sortBy = ref(props.filters.sort_by || 'date')
 const sortDirection = ref(props.filters.sort_direction || 'desc')
 
@@ -140,8 +148,8 @@ const resetFilters = () => {
   projectFilter.value = 'all'
   startDate.value = ''
   endDate.value = ''
-  minHours.value = ''
-  maxHours.value = ''
+  minHours.value = null
+  maxHours.value = null
   sortBy.value = 'date'
   sortDirection.value = 'desc'
 
@@ -164,13 +172,23 @@ const approvalRate = computed(() => {
   if (props.stats.total_entries === 0) return 0
   return Math.round((props.stats.approved_entries / props.stats.total_entries) * 100)
 })
+
+const updateMinHours = (value: number | undefined) => {
+  minHours.value = value || null
+  handleSearch()
+}
+
+const updateMaxHours = (value: number | undefined) => {
+  maxHours.value = value || null
+  handleSearch()
+}
 </script>
 
 <template>
   <Head title="Team Work Entries" />
 
   <ManagerLayout>
-    <div class="py-6">
+    <div>
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
         <div>
@@ -244,11 +262,10 @@ const approvalRate = computed(() => {
         :icon="Filter"
         inline-icon
         class="mb-6"
-        padding="p-4"
-      >
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        padding="p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Search -->
-          <div class="relative">
+          <div class="relative md:col-span-3 lg:col-span-4">
             <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               v-model="searchQuery"
@@ -260,7 +277,7 @@ const approvalRate = computed(() => {
 
           <!-- Team Member Filter -->
           <Select v-model="userFilter" @update:model-value="applyFilters">
-            <SelectTrigger>
+            <SelectTrigger class="w-full">
               <SelectValue placeholder="All Team Members" />
             </SelectTrigger>
             <SelectContent>
@@ -268,8 +285,7 @@ const approvalRate = computed(() => {
               <SelectItem
                 v-for="member in teamMembers"
                 :key="member.id"
-                :value="member.id.toString()"
-              >
+                :value="member.id.toString()">
                 {{ member.name }}
               </SelectItem>
             </SelectContent>
@@ -277,16 +293,16 @@ const approvalRate = computed(() => {
 
           <!-- Project Filter -->
           <Select v-model="projectFilter" @update:model-value="applyFilters">
-            <SelectTrigger>
+            <SelectTrigger class="w-full">
               <SelectValue placeholder="All Projects" />
             </SelectTrigger>
+
             <SelectContent>
               <SelectItem value="all">All Projects</SelectItem>
               <SelectItem
                 v-for="project in projects"
                 :key="project.id"
-                :value="project.id.toString()"
-              >
+                :value="project.id.toString()">
                 {{ project.name }}
               </SelectItem>
             </SelectContent>
@@ -312,28 +328,47 @@ const approvalRate = computed(() => {
 
         <div class="mt-4 flex justify-between">
           <div class="flex gap-2">
-            <Input
-              v-model="minHours"
-              @input="handleSearch"
-              type="number"
-              step="0.25"
-              min="0"
+            <NumberField
+              :model-value="minHours ?? undefined"
+              @update:model-value="(value) => updateMinHours(value)"
+              :step="0.25"
+              :min="0"
               placeholder="Min hours"
-              class="w-24"
-            />
-            <Input
-              v-model="maxHours"
-              @input="handleSearch"
-              type="number"
-              step="0.25"
-              min="0"
+              :format-options="{
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+              }">
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput placeholder="Min hours" />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
+
+            <NumberField
+              :model-value="maxHours ?? undefined"
+              @update:model-value="(value) => updateMaxHours(value)"
+              :step="0.25"
+              :min="0"
               placeholder="Max hours"
-              class="w-24"
-            />
+              :format-options="{
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+              }">
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput placeholder="Max hours" />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
           </div>
 
-          <Button variant="outline" @click="resetFilters">
-            Reset Filters
+          <Button
+            size="icon"
+            variant="outline"
+            @click="resetFilters">
+            <XIcon class="w-4 h-4" />
+            <span class="sr-only">Reset Filters</span>
           </Button>
         </div>
       </CustomCard>
