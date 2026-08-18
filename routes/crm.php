@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('search', [SearchController::class, 'index'])->name('search');
+    Route::get('crm/search', [SearchController::class, 'index'])->name('search.crm');
 
     Route::prefix('prospects')->as('prospects.')->group(function (): void {
         Route::get('/', [ProspectController::class, 'index'])->name('index');

@@ -29,8 +29,9 @@ export function GlobalSearch() {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<SearchResult[]>([]);
+    const [history, setHistory] = useState<string[]>([]);
 
-    const http = useHttp<SearchResponse>({ q: '' });
+    const http = useHttp<SearchResponse>({ headers: { 'Accept': 'application/json' } });
 
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -55,6 +56,11 @@ export function GlobalSearch() {
                 data: { q: query },
                 onSuccess: (response) => {
                     setResults(response.results || []);
+                    // add to history
+                    setHistory(prev => {
+                        const newHistory = [query, ...prev.filter(q => q !== query)];
+                        return newHistory.slice(0, 10);
+                    });
                 },
                 onError: () => {
                     setResults([]);
