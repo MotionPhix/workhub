@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Workhub Frontend Plan</title>
+<style>
+/* === Palette === */
+:root {
+  --bg: #FAFBFC;
+  --bg-surface: #FFFFFF;
+  --bg-muted: #F1F3F5;
+  --bg-accent: #EEF2FF;
+  --fg: #0F172A;
+  --fg-muted: #64748B;
+  --fg-faint: #94A3B8;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --accent: #4F46E5;
+  --accent-soft: #EEF2FF;
+  --accent-fg: #3730A3;
+  --success: #059669;
+  --success-soft: #ECFDF5;
+  --warning: #D97706;
+  --warning-soft: #FFFBEB;
+  --danger: #DC2626;
+  --danger-soft: #FEF2F2;
+  --code-bg: #F8FAFC;
+  --code-border: #E2E8F0;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.06);
+  --radius: 8px;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+  --font-display: 'Inter', system-ui, sans-serif;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0C1222;
+  --bg-surface: #151D2E;
+  --bg-muted: #1C2740;
+  --bg-accent: #1E1B4B;
+  --fg: #F1F5F9;
+  --fg-muted: #94A3B8;
+  --fg-faint: #64748B;
+  --border: #1E293B;
+  --border-strong: #334155;
+  --accent: #818CF8;
+  --accent-soft: #1E1B4B;
+  --accent-fg: #C7D2FE;
+  --success: #34D399;
+  --success-soft: #064E3B;
+  --warning: #FBBF24;
+  --warning-soft: #78350F;
+  --danger: #F87171;
+  --danger-soft: #7F1D1D;
+  --code-bg: #151D2E;
+  --code-border: #1E293B;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1222;
+    --bg-surface: #151D2E;
+    --bg-muted: #1C2740;
+    --bg-accent: #1E1B4B;
+    --fg: #F1F5F9;
+    --fg-muted: #94A3B8;
+    --fg-faint: #64748B;
+    --border: #1E293B;
+    --border-strong: #334155;
+    --accent: #818CF8;
+    --accent-soft: #1E1B4B;
+    --accent-fg: #C7D2FE;
+    --success: #34D399;
+    --success-soft: #064E3B;
+    --warning: #FBBF24;
+    --warning-soft: #78350F;
+    --danger: #F87171;
+    --danger-soft: #7F1D1D;
+    --code-bg: #151D2E;
+    --code-border: #1E293B;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.2);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.3);
+  }
+}
+
+/* === Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 2rem; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Layout === */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+.toc {
+  position: sticky;
+  top: 0;
+  width: 260px;
+  min-width: 260px;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 2rem 1.5rem;
+  border-right: 1px solid var(--border);
+  background: var(--bg-surface);
+  font-size: 13px;
+}
+.toc-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--fg-faint);
+  margin-bottom: 1rem;
+}
+.toc a {
+  display: block;
+  padding: 5px 8px;
+  color: var(--fg-muted);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background .15s, color .15s;
+}
+.toc a:hover {
+  background: var(--accent-soft);
+  color: var(--accent-fg);
+}
+.toc a.active {
+  background: var(--accent-soft);
+  color: var(--accent-fg);
+  font-weight: 500;
+}
+.toc .indent { padding-left: 20px; font-size: 12px; }
+.main {
+  flex: 1;
+  min-width: 0;
+  max-width: 860px;
+  padding: 3rem 3.5rem 6rem;
+}
+
+/* === Typography === */
+h1 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  margin-bottom: .5rem;
+  text-wrap: balance;
+}
+.subtitle {
+  color: var(--fg-muted);
+  font-size: 1.05rem;
+  margin-bottom: 2.5rem;
+}
+h2 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -.015em;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid var(--border);
+  text-wrap: balance;
+}
+h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: .75rem;
+  color: var(--fg);
+}
+h4 {
+  font-size: .875rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: .5rem;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+p { margin-bottom: .75rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* === Code === */
+code {
+  font-family: var(--font-mono);
+  font-size: .85em;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  font-size: 13px;
+  line-height: 1.5;
+}
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* === Tables === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 14px;
+}
+th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--fg-muted);
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--border-strong);
+  white-space: nowrap;
+}
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-muted); }
+
+/* === Callouts === */
+.callout {
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 14px;
+  border-left: 3px solid;
+}
+.callout-info { background: var(--accent-soft); border-color: var(--accent); }
+.callout-success { background: var(--success-soft); border-color: var(--success); }
+.callout-warn { background: var(--warning-soft); border-color: var(--warning); }
+.callout strong { display: block; margin-bottom: .25rem; }
+
+/* === Chips === */
+.chip {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.chip-accent { background: var(--accent-soft); color: var(--accent-fg); }
+.chip-success { background: var(--success-soft); color: var(--success); }
+.chip-warning { background: var(--warning-soft); color: var(--warning); }
+.chip-danger { background: var(--danger-soft); color: var(--danger); }
+.chip-muted { background: var(--bg-muted); color: var(--fg-muted); }
+
+/* === Wireframe === */
+.wireframe {
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre;
+  color: var(--fg-muted);
+}
+
+/* === Lists === */
+ul, ol { padding-left: 1.25rem; margin-bottom: .75rem; }
+li { margin-bottom: .25rem; }
+
+/* === Separator === */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* === Mobile === */
+@media (max-width: 900px) {
+  .toc { display: none; }
+  .main { padding: 2rem 1.5rem 4rem; }
+}
+@media (max-width: 600px) {
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.15rem; }
+  table { font-size: 13px; }
+  pre { font-size: 12px; padding: .75rem; }
+}
+
+/* Phase markers */
+.phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-fg);
+  margin-bottom: .5rem;
+}
+.phase-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ========== TOC ========== -->
+<nav class="toc">
+  <div class="toc-title">Frontend Plan</div>
+  <a href="#overview">Overview</a>
+  <a href="#foundations" class="indent">Foundations</a>
+  <a href="#navigation">Navigation</a>
+  <a href="#nav-groups" class="indent">Sidebar Groups</a>
+  <a href="#nav-icon-map" class="indent">Icon Map</a>
+  <a href="#routes">Route Map</a>
+  <a href="#route-detail" class="indent">All Routes</a>
+  <a href="#dashboard">Dashboard</a>
+  <a href="#dashboard-layout" class="indent">Layout</a>
+  <a href="#dashboard-data" class="indent">Data Flow</a>
+  <a href="#components">Components</a>
+  <a href="#shared-components" class="indent">Shared</a>
+  <a href="#domain-components" class="indent">Domain</a>
+  <a href="#shadcn-install" class="indent">shadcn/ui</a>
+  <a href="#command-palette">Command Palette</a>
+  <a href="#types">TypeScript Types</a>
+  <a href="#dark-mode">Dark Mode</a>
+  <a href="#responsive">Responsive</a>
+  <a href="#state">State Management</a>
+  <a href="#phases">Implementation Phases</a>
+</nav>
+
+<!-- ========== MAIN ========== -->
+<main class="main">
+
+<h1>Workhub Frontend Plan</h1>
+<p class="subtitle">Architecture and implementation roadmap for the Personal Client Outreach &amp; Proposal CRM.</p>
+
+<!-- ===== OVERVIEW ===== -->
+<h2 id="overview">Overview</h2>
+<p>Workhub is a personal CRM for a solo creative professional managing weekly outreach cycles, prospect ranking, email personalization, proposal building, and a deal pipeline. The frontend is an Inertia v3 single-page application: React 19 + TypeScript + Tailwind 4 + shadcn/ui (new-york, neutral). Routes are typed via Wayfinder. The app shell is a collapsible sidebar with 11 navigation sections.</p>
+
+<div class="callout callout-info">
+<strong>Design language</strong>
+Instrument Sans for UI, oklch neutral tokens for theming, shadcn/ui new-york (smaller radii, tighter spacing). All custom components use semantic token classes (<code>bg-background</code>, <code>text-foreground</code>, <code>bg-card</code>) — never raw colors. The neutral palette carries no chromatic bias.
+</div>
+
+<!-- ===== FOUNDATIONS ===== -->
+<h2 id="foundations">Foundations Already in Place</h2>
+
+<table>
+<thead><tr><th>Layer</th><th>What exists</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><strong>Inertia</strong></td><td>v3 with <code>@inertiajs/vite</code>, SSR off, progress bar, strict mode</td><td><span class="chip chip-success">Ready</span></td></tr>
+<tr><td><strong>React</strong></td><td>19 with React Compiler (babel plugin)</td><td><span class="chip chip-success">Ready</span></td></tr>
+<tr><td><strong>TypeScript</strong></td><td>5.7, strict, paths <code>@/*</code> → <code>resources/js/*</code></td><td><span class="chip chip-success">Ready</span></td></tr>
+<tr><td><strong>Tailwind</strong></td><td>4 via <code>@tailwindcss/vite</code>, oklch tokens in <code>app.css</code></td><td><span class="chip chip-success">Ready</span></td></tr>
+<tr><td><strong>shadcn/ui</strong></td><td>27 components installed (new-york, neutral)</td><td><span class="chip chip-warning">Needs additions</span></td></tr>
+<tr><td><strong>Wayfinder</strong></td><td>Auth + settings routes only; CRM routes TBD</td><td><span class="chip chip-warning">TBD</span></td></tr>
+<tr><td><strong>App shell</strong></td><td>Sidebar (icon-collapsible, inset) + SidebarInset + SidebarHeader (trigger + breadcrumbs)</td><td><span class="chip chip-success">Ready</span></td></tr>
+<tr><td><strong>Layout routing</strong></td><td><code>app.tsx</code> layout switch: <code>auth/*</code> → AuthLayout, <code>settings/*</code> → [AppLayout, SettingsLayout], default → AppLayout</td><td><span class="chip chip-success">Ready</span></td></tr>
+<tr><td><strong>Dark mode</strong></td><td><code>use-appearance</code> hook + <code>initializeTheme()</code>, <code>.dark</code> class on <code>&lt;html&gt;</code></td><td><span class="chip chip-success">Ready</span></td></tr>
+<tr><td><strong>Hooks</strong></td><td>useCurrentUrl, useMobile, useAppearance, useClipboard, useFlashToast, useInitials</td><td><span class="chip chip-success">Ready</span></td></tr>
+<tr><td><strong>Font</strong></td><td>Instrument Sans (400, 500, 600) via Vite font plugin</td><td><span class="chip chip-success">Ready</span></td></tr>
+<tr><td><strong>Toast</strong></td><td>Sonner + <code>Toaster</code> in <code>app.tsx</code>, <code>useFlashToast</code> for server flash</td><td><span class="chip chip-success">Ready</span></td></tr>
+</tbody>
+</table>
+
+<h3>Existing shadcn/ui Components (27)</h3>
+<p>alert · avatar · badge · breadcrumb · button · card · checkbox · collapsible · dialog · dropdown-menu · icon · input-otp · input · label · navigation-menu · placeholder-pattern · select · separator · sheet · sidebar · skeleton · sonner · spinner · toggle · toggle-group · tooltip</p>
+
+<h3>Existing Custom Components</h3>
+<p>AppShell · AppSidebar · AppHeader · AppSidebarHeader · AppContent · AppLogo · AppLogoIcon · NavMain · NavFooter · NavUser · Breadcrumbs · Heading · UserMenuContent · PasswordInput · TextLink · InputError · AppearanceTabs · DeleteUser · ManagePasskeys · ManageTwoFactor</p>
+
+<!-- ===== NAVIGATION ===== -->
+<h2 id="navigation">Navigation — The 11-Item Sidebar</h2>
+
+<h3 id="nav-groups">Sidebar Groups</h3>
+
+<table>
+<thead><tr><th>Group</th><th>Nav Items</th><th>Lucide Icon</th><th>Route (Wayfinder)</th></tr></thead>
+<tbody>
+<tr><td rowspan="5"><strong>Reach</strong></td><td>Dashboard</td><td><code>LayoutGrid</code></td><td><code>/dashboard</code></td></tr>
+<tr><td>Prospects</td><td><code>UsersRound</code></td><td><code>/prospects</code></td></tr>
+<tr><td>Companies</td><td><code>Building2</code></td><td><code>/companies</code></td></tr>
+<tr><td>Outreach</td><td><code>Send</code></td><td><code>/outreach</code></td></tr>
+<tr><td>Follow-ups</td><td><code>CalendarClock</code></td><td><code>/follow-ups</code></td></tr>
+<tr><td rowspan="4"><strong>Business</strong></td><td>Proposals</td><td><code>FileText</code></td><td><code>/proposals</code></td></tr>
+<tr><td>Pipeline</td><td><code>GitBranch</code></td><td><code>/pipeline</code></td></tr>
+<tr><td>Clients</td><td><code>Handshake</code></td><td><code>/clients</code></td></tr>
+<tr><td>Templates</td><td><code>LayoutTemplate</code></td><td><code>/templates</code></td></tr>
+<tr><td><strong>Insight</strong></td><td>Analytics</td><td><code>BarChart3</code></td><td><code>/analytics</code></td></tr>
+<tr><td><strong>Config</strong></td><td>Settings</td><td><code>Settings</code></td><td><code>/settings/profile</code></td></tr>
+</tbody>
+</table>
+
+<h3 id="nav-icon-map">Implementation</h3>
+<p>Extend <code>NavItem</code> with an optional <code>badge</code> for counts (overdue follow-ups, pending queue items). Each group gets its own <code>&lt;SidebarGroup&gt;</code> + <code>&lt;SidebarGroupLabel&gt;</code> in <code>app-sidebar.tsx</code>. Settings stays at the bottom, routed to the existing settings layout.</p>
+
+<pre><code>// resources/js/components/app-sidebar.tsx (revised nav structure)
+const navGroups = [
+  {
+    label: 'Reach',
+    items: [
+      { title: 'Dashboard',   href: routes.dashboard(),   icon: LayoutGrid },
+      { title: 'Prospects',   href: routes.prospects.index(), icon: UsersRound },
+      { title: 'Companies',   href: routes.companies.index(), icon: Building2 },
+      { title: 'Outreach',    href: routes.outreach.index(),  icon: Send },
+      { title: 'Follow-ups',  href: routes.followUps.index(), icon: CalendarClock, badge: overdueCount },
+    ],
+  },
+  {
+    label: 'Business',
+    items: [
+      { title: 'Proposals',  href: routes.proposals.index(), icon: FileText },
+      { title: 'Pipeline',   href: routes.pipeline(),         icon: GitBranch },
+      { title: 'Clients',    href: routes.clients.index(),    icon: Handshake },
+      { title: 'Templates',  href: routes.templates.index(),  icon: LayoutTemplate },
+    ],
+  },
+  {
+    label: 'Insight',
+    items: [
+      { title: 'Analytics', href: routes.analytics(), icon: BarChart3 },
+    ],
+  },
+];</code></pre>
+
+<!-- ===== ROUTES ===== -->
+<h2 id="routes">Route Map</h2>
+
+<div class="callout callout-info">
+<strong>Wayfinder generation</strong>
+After defining routes in <code>routes/web.php</code>, run <code>php artisan wayfinder:generate</code> to produce typed TypeScript functions in <code>resources/js/routes/</code>. Every page component imports routes from <code>@/routes</code>, never hardcodes URLs.
+</div>
+
+<h3 id="route-detail">All Routes</h3>
+
+<table>
+<thead><tr><th>Section</th><th>Method</th><th>URI</th><th>Controller</th><th>Wayfinder</th></tr></thead>
+<tbody>
+<tr><td rowspan="3"><strong>Dashboard</strong></td><td>GET</td><td><code>/dashboard</code></td><td>DashboardController@index</td><td><code>dashboard()</code></td></tr>
+<tr><td>GET</td><td><code>/search</code></td><td>SearchController@index</td><td><code>search()</code></td></tr>
+<tr><td>POST</td><td><code>/search</code></td><td>SearchController@store</td><td><code>search()</code></td></tr>
+
+<tr><td rowspan="6"><strong>Prospects</strong></td><td>GET</td><td><code>/prospects</code></td><td>ProspectController@index</td><td><code>prospects.index()</code></td></tr>
+<tr><td>GET</td><td><code>/prospects/create</code></td><td>ProspectController@create</td><td><code>prospects.create()</code></td></tr>
+<tr><td>POST</td><td><code>/prospects</code></td><td>ProspectController@store</td><td><code>prospects.store()</code></td></tr>
+<tr><td>GET</td><td><code>/prospects/{id}</code></td><td>ProspectController@show</td><td><code>prospects.show(id)</code></td></tr>
+<tr><td>PUT</td><td><code>/prospects/{id}</code></td><td>ProspectController@update</td><td><code>prospects.update(id)</code></td></tr>
+<tr><td>DELETE</td><td><code>/prospects/{id}</code></td><td>ProspectController@destroy</td><td><code>prospects.destroy(id)</code></td></tr>
+
+<tr><td rowspan="5"><strong>Companies</strong></td><td>GET</td><td><code>/companies</code></td><td>CompanyController@index</td><td><code>companies.index()</code></td></tr>
+<tr><td>GET</td><td><code>/companies/create</code></td><td>CompanyController@create</td><td><code>companies.create()</code></td></tr>
+<tr><td>POST</td><td><code>/companies</code></td><td>CompanyController@store</td><td><code>companies.store()</code></td></tr>
+<tr><td>GET</td><td><code>/companies/{id}</code></td><td>CompanyController@show</td><td><code>companies.show(id)</code></td></tr>
+<tr><td>PUT</td><td><code>/companies/{id}</code></td><td>CompanyController@update</td><td><code>companies.update(id)</code></td></tr>
+
+<tr><td rowspan="7"><strong>Outreach</strong></td><td>GET</td><td><code>/outreach</code></td><td>OutreachController@index</td><td><code>outreach.index()</code></td></tr>
+<tr><td>POST</td><td><code>/outreach/assignments/{id}/contact</code></td><td>OutreachController@markContacted</td><td><code>outreach.markContacted(id)</code></td></tr>
+<tr><td>POST</td><td><code>/outreach/assignments/{id}/skip</code></td><td>OutreachController@skip</td><td><code>outreach.skip(id)</code></td></tr>
+<tr><td>POST</td><td><code>/outreach/assignments/{id}/snooze</code></td><td>OutreachController@snooze</td><td><code>outreach.snooze(id)</code></td></tr>
+<tr><td>POST</td><td><code>/outreach/assignments/{id}/draft</code></td><td>OutreachController@draftEmail</td><td><code>outreach.draftEmail(id)</code></td></tr>
+<tr><td>GET</td><td><code>/outreach/cycles</code></td><td>OutreachCycleController@index</td><td><code>outreach.cycles.index()</code></td></tr>
+<tr><td>GET</td><td><code>/outreach/cycles/{id}</code></td><td>OutreachCycleController@show</td><td><code>outreach.cycles.show(id)</code></td></tr>
+
+<tr><td rowspan="3"><strong>Follow-ups</strong></td><td>GET</td><td><code>/follow-ups</code></td><td>FollowUpController@index</td><td><code>followUps.index()</code></td></tr>
+<tr><td>PUT</td><td><code>/follow-ups/{id}</code></td><td>FollowUpController@update</td><td><code>followUps.update(id)</code></td></tr>
+<tr><td>DELETE</td><td><code>/follow-ups/{id}</code></td><td>FollowUpController@destroy</td><td><code>followUps.destroy(id)</code></td></tr>
+
+<tr><td rowspan="5"><strong>Proposals</strong></td><td>GET</td><td><code>/proposals</code></td><td>ProposalController@index</td><td><code>proposals.index()</code></td></tr>
+<tr><td>GET</td><td><code>/proposals/create</code></td><td>ProposalController@create</td><td><code>proposals.create()</code></td></tr>
+<tr><td>POST</td><td><code>/proposals</code></td><td>ProposalController@store</td><td><code>proposals.store()</code></td></tr>
+<tr><td>GET</td><td><code>/proposals/{id}</code></td><td>ProposalController@show</td><td><code>proposals.show(id)</code></td></tr>
+<tr><td>POST</td><td><code>/proposals/{id}/export</code></td><td>ProposalController@exportPdf</td><td><code>proposals.exportPdf(id)</code></td></tr>
+
+<tr><td rowspan="3"><strong>Pipeline</strong></td><td>GET</td><td><code>/pipeline</code></td><td>PipelineController@index</td><td><code>pipeline()</code></td></tr>
+<tr><td>PUT</td><td><code>/pipeline/opportunities/{id}/stage</code></td><td>PipelineController@updateStage</td><td><code>pipeline.updateStage(id)</code></td></tr>
+<tr><td>POST</td><td><code>/pipeline/opportunities</code></td><td>PipelineController@store</td><td><code>pipeline.store()</code></td></tr>
+
+<tr><td rowspan="4"><strong>Clients</strong></td><td>GET</td><td><code>/clients</code></td><td>ClientController@index</td><td><code>clients.index()</code></td></tr>
+<tr><td>GET</td><td><code>/clients/{id}</code></td><td>ClientController@show</td><td><code>clients.show(id)</code></td></tr>
+<tr><td>PUT</td><td><code>/clients/{id}</code></td><td>ClientController@update</td><td><code>clients.update(id)</code></td></tr>
+<tr><td>DELETE</td><td><code>/clients/{id}</code></td><td>ClientController@destroy</td><td><code>clients.destroy(id)</code></td></tr>
+
+<tr><td rowspan="3"><strong>Templates</strong></td><td>GET</td><td><code>/templates</code></td><td>TemplateController@index</td><td><code>templates.index()</code></td></tr>
+<tr><td>GET</td><td><code>/templates/{id}/edit</code></td><td>TemplateController@edit</td><td><code>templates.edit(id)</code></td></tr>
+<tr><td>PUT</td><td><code>/templates/{id}</code></td><td>TemplateController@update</td><td><code>templates.update(id)</code></td></tr>
+
+<tr><td><strong>Analytics</strong></td><td>GET</td><td><code>/analytics</code></td><td>AnalyticsController@index</td><td><code>analytics()</code></td></tr>
+</tbody>
+</table>
+
+<!-- ===== DASHBOARD ===== -->
+<h2 id="dashboard">Dashboard — The Heart</h2>
+
+<p>The dashboard answers three questions the moment the user opens the app: <em>Who do I contact today?</em> · <em>Who's the next best prospect?</em> · <em>What's the state of my pipeline?</em></p>
+
+<h3 id="dashboard-layout">Layout Wireframe</h3>
+
+<div class="wireframe">┌─────────────────────────────────────────────────────────────────────┐
+│  Good morning, Kingsley — Sunday, 17 August 2025                    │
+│  Week 33 outreach cycle · 8 of 25 contacted this week               │
+├────────────────────────────────────────┬────────────────────────────┤
+│  TODAY'S OUTREACH                      │  NEXT BEST PROSPECTS       │
+│  12 assignments remaining              │  Ranked by lead score      │
+│                                        │                            │
+│  ┌─ Family Planning Assoc. ─────────┐  │  1. John Mwale  <span class="chip chip-danger">HOT</span>     │
+│  │  Grace Mphatso · Comms Officer   │  │     Score 92 · Never      │
+│  │  Last: 12 days ago · Interested  │  │     Budget: 2.5M MWK      │
+│  │  Suggested: Website Redesign      │  │     ──────────────────    │
+│  │  Angle: "FPAM site refresh for    │  │  2. Sarah Kamwendo  <span class="chip chip-warning">WARM</span>│
+│  │  the 2026 strategic plan"         │  │     Score 87 · 45d ago    │
+│  │  [ ✉ Draft Email ] [ Skip ]      │  │     Budget: 1.8M MWK      │
+│  └──────────────────────────────────┘  │  ──────────────────        │
+│  ┌─ Malawi Revenue Authority ───────┐  │  3. Chikondi Banda  <span class="chip chip-warning">WARM</span>│
+│  │  James Kalo · IT Director        │  │     Score 81 · 23d ago    │
+│  │  Last: 30 days ago · Contacted   │  │     Budget: 950K MWK      │
+│  │  Suggested: UI/UX Redesign       │  │  ...                      │
+│  │  Angle: "MRA portal usability"   │  │                            │
+│  │  [ ✉ Draft Email ] [ Skip ]      │  ├────────────────────────────┤
+│  └──────────────────────────────────┘  │  PIPELINE THIS MONTH       │
+│  ┌─ TEVET Authority ────────────────┐  │  Lead      4   1.2M MWK   │
+│  │  ...                             │  │  Proposal  3   4.8M MWK   │
+│  └──────────────────────────────────┘  │  Negotiate 1   2.1M MWK   │
+│                                        │  Won       2   6.1M MWK   │
+├────────────────────────────────────────┤                            │
+│  FOLLOW-UPS                            │  MONTHLY GOAL              │
+│  ● Overdue: 3  (red)                   │  ████████░░░░  68%         │
+│  ● Due today: 2  (amber)               │  4.2M / 6.0M MWK           │
+│  ● This week: 5                        │                            │
+└────────────────────────────────────────┴────────────────────────────┘</div>
+
+<h3>Today's Outreach Card Structure</h3>
+<p>Each assignment card in the Today's Outreach list renders:</p>
+<ul>
+  <li><strong>Company</strong> — name + initials avatar (color from company hash)</li>
+  <li><strong>Contact</strong> — full name + job title</li>
+  <li><strong>Status chip</strong> — mapped from <code>ContactStatus</code>: New (blue), Researched (gray), Contacted (amber), Interested (green), Not Interested (red)</li>
+  <li><strong>Last contact</strong> — "X days ago" or "Never contacted" in muted text</li>
+  <li><strong>Opportunity</strong> — linked opportunity title + amount (if exists)</li>
+  <li><strong>Suggested service</strong> — bolded service name from assignment</li>
+  <li><strong>Angle</strong> — the personalized reason/suggested pitch from assignment snapshot</li>
+  <li><strong>Actions</strong> — <code>[Draft Email]</code> opens composer sheet, <code>[Skip]</code> marks skipped (optimistic)</li>
+</ul>
+
+<h3 id="dashboard-data">Data Flow</h3>
+<p>The <code>DashboardController@index</code> resolves these Inertia props:</p>
+
+<table>
+<thead><tr><th>Prop</th><th>Source</th><th>Deferred?</th></tr></thead>
+<tbody>
+<tr><td><code>todayOutreach</code></td><td><code>OutreachAssignment::where('assigned_on', today)->with('contact.company','suggestedService')->orderBy('rank')</code></td><td>No — loads first</td></tr>
+<tr><td><code>nextBestProspects</code></td><td><code>Contact::bestFirst()->contactable()->limit(10)->with('company')</code></td><td>Yes</td></tr>
+<tr><td><code>followUps</code></td><td><code>FollowUp::pending()->where('due_on', '&lt;=', today)->with('contact.company')</code></td><td>No</td></tr>
+<tr><td><code>pipelineSummary</code></td><td><code>Opportunity::selectRaw('stage, count(*), coalesce(sum(amount),0)')->groupBy('stage')</code></td><td>Yes</td></tr>
+<tr><td><code>monthlyGoal</code></td><td><code>Goal::current()</code> with won revenue sum</td><td>Yes</td></tr>
+<tr><td><code>recentActivity</code></td><td><code>Activity::where('occurred_at','&gt;', now->subDays(7))->count()</code></td><td>No</td></tr>
+</tbody>
+</table>
+
+<div class="callout callout-warn">
+<strong>Carbon mutation trap</strong>
+When computing date ranges for queries, always <code>->copy()</code> before calling <code>startOfDay()</code>, <code>addDays()</code>, etc. Carbon mutates in place; shared references corrupt other queries.
+</div>
+
+<!-- ===== COMPONENTS ===== -->
+<h2 id="components">Component Architecture</h2>
+
+<h3 id="shared-components">Shared Page Components</h3>
+
+<table>
+<thead><tr><th>Component</th><th>Purpose</th><th>Location</th></tr></thead>
+<tbody>
+<tr><td><code>PageLayout</code></td><td>Reusable page chrome: title, subtitle, actions slot, children</td><td><code>components/page-layout.tsx</code></td></tr>
+<tr><td><code>DataTable&lt;T&gt;</code></td><td>Generic table with column defs, sort, search, pagination</td><td><code>components/data-table.tsx</code></td></tr>
+<tr><td><code>EmptyState</code></td><td>Icon + heading + description + action button for zero-data states</td><td><code>components/empty-state.tsx</code></td></tr>
+<tr><td><code>LoadingSkeleton</code></td><td>Page-level skeleton placeholders (cards, table rows)</td><td><code>components/loading-skeleton.tsx</code></td></tr>
+<tr><td><code>StatCard</code></td><td>KPI tile: label, value, optional trend indicator, optional sparkline</td><td><code>components/stat-card.tsx</code></td></tr>
+<tr><td><code>StatusBadge</code></td><td>Colored chip for any <code>ContactStatus</code>, <code>OpportunityStage</code>, etc.</td><td><code>components/status-badge.tsx</code></td></tr>
+<tr><td><code>TemperatureBadge</code></td><td>Hot / warm / cold lead temperature chip</td><td><code>components/temperature-badge.tsx</code></td></tr>
+<tr><td><code>ConfirmDialog</code></td><td>Destructive action confirmation (reuses Dialog)</td><td><code>components/confirm-dialog.tsx</code></td></tr>
+<tr><td><code>SearchInput</code></td><td>Debounced search with clear button, optional onChange callback</td><td><code>components/search-input.tsx</code></td></tr>
+<tr><td><code>DateRangePicker</code></td><td>Calendar popover for analytics and filter ranges</td><td><code>components/date-range-picker.tsx</code></td></tr>
+<tr><td><code>ActivityTimeline</code></td><td>Chronological activity feed for contact/company detail pages</td><td><code>components/activity-timeline.tsx</code></td></tr>
+</tbody>
+</table>
+
+<h3 id="domain-components">Domain Components</h3>
+
+<h4>Outreach</h4>
+<table>
+<thead><tr><th>Component</th><th>Renders</th></tr></thead>
+<tbody>
+<tr><td><code>TodayOutreachList</code></td><td>Scrollable list of today's assignment cards</td></tr>
+<tr><td><code>AssignmentCard</code></td><td>Single outreach row: contact, company, angle, actions</td></tr>
+<tr><td><code>DraftEmailComposer</code></td><td>Full composer sheet: template picker, variable interpolation, preview, send</td></tr>
+<tr><td><code>EmailThread</code></td><td>Threaded view of sent + received messages</td></tr>
+</tbody>
+</table>
+
+<h4>Prospects</h4>
+<table>
+<thead><tr><th>Component</th><th>Renders</th></tr></thead>
+<tbody>
+<tr><td><code>ProspectFilters</code></td><td>Filter bar: status, temperature, service, company, last-contacted range</td></tr>
+<tr><td><code>ProspectTable</code></td><td>DataTable columns: name, company, status, temperature, last-contacted, score</td></tr>
+<tr><td><code>ProspectDetail</code></td><td>Tabbed detail: overview, emails, activities, proposals</td></tr>
+</tbody>
+</table>
+
+<h4>Companies</h4>
+<table>
+<thead><tr><th>Component</th><th>Renders</th></tr></thead>
+<tbody>
+<tr><td><code>CompanyCard</code></td><td>Grid card with name, industry, location, contact count</td></tr>
+<tr><td><code>CompanyDetail</code></td><td>Full detail with contacts list, opportunities, research notes</td></tr>
+</tbody>
+</table>
+
+<h4>Pipeline</h4>
+<table>
+<thead><tr><th>Component</th><th>Renders</th></tr></thead>
+<tbody>
+<tr><td><code>PipelineBoard</code></td><td>Kanban columns: Lead → Proposal → Negotiation → Won/Lost</td></tr>
+<tr><td><code>PipelineColumn</code></td><td>Single stage column with count + sum header</td></tr>
+<tr><td><code>OpportunityCard</code></td><td>Draggable card: amount, contact, company, stage badge</td></tr>
+</tbody>
+</table>
+
+<h4>Proposals</h4>
+<table>
+<thead><tr><th>Component</th><th>Renders</th></tr></thead>
+<tbody>
+<tr><td><code>ProposalList</code></td><td>DataTable: status, amount, contact, last-viewed, sent date</td></tr>
+<tr><td><code>ProposalEditor</code></td><td>Section editor with drag-to-reorder, template loading</td></tr>
+<tr><td><code>LineItemsEditor</code></td><td>Inline table: description, qty, unit price, amount; subtotal + tax</td></tr>
+<tr><td><code>ProposalPreview</code></td><td>Live preview panel mirroring PDF output</td></tr>
+</tbody>
+</table>
+
+<h3 id="shadcn-install">Additional shadcn/ui Components to Install</h3>
+
+<pre><code># shadcn/ui components
+bunx shadcn@latest add command table tabs popover calendar textarea switch radio-group progress scroll-area form
+
+# npm packages
+bun add cmdk @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities date-fns</code></pre>
+
+<!-- ===== COMMAND PALETTE ===== -->
+<h2 id="command-palette">Command Palette (⌘K)</h2>
+
+<p>A global command palette gives keyboard-first navigation, search, and action shortcuts. It opens on <code>Cmd/Ctrl+K</code> and is registered in <code>app.tsx</code> via the <code>withApp</code> wrapper.</p>
+
+<h3>Sections</h3>
+
+<table>
+<thead><tr><th>Section</th><th>Items</th><th>Behavior</th></tr></thead>
+<tbody>
+<tr><td><strong>Navigate</strong></td><td>All 11 sidebar nav items + Settings sub-items</td><td>Instant Inertia visit</td></tr>
+<tr><td><strong>Search</strong></td><td>Contacts, Companies, Proposals — fetched from <code>/search</code></td><td>Debounced (250ms), show 8 results with entity type badge</td></tr>
+<tr><td><strong>Actions</strong></td><td>New Prospect, New Company, Start Cycle, New Proposal</td><td>Opens create form or sheet</td></tr>
+<tr><td><strong>Settings</strong></td><td>Profile, Security, Appearance</td><td>Navigate to settings</td></tr>
+</tbody>
+</table>
+
+<h3>Implementation</h3>
+
+<pre><code>// resources/js/components/command-palette.tsx
+// Uses shadcn/ui Command (cmdk) + global Cmd+K listener
+
+import { Command } from 'cmdk';
+import { Dialog } from '@/components/ui/dialog';
+
+export function CommandPalette() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'k' &amp;&amp; (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen(prev => !prev);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return (
+    &lt;Dialog open={open} onOpenChange={setOpen}&gt;
+      &lt;Command&gt;
+        &lt;Command.Input placeholder="Search or jump to..." /&gt;
+        &lt;Command.List&gt;
+          &lt;Command.Group heading="Navigate"&gt;...&lt;/Command.Group&gt;
+          &lt;Command.Group heading="Actions"&gt;...&lt;/Command.Group&gt;
+        &lt;/Command.List&gt;
+      &lt;/Command&gt;
+    &lt;/Dialog&gt;
+  );
+}</code></pre>
+
+<!-- ===== TYPES ===== -->
+<h2 id="types">TypeScript Types</h2>
+
+<p>All CRM model types live in <code>resources/js/types/models.ts</code>. Enum mirrors live in <code>resources/js/types/enums.ts</code>. Page props extend the shared interface via Inertia's <code>usePage</code>.</p>
+
+<h3>Enum Mirrors</h3>
+
+<pre><code>// resources/js/types/enums.ts
+export type ContactStatus =
+  | 'new' | 'researched' | 'contacted' | 'replied'
+  | 'interested' | 'not_interested' | 'converted' | 'do_not_contact';
+
+export type LeadTemperature = 'hot' | 'warm' | 'cold';
+
+export type OpportunityStage =
+  | 'lead' | 'proposal' | 'negotiation' | 'won' | 'lost';
+
+export type ProposalStatus =
+  | 'draft' | 'sent' | 'viewed' | 'accepted' | 'rejected' | 'expired';
+
+export type FollowUpStatus = 'pending' | 'completed' | 'cancelled';
+export type FollowUpType = 'email' | 'call' | 'meeting' | 'task';
+
+export type ActivityType =
+  | 'email_sent' | 'email_replied' | 'call' | 'meeting'
+  | 'note' | 'status_change' | 'client_converted';
+
+export type AssignmentStatus = 'pending' | 'contacted' | 'skipped' | 'snoozed';
+export type ClientStatus = 'active' | 'inactive' | 'former';
+export type ProjectStatus = 'planning' | 'in_progress' | 'completed' | 'on_hold' | 'cancelled';
+
+export type CycleStatus = 'active' | 'completed' | 'cancelled';
+export type TemplateCategory = 'cold_outreach' | 'follow_up' | 'proposal_introduction' | 'introduction';</code></pre>
+
+<h3>Model Interfaces</h3>
+
+<pre><code>// resources/js/types/models.ts
+export interface Company {
+  id: string;
+  name: string;
+  slug: string;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  industry: string | null;
+  location: string | null;
+  country: string | null;
+  size: string | null;
+  organization_type: string | null;
+  lead_source: string | null;
+  description: string | null;
+  what_they_do: string | null;
+  is_client: boolean;
+  researched_at: string | null;
+  contacts?: Contact[];
+  opportunities?: Opportunity[];
+}
+
+export interface Contact {
+  id: string;
+  company_id: string | null;
+  first_name: string;
+  last_name: string | null;
+  job_title: string | null;
+  email: string | null;
+  phone: string | null;
+  status: ContactStatus;
+  priority: Priority;
+  lead_score: number;
+  temperature: LeadTemperature;     // appended accessor
+  full_name: string;                // appended accessor
+  last_contacted_at: string | null;
+  cooldown_until: string | null;
+  is_primary_contact: boolean;
+  company?: Company;
+  services?: Service[];
+  tags?: Tag[];
+  latest_email_message?: EmailMessage;
+}
+
+export interface OutreachAssignment {
+  id: string;
+  outreach_cycle_id: string;
+  contact_id: string;
+  status: AssignmentStatus;
+  rank: number;
+  score: number;
+  reasons: string[] | null;
+  strategy: string;
+  suggested_service_id: string | null;
+  suggested_angle: string | null;
+  assigned_on: string;
+  contacted_at: string | null;
+  contact?: Contact;
+  suggested_service?: Service;
+}
+
+export interface Opportunity {
+  id: string;
+  contact_id: string;
+  company_id: string | null;
+  service_id: string | null;
+  title: string;
+  description: string | null;
+  stage: OpportunityStage;
+  amount: number | null;
+  probability: number | null;
+  contact?: Contact;
+  company?: Company;
+  service?: Service;
+  proposal?: Proposal;
+}
+
+export interface Proposal {
+  id: string;
+  contact_id: string;
+  company_id: string | null;
+  opportunity_id: string | null;
+  proposal_template_id: string | null;
+  title: string;
+  status: ProposalStatus;
+  total_amount: number | null;
+  sent_at: string | null;
+  viewed_at: string | null;
+  view_count: number;
+  contact?: Contact;
+  company?: Company;
+  latest_version?: ProposalVersion;
+}
+
+export interface FollowUp {
+  id: string;
+  contact_id: string;
+  email_message_id: string | null;
+  type: FollowUpType;
+  status: FollowUpStatus;
+  due_on: string;
+  completed_at: string | null;
+  notes: string | null;
+  contact?: Contact;
+}</code></pre>
+
+<h3>Page Props Pattern</h3>
+
+<pre><code>// pages/prospects/index.tsx
+type Props = {
+  contacts: Paginated&lt;Contact&gt;;
+  filters: {
+    search: string | null;
+    status: ContactStatus | null;
+    temperature: LeadTemperature | null;
+    company_id: string | null;
+  };
+  stats: {
+    total: number;
+    hot: number;
+    contactedThisWeek: number;
+  };
+};
+
+export default function ProspectsIndex({ contacts, filters, stats }: Props) {
+  // ...
+}
+
+ProspectsIndex.layout = {
+  breadcrumbs: [
+    { title: 'Prospects', href: prospects.index() },
+  ],
+};</code></pre>
+
+<!-- ===== DARK MODE ===== -->
+<h2 id="dark-mode">Dark Mode Strategy</h2>
+
+<p>Already wired: <code>use-appearance.tsx</code> toggles the <code>.dark</code> class on <code>&lt;html&gt;</code>, and <code>initializeTheme()</code> runs on load. The oklch token system in <code>app.css</code> defines complete palettes for both themes.</p>
+
+<h3>Rules for New Components</h3>
+<ul>
+  <li><strong>Always use semantic tokens:</strong> <code>bg-background</code>, <code>text-foreground</code>, <code>bg-card</code>, <code>text-muted-foreground</code>, <code>border-border</code>, <code>bg-accent</code>. Never hardcode <code>bg-white</code>, <code>text-gray-500</code>, or <code>dark:bg-neutral-800</code>.</li>
+  <li><strong>Charts:</strong> Use <code>chart-1</code> through <code>chart-5</code> — they're defined for both themes.</li>
+  <li><strong>Status colors:</strong> The <code>StatusBadge</code> component should use a lookup map that maps each status to its semantic color, not inline classes.</li>
+  <li><strong>Migration note:</strong> <code>app-header.tsx</code> uses raw <code>dark:bg-neutral-800</code> / <code>dark:stroke-neutral-100/20</code> — these should migrate to token-based classes during Phase 12 polish.</li>
+</ul>
+
+<!-- ===== RESPONSIVE ===== -->
+<h2 id="responsive">Responsive Strategy</h2>
+
+<h3>Sidebar Behavior</h3>
+<table>
+<thead><tr><th>Viewport</th><th>Sidebar</th><th>Trigger</th></tr></thead>
+<tbody>
+<tr><td><span class="chip chip-muted">&lt; lg (1024px)</span></td><td>Hidden, opens as Sheet overlay</td><td><code>SidebarTrigger</code> in AppSidebarHeader</td></tr>
+<tr><td><span class="chip chip-accent">≥ lg (1024px)</span></td><td>Visible, collapsible to icon rail</td><td><code>SidebarTrigger</code> or keyboard shortcut</td></tr>
+</tbody>
+</table>
+
+<h3>Page Layout Patterns</h3>
+<table>
+<thead><tr><th>Page Type</th><th>Mobile</th><th>Desktop (≥xl)</th></tr></thead>
+<tbody>
+<tr><td><strong>Index pages</strong></td><td>Full-width list/table</td><td>Table + optional sidebar filters (2-col)</td></tr>
+<tr><td><strong>Detail pages</strong></td><td>Stacked tabs</td><td>Main detail + activity timeline sidebar (2-col)</td></tr>
+<tr><td><strong>Dashboard</strong></td><td>Stacked: Outreach → Follow-ups → Pipeline → Goal</td><td>2-col: main + right rail</td></tr>
+<tr><td><strong>Pipeline</strong></td><td>Horizontal scroll (all columns visible)</td><td>4 columns side by side</td></tr>
+<tr><td><strong>Composer</strong></td><td>Full-screen Sheet</td><td>Centered Dialog (640px wide)</td></tr>
+<tr><td><strong>Settings</strong></td><td>Stacked: nav → content</td><td>Left nav + right content (2-col)</td></tr>
+</tbody>
+</table>
+
+<h3>Table Responsiveness</h3>
+<p>The <code>DataTable</code> component should accept a <code>responsive</code> column config: below <code>md</code>, hide secondary columns (last-contacted, score, tags, budget) and show as a card list. The primary column (name + company) is always visible. On desktop, show the full table.</p>
+
+<!-- ===== STATE ===== -->
+<h2 id="state">State Management</h2>
+
+<p>Workhub is server-driven. Most state lives in Inertia page props. No global client store (Redux, Zustand) is needed.</p>
+
+<h3>Patterns</h3>
+
+<table>
+<thead><tr><th>Pattern</th><th>Use Case</th><th>Inertia v3 API</th></tr></thead>
+<tbody>
+<tr><td><strong>Server props</strong></td><td>All data display (lists, details, stats)</td><td><code>Inertia::render()</code> with eager-loaded relations</td></tr>
+<tr><td><strong>Deferred props</strong></td><td>Heavy dashboard sections (next best prospects, pipeline summary, goal)</td><td><code>Inertia::defer()</code> + skeleton fallback</td></tr>
+<tr><td><strong>Optimistic updates</strong></td><td>Quick actions: skip assignment, mark contacted, snooze</td><td><code>router.visit()</code> with <code>preserveScroll: true</code></td></tr>
+<tr><td><strong>Polling</strong></td><td>Email open/reply status, dashboard refresh</td><td><code>usePoll(interval, url, { preserveState: true })</code></td></tr>
+<tr><td><strong>URL-driven filters</strong></td><td>Search, status filter, date range — persisted in query params</td><td><code>router.get(url, filters, { preserveState: true })</code></td></tr>
+<tr><td><strong>Local state only</strong></td><td>Command palette, modal open/close, sidebar collapse</td><td><code>useState</code> / <code>SidebarProvider</code></td></tr>
+</tbody>
+</table>
+
+<h3>Forms</h3>
+<p>Use Inertia's <code>useForm</code> for forms that submit to Inertia routes (create/edit contact, create proposal). For standalone API calls (AI draft generation, email send via third-party), use Inertia v3's <code>useHttp</code> hook or the built-in XHR client with interceptors.</p>
+
+<h3>Toasts</h3>
+<p>Server-side flash messages route through <code>useFlashToast</code> → Sonner. Client-side actions call <code>toast.success()</code> / <code>toast.error()</code> directly. Never mix the two — pick one path per action.</p>
+
+<!-- ===== PHASES ===== -->
+<h2 id="phases">Implementation Phases</h2>
+
+<p>Each phase produces a shippable slice. Dependencies flow downward — a later phase can start once its direct prerequisites are done, but need not wait for everything above it.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 1 — Foundation Pass</div>
+<p>Install missing shadcn/ui components. Create TypeScript types for all 23 enums and 12+ models. Build shared components: PageLayout, DataTable, EmptyState, LoadingSkeleton, StatCard, StatusBadge, TemperatureBadge, SearchInput, ConfirmDialog, DateRangePicker. Update <code>app-sidebar.tsx</code> with all 11 nav items grouped. Define all routes in <code>routes/web.php</code>. Generate Wayfinder. Add command palette shell to <code>app.tsx</code>.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 2 — Dashboard</div>
+<p>DashboardController with real data queries. Today's Outreach list + AssignmentCard. Next Best Prospects ranking. Pipeline Summary stat cards. Monthly Goal progress bar. Follow-ups due/overdue sidebar. Deferred props for heavy sections.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 3 — Prospects</div>
+<p>Index page with DataTable (search, filter, sort, paginate). ProspectFilters component. Show page with tabs: overview, emails, activities, proposals. ActivityTimeline on show. Create/Edit via Sheet (slide-in form).</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 4 — Companies</div>
+<p>Index with card grid + table toggle. Show page: contacts list, opportunities, research notes. Create/Edit via Sheet. Company research fields (description, what_they_do, opportunities, suggested_pitch).</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 5 — Outreach</div>
+<p>Today's queue view (the main outreach screen). DraftEmailComposer: template selection → variable interpolation → preview → send. Mark contacted, skip, snooze actions with optimistic updates. Cycle history list. Cycle detail view with all assignments.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 6 — Follow-ups</div>
+<p>Grouped list: overdue (red), today (amber), upcoming (muted). Quick-complete and reschedule actions. Link to contact detail. Optional: link to outreach assignment if follow-up originated from one.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 7 — Pipeline</div>
+<p>Kanban board with drag-and-drop (@dnd-kit). OpportunityCard with amount, contact, company, stage. Stage column totals (count + MWK sum). Drag between columns to change stage. New opportunity creation.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 8 — Proposals</div>
+<p>Index with status filters. Show with version history, view tracking, amounts. ProposalBuilder: section editor with template loading, line items editor. PDF export trigger (POST → download). Send proposal action.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 9 — Clients + Projects</div>
+<p>Client index (active / former / retainer filters). Client detail: projects list, revenue summary, linked contact. Project status tracking. Link from won opportunities.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 10 — Templates</div>
+<p>Email template list + editor (with variable reference sidebar). Proposal template list + section editor. Template preview. Default template marking.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 11 — Analytics</div>
+<p>Outreach performance: sent / opened / replied / converted rates. Conversion funnel visualization. Revenue tracking in MWK. Time-based charts: weekly outreach, monthly revenue, pipeline velocity. Date range picker integration.</p>
+
+<div class="phase"><span class="phase-dot"></span> Phase 12 — Polish</div>
+<p>Dark mode audit across all pages — no raw colors, all tokens. Responsive audit (mobile, tablet, desktop). Empty states for every page. Loading skeletons for every data-heavy page. Validation error states for all forms. Keyboard navigation for command palette and kanban. Performance: deferred props, prefetching on hover, lazy-loaded charts.</p>
+
+<hr>
+
+<div class="callout callout-success">
+<strong>Quality gates after every phase</strong>
+<code>php artisan test --compact</code> · <code>vendor/bin/pint --format agent</code> · <code>npx tsc --noEmit</code> · <code>bun run build</code>
+</div>
+
+</main>
+</div>
+
+<!-- ===== Theme toggle script ===== -->
+<script>
+(function() {
+  const html = document.documentElement;
+  // Respect the viewer's OS preference on first load
+  if (!html.dataset.theme) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // data-theme="light" is already set; if system is dark, remove it to let media query work
+    if (prefersDark) html.removeAttribute('data-theme');
+  }
+})();
+</script>
+</body>
+</html>
